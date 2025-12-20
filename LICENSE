@@ -1,14 +1,18 @@
-Copyright (c) 2025 [Michael_J, known as Seung-zedd of Github nickname]
+LICENSE
+Copyright (c) 2025 Michael_J (Seung-zedd)
 
-All rights reserved.
+All Rights Reserved.
 
-This software and associated documentation files (the "Software") are proprietary to [본인 성함 또는 팀명].
+This software and associated documentation files (the "Software") are the exclusive property of the Copyright Holder.
 
-Permission is hereby granted ONLY for the purpose of review and evaluation by the judges and organizers of the Gemini API Developer Competition. 
+1. Limited License for Competition Purposes Pursuant to the Gemini API Developer Competition Official Rules, the Copyright Holder hereby grants the Contest Sponsor (Google LLC) and its affiliates a non-exclusive, royalty-free, perpetual, irrevocable, and worldwide license to use, review, and evaluate the Software solely for the purposes of judging, testing, and promoting the Competition.
 
-Strictly Prohibited Actions:
-1. Any unauthorized copying, modification, or distribution of this software.
-2. Any commercial use of this software, including but not limited to, using it as a basis for a Software-as-a-Service (SaaS) or any other revenue-generating product.
-3. Sublicensing or redistributing the software to third parties.
+2. Restrictions on Third Parties and Commercial Use Except for the limited rights granted to the Contest Sponsor as stated above, all other rights are strictly reserved.
 
-Except as expressly permitted above, no part of this software may be reproduced or transmitted in any form or by any means without prior written permission from the copyright holder.
+No Commercial Use: Any use of this Software for commercial purposes, including but not limited to, using it as a basis for a Software-as-a-Service (SaaS) or any other revenue-generating product, is strictly prohibited.
+
+No Redistribution: Any unauthorized copying, modification, distribution, or sublicensing of this Software to any third party is strictly prohibited.
+
+No Derivative Works: You may not create derivative works based on this Software without express written permission from the Copyright Holder.
+
+3. Disclaimer of Warranty THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -2,18 +2,18 @@
  * Svelte 5 utility for common modal behaviors.
  * Handles Escape key to close and provides a backdrop click handler.
  */
-export function useModal(onClose: () => void) {
+export function useModal(getOnClose: () => () => void) {
   function handleBackdropClick(e: MouseEvent) {
     // Only close if the click was directly on the backdrop (currentTarget),
     // not on its children (modal content).
     if (e.target === e.currentTarget) {
-      onClose();
+      getOnClose()();
     }
   }
 
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === "Escape") {
-      onClose();
+      getOnClose()();
     }
   }
 

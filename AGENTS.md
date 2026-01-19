@@ -22,6 +22,9 @@ For any task involving **logic implementation, refactoring, debugging, or archit
     - Formulate a hypothesis or a step-by-step implementation plan.
 3.  **Review:** Only after the sequential thinking process is complete and you have a clear path, proceed to write code or answer.
 
+**Rule: Terminal Command Notification.**
+If a task requires terminal commands (e.g., `mkdir`, `mv`, `rm`, `pnpm install`), you **MUST NOT** execute them directly. Instead, **notify the user** of the exact commands needed so they can run them manually. This is to ensure efficiency and avoid delays in command processing.
+
 **Exception:**
 
 - Simple content generation (e.g., "Write a README") or trivial fixes (e.g., typos) do not require this tool.

@@ -38,19 +38,23 @@
     return () => window.removeEventListener("scroll", handleScroll);
   });
 
-  let sunsetOpacity = $derived(scrollPercent < 0.2 ? 0 : 1);
-  let nightOpacity = $derived(scrollPercent < 0.5 ? 0 : 1);
+  let sunsetOpacity = $derived(
+    Math.min(1, Math.max(0, (scrollPercent - 0.1) / 0.3)),
+  );
+  let nightOpacity = $derived(
+    Math.min(1, Math.max(0, (scrollPercent - 0.5) / 0.4)),
+  );
   let starOpacity = $derived(
-    scrollPercent < 0.2 ? 0 : scrollPercent < 0.5 ? 0.3 : 1,
+    Math.min(1, Math.max(0, (scrollPercent - 0.3) / 0.5)),
   );
   let textColor = $derived(
-    scrollPercent < 0.2 ? "text-slate-800" : "text-white",
+    scrollPercent < 0.3 ? "text-slate-800" : "text-white",
   );
   let twilightTextColor = $derived(
-    scrollPercent < 0.2 ? "text-slate-800" : "text-white",
+    scrollPercent < 0.3 ? "text-slate-800" : "text-white",
   );
   let twilightDescColor = $derived(
-    scrollPercent < 0.2 ? "text-slate-600" : "text-slate-300",
+    scrollPercent < 0.3 ? "text-slate-600" : "text-slate-300",
   );
 </script>
 
@@ -228,13 +232,14 @@
         Record your dreams tonight with Lucidify.
       </p>
 
-      <button
+      <a
+        href="/dream"
         class="group relative inline-flex items-center justify-center px-8 py-5 text-lg font-bold text-slate-900 transition-all duration-200 bg-yellow-400 font-pj rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 btn-glow"
       >
         <span
           class="absolute top-0 right-0 w-4 h-4 -mt-1 -mr-1 rounded-full bg-red-500 animate-ping"
         ></span>
-        Enter the Dream
+        Get Started with Lucidify
         <svg
           class="w-5 h-5 ml-2 -mr-1 transition-transform group-hover:translate-x-1"
           xmlns="http://www.w3.org/2000/svg"
@@ -247,7 +252,7 @@
             clip-rule="evenodd"
           />
         </svg>
-      </button>
+      </a>
 
       <!-- Bed/Sleep Metaphor -->
       <div class="mt-16 opacity-50">
@@ -283,16 +288,16 @@
     will-change: opacity;
   }
 
-  /* Layer 1: Day (Base) - Always visible initially */
+  /* Layer 1: Sunset (Base) - Always visible initially */
   #bg-day {
     z-index: -3;
-    background: linear-gradient(to bottom, #f5f7fa, #c3cfe2);
+    background: linear-gradient(to bottom, #fbc2eb, #a6c1ee);
   }
 
-  /* Layer 2: Sunset - Overlays Day */
+  /* Layer 2: Twilight - Overlays Sunset */
   #bg-sunset {
     z-index: -2;
-    background: linear-gradient(to bottom, #4b6cb7, #182848);
+    background: linear-gradient(to bottom, #1e3a8a, #1e1b4b);
   }
 
   /* Layer 3: Night - Overlays Sunset */

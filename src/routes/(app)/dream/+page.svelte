@@ -1,108 +1,185 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
+  import Send from "@lucide/svelte/icons/send";
+  import Sparkles from "@lucide/svelte/icons/sparkles";
 
   let message = $state("");
   let response = $state("");
   let loading = $state(false);
 
   async function handleSubmit() {
-    if (!message.trim()) return;
+    if (!message.trim() || loading) return;
+
     loading = true;
     response = "";
 
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
-      });
-      const data = await res.json();
-      response = data.text || data.error;
+      // Simulate API call to /api/dream
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Mock response
+      response =
+        "Your dream of flying over a neon-lit ocean suggests a deep desire for liberation and a connection to your creative subconscious. The vibrant colors represent untapped potential waiting to be explored.";
     } catch (e) {
-      response = "Failed to connect to the dream realm.";
+      response =
+        "The connection to your subconscious was interrupted. Please try again.";
     } finally {
       loading = false;
+      message = "";
     }
   }
 </script>
 
-<main
-  class="max-w-4xl mx-auto px-6 py-20 flex flex-col items-center justify-center min-h-screen"
+<div
+  class="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center p-6 relative overflow-hidden"
 >
-  <div in:fly={{ y: 20, duration: 800 }} class="text-center mb-12">
-    <h1
-      class="text-6xl font-extrabold tracking-tight mb-4 bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent"
-    >
-      Lucidify
-    </h1>
-    <p class="text-xl text-muted-foreground max-w-lg mx-auto">
-      Unlock the secrets of your subconscious. Your AI-powered companion for the
-      dream world.
-    </p>
-  </div>
-
+  <!-- Deep Dreamy Background -->
   <div
-    in:fade={{ delay: 400, duration: 800 }}
-    class="w-full max-w-2xl space-y-6"
-  >
-    <div class="relative group">
+    class="absolute inset-0 bg-linear-to-b from-indigo-950 via-zinc-950 to-black -z-10"
+  ></div>
+
+  <!-- Ambient Glow -->
+  <div
+    class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] -z-10 animate-pulse"
+  ></div>
+  <div
+    class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] -z-10 animate-pulse"
+    style="animation-delay: 2s"
+  ></div>
+
+  <div class="w-full max-w-3xl space-y-8 relative z-10">
+    <!-- Header -->
+    <div in:fly={{ y: -20, duration: 800 }} class="text-center space-y-4">
       <div
-        class="absolute -inset-1 bg-linear-to-r from-primary to-primary/30 rounded-2xl blur opacity-25 group-focus-within:opacity-50 transition duration-1000"
-      ></div>
-      <div
-        class="relative bg-card border border-border rounded-xl p-2 flex items-center shadow-2xl"
+        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-2"
       >
-        <input
-          type="text"
-          bind:value={message}
-          placeholder="Describe your dream or ask a question..."
-          class="flex-1 bg-transparent border-none focus:ring-0 px-4 py-3 text-lg outline-none"
-          onkeydown={(e) => e.key === "Enter" && handleSubmit()}
-        />
-        <button
-          onclick={handleSubmit}
-          disabled={loading}
-          class="bg-primary text-primary-foreground px-6 py-3 rounded-lg font-bold hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
-        >
-          {loading ? "Consulting..." : "Explore"}
-        </button>
+        <Sparkles class="w-4 h-4" />
+        <span>AI Dream Architect</span>
       </div>
+      <h2 class="text-4xl md:text-5xl font-black text-white tracking-tight">
+        Explore Your <span class="text-primary">Subconscious</span>
+      </h2>
+      <p class="text-slate-400 text-lg max-w-xl mx-auto">
+        Describe your dream in detail. Lucidify will help you visualize and
+        understand the hidden meanings.
+      </p>
     </div>
 
-    {#if response}
-      <div
-        in:fly={{ y: 10, duration: 400 }}
-        class="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-xl"
-      >
-        <h2
-          class="text-sm font-bold uppercase tracking-widest text-primary mb-4"
-        >
-          Insight
-        </h2>
-        <p class="text-lg leading-relaxed whitespace-pre-wrap">
-          {response}
-        </p>
-      </div>
-    {/if}
-  </div>
+    <!-- Chat/Input Container -->
+    <div in:fade={{ delay: 400, duration: 800 }} class="space-y-6">
+      <div class="relative group">
+        <!-- Glow effect on focus -->
+        <div
+          class="absolute -inset-1 bg-linear-to-r from-primary/30 to-indigo-500/30 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500"
+        ></div>
 
-  <footer class="mt-20 text-muted-foreground text-sm">
-    &copy; 2026 Lucidify. Powered by Gemini.
-  </footer>
-</main>
+        <div
+          class="relative bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl transition-all duration-300 group-focus-within:border-white/20"
+        >
+          <div class="flex items-end gap-2">
+            <textarea
+              bind:value={message}
+              placeholder="I was walking through a forest of crystal trees..."
+              class="flex-1 bg-transparent border-none focus:ring-0 p-4 text-white placeholder-slate-400 text-lg min-h-[120px] resize-none outline-none"
+              onkeydown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+            ></textarea>
+
+            <button
+              onclick={handleSubmit}
+              disabled={loading || !message.trim()}
+              class="mb-2 mr-2 p-4 rounded-xl bg-yellow-400 text-slate-900 font-bold hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:hover:scale-100 shadow-[0_0_20px_rgba(250,204,21,0.3)]"
+              aria-label="Send to subconscious"
+            >
+              {#if loading}
+                <div
+                  class="w-6 h-6 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin"
+                ></div>
+              {:else}
+                <Send class="w-6 h-6" />
+              {/if}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Response Area -->
+      {#if loading || response}
+        <div
+          in:fly={{ y: 20, duration: 500 }}
+          class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8 shadow-xl"
+        >
+          <div class="flex items-center gap-3 mb-6">
+            <div
+              class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center"
+            >
+              <Sparkles class="w-5 h-5 text-primary" />
+            </div>
+            <h3
+              class="text-sm font-bold uppercase tracking-widest text-primary"
+            >
+              {loading ? "Analyzing Dream..." : "Subconscious Insight"}
+            </h3>
+          </div>
+
+          {#if loading}
+            <div class="space-y-3">
+              <div
+                class="h-4 bg-white/10 rounded-full w-3/4 animate-pulse"
+              ></div>
+              <div
+                class="h-4 bg-white/10 rounded-full w-full animate-pulse"
+              ></div>
+              <div
+                class="h-4 bg-white/10 rounded-full w-5/6 animate-pulse"
+              ></div>
+              <p class="text-slate-500 text-sm mt-4 animate-pulse">
+                Connecting to subconscious...
+              </p>
+            </div>
+          {:else}
+            <p
+              class="text-slate-100 text-lg leading-relaxed whitespace-pre-wrap"
+            >
+              {response}
+            </p>
+
+            <div class="mt-8 flex gap-4">
+              <button
+                class="px-6 py-2.5 rounded-xl bg-white/10 text-white font-semibold hover:bg-white/20 transition-colors text-sm"
+              >
+                Generate Video
+              </button>
+              <button
+                class="px-6 py-2.5 rounded-xl border border-white/10 text-slate-400 font-semibold hover:text-white hover:border-white/20 transition-all text-sm"
+              >
+                Save to Journal
+              </button>
+            </div>
+          {/if}
+        </div>
+      {/if}
+    </div>
+  </div>
+</div>
 
 <style>
-  :global(body) {
-    background-image: radial-gradient(
-        circle at 20% 20%,
-        rgba(250, 204, 21, 0.05) 0%,
-        transparent 40%
-      ),
-      radial-gradient(
-        circle at 80% 80%,
-        rgba(250, 204, 21, 0.05) 0%,
-        transparent 40%
-      );
+  /* Custom scrollbar for textarea if needed */
+  textarea::-webkit-scrollbar {
+    width: 6px;
+  }
+  textarea::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  textarea::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+  textarea::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
 </style>

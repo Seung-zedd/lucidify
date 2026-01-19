@@ -32,7 +32,7 @@
 >
   <div in:fly={{ y: 20, duration: 800 }} class="text-center mb-12">
     <h1
-      class="text-6xl font-extrabold tracking-tight mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent"
+      class="text-6xl font-extrabold tracking-tight mb-4 bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent"
     >
       Lucidify
     </h1>
@@ -48,7 +48,7 @@
   >
     <div class="relative group">
       <div
-        class="absolute -inset-1 bg-gradient-to-r from-primary to-primary/30 rounded-2xl blur opacity-25 group-focus-within:opacity-50 transition duration-1000"
+        class="absolute -inset-1 bg-linear-to-r from-primary to-primary/30 rounded-2xl blur opacity-25 group-focus-within:opacity-50 transition duration-1000"
       ></div>
       <div
         class="relative bg-card border border-border rounded-xl p-2 flex items-center shadow-2xl"

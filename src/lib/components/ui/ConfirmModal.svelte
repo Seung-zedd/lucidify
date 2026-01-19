@@ -38,7 +38,7 @@
     info: "text-blue-500 bg-blue-500/10",
   };
 
-  const { handleBackdropClick, handleKeydown } = useModal(oncancel);
+  const { handleBackdropClick, handleKeydown } = useModal(() => oncancel);
 </script>
 
 <div

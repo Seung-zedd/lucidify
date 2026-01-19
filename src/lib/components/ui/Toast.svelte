@@ -1,4 +1,4 @@
-<script lang="ts">;
+<script lang="ts">
   import { fade, fly } from "svelte/transition";
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
   import X from "@lucide/svelte/icons/x";
@@ -28,34 +28,40 @@
 >
   <div
     class="
-      flex items-center gap-3 p-4 rounded-xl border shadow-2xl backdrop-blur-md
-      {type === 'error' ? 'bg-red-950/80 border-red-500/50 text-red-200' : ''}
+      flex items-center gap-4 p-5 rounded-2xl border shadow-2xl backdrop-blur-2xl
+      {type === 'error' ? 'bg-red-950/40 border-red-500/30 text-red-100' : ''}
       {type === 'success'
-      ? 'bg-green-950/80 border-green-500/50 text-green-200'
+      ? 'bg-indigo-950/40 border-indigo-500/30 text-indigo-100'
       : ''}
-      {type === 'info' ? 'bg-zinc-900/80 border-zinc-700/50 text-zinc-200' : ''}
+      {type === 'info' ? 'bg-slate-900/40 border-white/10 text-slate-100' : ''}
     "
   >
     <div class="shrink-0">
       {#if type === "error"}
-        <CircleAlert class="w-5 h-5 text-red-400" />
+        <div class="p-2 rounded-lg bg-red-500/20">
+          <CircleAlert class="w-5 h-5 text-red-400" />
+        </div>
       {:else if type === "success"}
-        <CircleAlert class="w-5 h-5 text-green-400" />
+        <div class="p-2 rounded-lg bg-indigo-500/20">
+          <CircleAlert class="w-5 h-5 text-indigo-400" />
+        </div>
       {:else}
-        <CircleAlert class="w-5 h-5 text-zinc-400" />
+        <div class="p-2 rounded-lg bg-white/10">
+          <CircleAlert class="w-5 h-5 text-slate-400" />
+        </div>
       {/if}
     </div>
 
-    <p class="flex-1 text-sm font-medium leading-tight">
+    <p class="flex-1 text-base font-bold leading-tight">
       {message}
     </p>
 
     <button
       onclick={onclose}
-      class="shrink-0 p-1 rounded-lg hover:bg-white/10 transition-colors"
+      class="shrink-0 p-2 rounded-xl hover:bg-white/10 transition-colors"
       aria-label="Close notification"
     >
-      <X class="w-4 h-4 opacity-60 hover:opacity-100" />
+      <X class="w-5 h-5 opacity-60 hover:opacity-100" />
     </button>
   </div>
 </div>

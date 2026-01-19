@@ -91,7 +91,7 @@
   <!-- Section 1: Sunset (Introduction) -->
   <section id="sec1" class="section">
     <h1
-      class="text-6xl md:text-8xl font-black mb-4 tracking-tighter text-center"
+      class="text-6xl md:text-9xl font-black mb-4 tracking-tighter text-center font-serif"
     >
       Dreams <span
         class="bg-linear-to-r from-[#ff9966] to-[#ff5e62] bg-clip-text text-transparent"
@@ -142,12 +142,12 @@
       </svg>
     </div>
     <h2
-      class="text-4xl md:text-6xl font-bold text-center mb-6 transition-colors duration-1000 {twilightTextColor}"
+      class="text-5xl md:text-7xl font-bold text-center mb-6 transition-colors duration-1000 {twilightTextColor} font-serif"
     >
       When Reality<br />Blurs
     </h2>
     <p
-      class="text-lg md:text-xl text-center max-w-xl transition-colors duration-1000 {twilightDescColor}"
+      class="text-xl md:text-2xl text-center max-w-xl transition-colors duration-1000 {twilightDescColor} font-medium"
     >
       Lucidify captures your hazy memories<br />
       into vivid cinematic videos.
@@ -161,27 +161,27 @@
     >
       <div class="space-y-8">
         <div
-          class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 hover:bg-white/20 transition-all duration-300"
+          class="bg-slate-900/40 backdrop-blur-xl p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-all duration-300 shadow-2xl"
         >
           <h3
-            class="text-2xl font-bold bg-linear-to-r from-[#a18cd1] to-[#fbc2eb] bg-clip-text text-transparent mb-2"
+            class="text-3xl font-bold bg-linear-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4 font-serif"
           >
             AI Dream Architect
           </h3>
-          <p class="text-gray-300">
+          <p class="text-slate-200 text-lg">
             Just say "I was flying,"<br />and AI crafts a perfect cinematic
             video.
           </p>
         </div>
         <div
-          class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 hover:bg-white/20 transition-all duration-300"
+          class="bg-slate-900/40 backdrop-blur-xl p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-all duration-300 shadow-2xl"
         >
           <h3
-            class="text-2xl font-bold bg-linear-to-r from-[#a18cd1] to-[#fbc2eb] bg-clip-text text-transparent mb-2"
+            class="text-3xl font-bold bg-linear-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4 font-serif"
           >
             Lucid Mode
           </h3>
-          <p class="text-gray-300">
+          <p class="text-slate-200 text-lg">
             Realized you're dreaming?<br />Tap the button to rewrite the ending.
           </p>
         </div>
@@ -223,25 +223,28 @@
 
     <div class="relative z-10 text-center">
       <h2
-        class="text-5xl md:text-7xl font-black mb-8 text-white tracking-tight"
+        class="text-6xl md:text-8xl font-black mb-8 text-white tracking-tight font-serif"
       >
         Now, Close Your Eyes<br />
-        <span class="text-yellow-400">And Dream.</span>
+        <span
+          class="bg-linear-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+          >And Dream.</span
+        >
       </h2>
-      <p class="text-slate-400 mb-12 text-lg">
+      <p class="text-slate-300 mb-12 text-xl font-medium">
         Record your dreams tonight with Lucidify.
       </p>
 
       <a
         href="/dream"
-        class="group relative inline-flex items-center justify-center px-8 py-5 text-lg font-bold text-slate-900 transition-all duration-200 bg-yellow-400 font-pj rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 btn-glow"
+        class="group relative inline-flex items-center justify-center px-10 py-6 text-xl font-bold text-white transition-all duration-300 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_40px_rgba(168,85,247,0.6)] hover:scale-105 active:scale-95"
       >
         <span
-          class="absolute top-0 right-0 w-4 h-4 -mt-1 -mr-1 rounded-full bg-red-500 animate-ping"
+          class="absolute top-0 right-0 w-4 h-4 -mt-1 -mr-1 rounded-full bg-pink-500 animate-ping"
         ></span>
         Get Started with Lucidify
         <svg
-          class="w-5 h-5 ml-2 -mr-1 transition-transform group-hover:translate-x-1"
+          class="w-6 h-6 ml-2 -mr-1 transition-transform group-hover:translate-x-1"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
@@ -291,19 +294,24 @@
   /* Layer 1: Sunset (Base) - Always visible initially */
   #bg-day {
     z-index: -3;
-    background: linear-gradient(to bottom, #fbc2eb, #a6c1ee);
+    background: linear-gradient(
+      to bottom,
+      #ff9a9e 0%,
+      #fecfef 99%,
+      #fecfef 100%
+    );
   }
 
   /* Layer 2: Twilight - Overlays Sunset */
   #bg-sunset {
     z-index: -2;
-    background: linear-gradient(to bottom, #1e3a8a, #1e1b4b);
+    background: radial-gradient(circle at center, #1e1b4b, #020617);
   }
 
-  /* Layer 3: Night - Overlays Sunset */
+  /* Layer 3: Night - Overlays Twilight */
   #bg-night {
     z-index: -1;
-    background: linear-gradient(to bottom, #0f172a, #020617);
+    background: radial-gradient(circle at top right, #312e81, #020617 70%);
   }
 
   /* Scroll Sections */

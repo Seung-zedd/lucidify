@@ -51,15 +51,20 @@
     <!-- Header -->
     <div in:fly={{ y: -20, duration: 800 }} class="text-center space-y-4">
       <div
-        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-2"
+        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-sm font-bold mb-2"
       >
         <Sparkles class="w-4 h-4" />
         <span>AI Dream Architect</span>
       </div>
-      <h2 class="text-4xl md:text-5xl font-black text-white tracking-tight">
-        Explore Your <span class="text-primary">Subconscious</span>
+      <h2
+        class="text-5xl md:text-7xl font-black text-white tracking-tight font-serif"
+      >
+        Explore Your <span
+          class="bg-linear-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+          >Subconscious</span
+        >
       </h2>
-      <p class="text-slate-400 text-lg max-w-xl mx-auto">
+      <p class="text-slate-300 text-xl max-w-xl mx-auto font-medium">
         Describe your dream in detail. Lucidify will help you visualize and
         understand the hidden meanings.
       </p>
@@ -70,17 +75,17 @@
       <div class="relative group">
         <!-- Glow effect on focus -->
         <div
-          class="absolute -inset-1 bg-linear-to-r from-primary/30 to-indigo-500/30 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500"
+          class="absolute -inset-1 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]"
         ></div>
 
         <div
-          class="relative bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl transition-all duration-300 group-focus-within:border-white/20"
+          class="relative bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl transition-all duration-300 group-focus-within:border-white/20"
         >
           <div class="flex items-end gap-2">
             <textarea
               bind:value={message}
               placeholder="I was walking through a forest of crystal trees..."
-              class="flex-1 bg-transparent border-none focus:ring-0 p-4 text-white placeholder-slate-400 text-lg min-h-[120px] resize-none outline-none"
+              class="flex-1 bg-transparent border-none focus:ring-0 p-4 text-white placeholder-slate-400 text-lg min-h-[120px] resize-none outline-none font-sans"
               onkeydown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -92,12 +97,12 @@
             <button
               onclick={handleSubmit}
               disabled={loading || !message.trim()}
-              class="mb-2 mr-2 p-4 rounded-xl bg-yellow-400 text-slate-900 font-bold hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:hover:scale-100 shadow-[0_0_20px_rgba(250,204,21,0.3)]"
+              class="mb-2 mr-2 p-4 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:hover:scale-100 shadow-[0_0_20px_rgba(168,85,247,0.4)]"
               aria-label="Send to subconscious"
             >
               {#if loading}
                 <div
-                  class="w-6 h-6 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin"
+                  class="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"
                 ></div>
               {:else}
                 <Send class="w-6 h-6" />
@@ -111,16 +116,16 @@
       {#if loading || response}
         <div
           in:fly={{ y: 20, duration: 500 }}
-          class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8 shadow-xl"
+          class="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl"
         >
           <div class="flex items-center gap-3 mb-6">
             <div
-              class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center"
+              class="w-10 h-10 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg"
             >
-              <Sparkles class="w-5 h-5 text-primary" />
+              <Sparkles class="w-6 h-6 text-white" />
             </div>
             <h3
-              class="text-sm font-bold uppercase tracking-widest text-primary"
+              class="text-sm font-bold uppercase tracking-widest text-indigo-300"
             >
               {loading ? "Analyzing Dream..." : "Subconscious Insight"}
             </h3>
@@ -137,25 +142,25 @@
               <div
                 class="h-4 bg-white/10 rounded-full w-5/6 animate-pulse"
               ></div>
-              <p class="text-slate-500 text-sm mt-4 animate-pulse">
+              <p class="text-slate-400 text-sm mt-4 animate-pulse font-medium">
                 Connecting to subconscious...
               </p>
             </div>
           {:else}
             <p
-              class="text-slate-100 text-lg leading-relaxed whitespace-pre-wrap"
+              class="text-slate-100 text-xl leading-relaxed whitespace-pre-wrap font-medium"
             >
               {response}
             </p>
 
             <div class="mt-8 flex gap-4">
               <button
-                class="px-6 py-2.5 rounded-xl bg-white/10 text-white font-semibold hover:bg-white/20 transition-colors text-sm"
+                class="px-8 py-3 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold hover:scale-105 transition-all shadow-lg shadow-purple-500/20"
               >
                 Generate Video
               </button>
               <button
-                class="px-6 py-2.5 rounded-xl border border-white/10 text-slate-400 font-semibold hover:text-white hover:border-white/20 transition-all text-sm"
+                class="px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-bold hover:text-white hover:border-white/20 transition-all"
               >
                 Save to Journal
               </button>

@@ -4,28 +4,49 @@
   import Sparkles from "@lucide/svelte/icons/sparkles";
 
   let message = $state("");
-  let response = $state("");
-  let loading = $state(false);
+  let isAnalyzing = $state(false);
+  let analysisResult = $state<{
+    title: string;
+    insight: string;
+    video_prompt: string;
+    keywords: string[];
+  } | null>(null);
+  let showResult = $state(false);
 
   async function handleSubmit() {
-    if (!message.trim() || loading) return;
+    if (!message.trim() || isAnalyzing) return;
 
-    loading = true;
-    response = "";
+    isAnalyzing = true;
+    showResult = false;
+    analysisResult = null;
 
     try {
-      // Simulate API call to /api/dream
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const res = await fetch("/api/dream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ dream: message }),
+      });
 
-      // Mock response
-      response =
-        "Your dream of flying over a neon-lit ocean suggests a deep desire for liberation and a connection to your creative subconscious. The vibrant colors represent untapped potential waiting to be explored.";
-    } catch (e) {
-      response =
-        "The connection to your subconscious was interrupted. Please try again.";
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(
+          errorData.message || "Connection to the dream world failed",
+        );
+      }
+
+      analysisResult = await res.json();
+      showResult = true;
+    } catch (e: any) {
+      if (import.meta.env.DEV) {
+        console.error("Analysis Error:", e);
+      }
+      alert(
+        e.message || "Connection to the dream world failed. Please try again.",
+      );
     } finally {
-      loading = false;
-      message = "";
+      isAnalyzing = false;
     }
   }
 </script>
@@ -96,11 +117,11 @@
 
             <button
               onclick={handleSubmit}
-              disabled={loading || !message.trim()}
+              disabled={isAnalyzing || !message.trim()}
               class="mb-2 mr-2 p-4 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:hover:scale-100 shadow-[0_0_20px_rgba(168,85,247,0.4)]"
               aria-label="Send to subconscious"
             >
-              {#if loading}
+              {#if isAnalyzing}
                 <div
                   class="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"
                 ></div>
@@ -113,7 +134,7 @@
       </div>
 
       <!-- Response Area -->
-      {#if loading || response}
+      {#if isAnalyzing || showResult}
         <div
           in:fly={{ y: 20, duration: 500 }}
           class="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl"
@@ -127,11 +148,11 @@
             <h3
               class="text-sm font-bold uppercase tracking-widest text-indigo-300"
             >
-              {loading ? "Analyzing Dream..." : "Subconscious Insight"}
+              {isAnalyzing ? "Analyzing Dream..." : "Subconscious Insight"}
             </h3>
           </div>
 
-          {#if loading}
+          {#if isAnalyzing}
             <div class="space-y-3">
               <div
                 class="h-4 bg-white/10 rounded-full w-3/4 animate-pulse"
@@ -146,24 +167,57 @@
                 Connecting to subconscious...
               </p>
             </div>
-          {:else}
-            <p
-              class="text-slate-100 text-xl leading-relaxed whitespace-pre-wrap font-medium"
-            >
-              {response}
-            </p>
+          {:else if analysisResult}
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-2xl font-serif font-bold text-white mb-2">
+                  {analysisResult.title}
+                </h4>
+                <p
+                  class="text-slate-100 text-lg leading-relaxed whitespace-pre-wrap font-medium"
+                >
+                  {analysisResult.insight}
+                </p>
+              </div>
 
-            <div class="mt-8 flex gap-4">
-              <button
-                class="px-8 py-3 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold hover:scale-105 transition-all shadow-lg shadow-purple-500/20"
-              >
-                Generate Video
-              </button>
-              <button
-                class="px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-bold hover:text-white hover:border-white/20 transition-all"
-              >
-                Save to Journal
-              </button>
+              <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                <h5
+                  class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-2"
+                >
+                  Video Generation Prompt
+                </h5>
+                <p class="text-slate-300 text-sm italic">
+                  "{analysisResult.video_prompt}"
+                </p>
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                {#each analysisResult.keywords as keyword}
+                  <span
+                    class="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium"
+                  >
+                    #{keyword}
+                  </span>
+                {/each}
+              </div>
+
+              <div class="pt-4 flex gap-4">
+                <button
+                  class="px-8 py-3 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold hover:scale-105 transition-all shadow-lg shadow-purple-500/20"
+                >
+                  Generate Video
+                </button>
+                <button
+                  onclick={() => {
+                    message = "";
+                    showResult = false;
+                    analysisResult = null;
+                  }}
+                  class="px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-bold hover:text-white hover:border-white/20 transition-all"
+                >
+                  New Dream
+                </button>
+              </div>
             </div>
           {/if}
         </div>

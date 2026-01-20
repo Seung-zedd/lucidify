@@ -130,6 +130,13 @@
     showFlash = false;
   }
 
+  function toggleLoop() {
+    isLooping = !isLooping;
+    if (isLooping && videoElement && videoElement.ended) {
+      videoElement.play().catch(() => {});
+    }
+  }
+
   function handleReset() {
     message = "";
     showResult = false;
@@ -420,7 +427,7 @@
 
                 <!-- Loop Toggle -->
                 <button
-                  onclick={() => (isLooping = !isLooping)}
+                  onclick={toggleLoop}
                   class="p-1.5 rounded-full hover:bg-white/10 transition-colors group/control"
                   title={isLooping ? "Disable Loop" : "Enable Loop"}
                 >

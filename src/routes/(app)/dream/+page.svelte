@@ -21,6 +21,7 @@
   let showLucidButton = $state(false);
   let videoSource = $state("/videos/demo_dream.mp4");
   let showFlash = $state(false);
+  let showAchievement = $state(false);
   let isMuted = $state(false);
   let videoElement = $state<HTMLVideoElement | null>(null);
 
@@ -78,14 +79,19 @@
   }
 
   function handleAwakening() {
-    // Trigger Flash
+    // Trigger Flash & Achievement
     showFlash = true;
-    setTimeout(() => (showFlash = false), 500);
+    showAchievement = true;
 
-    // Switch to Lucid Mode
+    // Switch to Lucid Mode immediately behind the flash
     isLucidMode = true;
     videoSource = "/videos/demo_lucid.mp4";
     showLucidButton = false;
+
+    // Reveal slowly
+    setTimeout(() => (showFlash = false), 2000);
+    // Hide achievement later
+    setTimeout(() => (showAchievement = false), 4000);
 
     // Play optional sound
     const audio = new Audio("/audios/awakening.mp3");
@@ -299,6 +305,13 @@
             <track kind="captions" />
           </video>
 
+          <!-- Holy Ambient Glow (Lucid Mode Only) -->
+          {#if isLucidMode}
+            <div
+              class="absolute inset-0 pointer-events-none z-10 shadow-[inset_0_0_100px_rgba(250,204,21,0.3),inset_0_0_200px_rgba(168,85,247,0.2)] animate-pulse-slow"
+            ></div>
+          {/if}
+
           <!-- Lucid Button (⭐️) -->
           {#if showLucidButton}
             <div
@@ -319,6 +332,33 @@
                   Take Control
                 </div>
               </button>
+            </div>
+          {/if}
+
+          <!-- Souls-like Achievement Overlay -->
+          {#if showAchievement}
+            <div
+              in:fade={{ duration: 1000 }}
+              out:fade={{ duration: 1000 }}
+              class="absolute inset-x-0 bottom-24 z-30 flex flex-col items-center pointer-events-none"
+            >
+              <div class="w-full max-w-2xl px-4 flex flex-col items-center">
+                <!-- Top Divider -->
+                <div
+                  class="w-full h-px bg-linear-to-r from-transparent via-amber-500/50 to-transparent mb-4"
+                ></div>
+
+                <h2
+                  class="text-4xl md:text-5xl font-['Cinzel_Decorative'] font-bold text-amber-400 tracking-[0.2em] text-center drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]"
+                >
+                  LUCIDITY ACHIEVED
+                </h2>
+
+                <!-- Bottom Divider -->
+                <div
+                  class="w-full h-px bg-linear-to-r from-transparent via-amber-500/50 to-transparent mt-4"
+                ></div>
+              </div>
             </div>
           {/if}
 
@@ -360,13 +400,27 @@
   {#if showFlash}
     <div
       in:fade={{ duration: 100 }}
-      out:fade={{ duration: 400 }}
-      class="fixed inset-0 bg-white z-100"
+      out:fade={{ duration: 2000 }}
+      class="fixed inset-0 bg-white z-100 flex items-center justify-center"
     ></div>
   {/if}
 </div>
 
 <style>
+  @keyframes pulse-slow {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
+
   /* Custom scrollbar for textarea if needed */
   textarea::-webkit-scrollbar {
     width: 6px;

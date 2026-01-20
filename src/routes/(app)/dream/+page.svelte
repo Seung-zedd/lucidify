@@ -399,7 +399,7 @@
             {/if}
 
             <!-- Video Controls Overlay -->
-            <div class="absolute top-6 right-6 z-20">
+            <div class="absolute top-24 right-6 z-20">
               <div
                 class="bg-black/40 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-4 border border-white/10 shadow-2xl"
               >
@@ -448,7 +448,7 @@
             </div>
 
             <!-- Dream State Label -->
-            <div class="absolute top-6 left-6 z-20">
+            <div class="absolute top-24 left-6 z-20">
               <div
                 class="px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-xs font-bold uppercase tracking-widest text-white/60"
               >

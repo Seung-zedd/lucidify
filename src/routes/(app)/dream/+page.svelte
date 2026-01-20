@@ -345,18 +345,18 @@
               <div class="w-full max-w-2xl px-4 flex flex-col items-center">
                 <!-- Top Divider -->
                 <div
-                  class="w-full h-px bg-linear-to-r from-transparent via-amber-500/50 to-transparent mb-4"
+                  class="w-[120%] h-px bg-linear-to-r from-transparent via-[#FDB931] to-transparent opacity-80 mb-6"
                 ></div>
 
                 <h2
-                  class="text-4xl md:text-5xl font-['Cinzel_Decorative'] font-bold text-amber-400 tracking-[0.2em] text-center drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]"
+                  class="text-4xl md:text-6xl font-['Cinzel_Decorative'] font-black tracking-[0.25em] text-center bg-linear-to-b from-[#FFF5C3] via-[#FDB931] to-[#9F7928] bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
                 >
                   LUCIDITY ACHIEVED
                 </h2>
 
                 <!-- Bottom Divider -->
                 <div
-                  class="w-full h-px bg-linear-to-r from-transparent via-amber-500/50 to-transparent mt-4"
+                  class="w-[120%] h-px bg-linear-to-r from-transparent via-[#FDB931] to-transparent opacity-80 mt-6"
                 ></div>
               </div>
             </div>

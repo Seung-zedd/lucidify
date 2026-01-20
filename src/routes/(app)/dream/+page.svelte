@@ -2,6 +2,8 @@
   import { fade, fly } from "svelte/transition";
   import Send from "@lucide/svelte/icons/send";
   import Sparkles from "@lucide/svelte/icons/sparkles";
+  import Volume2 from "@lucide/svelte/icons/volume-2";
+  import VolumeX from "@lucide/svelte/icons/volume-x";
 
   let message = $state("");
   let isAnalyzing = $state(false);
@@ -12,6 +14,15 @@
     keywords: string[];
   } | null>(null);
   let showResult = $state(false);
+
+  // Phase 3: Visuals & Lucid Interaction State
+  let isVideoPlaying = $state(false);
+  let isLucidMode = $state(false);
+  let showLucidButton = $state(false);
+  let videoSource = $state("/videos/demo_dream.mp4");
+  let showFlash = $state(false);
+  let isMuted = $state(false);
+  let videoElement = $state<HTMLVideoElement | null>(null);
 
   async function handleSubmit() {
     if (!message.trim() || isAnalyzing) return;
@@ -48,6 +59,58 @@
     } finally {
       isAnalyzing = false;
     }
+  }
+
+  function handleGenerateVideo() {
+    isVideoPlaying = true;
+    showResult = false; // Add this to allow video player to show
+    isLucidMode = false;
+    showLucidButton = false;
+    isMuted = false; // Start unmuted for the full experience
+    videoSource = "/videos/demo_dream.mp4";
+
+    // Show Lucid Button after 3 seconds
+    setTimeout(() => {
+      if (isVideoPlaying && !isLucidMode) {
+        showLucidButton = true;
+      }
+    }, 3000);
+  }
+
+  function handleAwakening() {
+    // Trigger Flash
+    showFlash = true;
+    setTimeout(() => (showFlash = false), 500);
+
+    // Switch to Lucid Mode
+    isLucidMode = true;
+    videoSource = "/videos/demo_lucid.mp4";
+    showLucidButton = false;
+
+    // Play optional sound
+    const audio = new Audio("/audios/awakening.mp3");
+    audio.play().catch(() => {
+      if (import.meta.env.DEV) {
+        console.log("Optional awakening audio not found or blocked.");
+      }
+    });
+  }
+
+  function toggleMute() {
+    if (videoElement) {
+      videoElement.muted = !videoElement.muted;
+      isMuted = videoElement.muted;
+    }
+  }
+
+  function handleReset() {
+    message = "";
+    showResult = false;
+    analysisResult = null;
+    isVideoPlaying = false;
+    isLucidMode = false;
+    showLucidButton = false;
+    videoSource = "/videos/demo_dream.mp4";
   }
 </script>
 
@@ -203,16 +266,13 @@
 
               <div class="pt-4 flex gap-4">
                 <button
+                  onclick={handleGenerateVideo}
                   class="px-8 py-3 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold hover:scale-105 transition-all shadow-lg shadow-purple-500/20"
                 >
                   Generate Video
                 </button>
                 <button
-                  onclick={() => {
-                    message = "";
-                    showResult = false;
-                    analysisResult = null;
-                  }}
+                  onclick={handleReset}
                   class="px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-bold hover:text-white hover:border-white/20 transition-all"
                 >
                   New Dream
@@ -221,9 +281,89 @@
             </div>
           {/if}
         </div>
+      {:else if isVideoPlaying}
+        <div
+          in:fade={{ duration: 800 }}
+          class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 group"
+        >
+          <!-- Video Element -->
+          <video
+            bind:this={videoElement}
+            src={videoSource}
+            autoplay
+            loop
+            playsinline
+            class="w-full h-full object-cover transition-all duration-1000"
+            style="filter: {isLucidMode ? 'none' : 'grayscale(50%) sepia(20%)'}"
+          >
+            <track kind="captions" />
+          </video>
+
+          <!-- Lucid Button (⭐️) -->
+          {#if showLucidButton}
+            <div
+              in:fly={{ y: 20, duration: 500 }}
+              class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
+            >
+              <button
+                onclick={handleAwakening}
+                class="group/lucid relative p-6 rounded-full bg-linear-to-r from-yellow-400 via-orange-400 to-yellow-500 text-white shadow-[0_0_30px_rgba(234,179,8,0.5)] hover:scale-110 active:scale-95 transition-all animate-pulse"
+                aria-label="Trigger Awakening"
+              >
+                <Sparkles class="w-8 h-8 fill-white" />
+
+                <!-- Tooltip -->
+                <div
+                  class="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/80 backdrop-blur-md rounded-lg text-xs font-bold whitespace-nowrap opacity-0 group-hover/lucid:opacity-100 transition-opacity"
+                >
+                  Take Control
+                </div>
+              </button>
+            </div>
+          {/if}
+
+          <!-- Video Controls Overlay -->
+          <div class="absolute top-4 right-4 z-20 flex gap-2">
+            <button
+              onclick={toggleMute}
+              class="p-2 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white/60 hover:text-white transition-colors"
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              {#if isMuted}
+                <VolumeX class="w-5 h-5" />
+              {:else}
+                <Volume2 class="w-5 h-5" />
+              {/if}
+            </button>
+            <button
+              onclick={handleReset}
+              class="p-2 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white/60 hover:text-white transition-colors"
+            >
+              Exit Dream
+            </button>
+          </div>
+
+          <!-- Dream State Label -->
+          <div class="absolute top-4 left-4 z-20">
+            <div
+              class="px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white/60"
+            >
+              {isLucidMode ? "Lucid State" : "Dream State"}
+            </div>
+          </div>
+        </div>
       {/if}
     </div>
   </div>
+
+  <!-- Full Screen Flash Overlay -->
+  {#if showFlash}
+    <div
+      in:fade={{ duration: 100 }}
+      out:fade={{ duration: 400 }}
+      class="fixed inset-0 bg-white z-100"
+    ></div>
+  {/if}
 </div>
 
 <style>

@@ -1,9 +1,22 @@
 <script lang="ts">
-  import { fade, fly } from "svelte/transition";
+  import { fade, fly, crossfade } from "svelte/transition";
+  import { cubicInOut } from "svelte/easing";
   import Send from "@lucide/svelte/icons/send";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Volume2 from "@lucide/svelte/icons/volume-2";
   import VolumeX from "@lucide/svelte/icons/volume-x";
+  import X from "@lucide/svelte/icons/x";
+
+  const [send, receive] = crossfade({
+    duration: 800,
+    easing: cubicInOut,
+    fallback(node, params) {
+      const { duration } = params;
+      return fade(node, {
+        duration: typeof duration === "function" ? duration(0) : duration,
+      });
+    },
+  });
 
   let message = $state("");
   let isAnalyzing = $state(false);
@@ -102,6 +115,18 @@
     });
   }
 
+  function handleExitVideo() {
+    if (videoElement) {
+      videoElement.pause();
+      videoElement.src = "";
+    }
+    isVideoPlaying = false;
+    isLucidMode = false;
+    showLucidButton = false;
+    showAchievement = false;
+    showFlash = false;
+  }
+
   function toggleMute() {
     if (videoElement) {
       videoElement.muted = !videoElement.muted;
@@ -113,10 +138,7 @@
     message = "";
     showResult = false;
     analysisResult = null;
-    isVideoPlaying = false;
-    isLucidMode = false;
-    showLucidButton = false;
-    videoSource = "/videos/demo_dream.mp4";
+    handleExitVideo();
   }
 </script>
 
@@ -204,191 +226,210 @@
 
       <!-- Response Area -->
       {#if isAnalyzing || showResult}
-        <div
-          in:fly={{ y: 20, duration: 500 }}
-          class="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl"
-        >
-          <div class="flex items-center gap-3 mb-6">
-            <div
-              class="w-10 h-10 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg"
-            >
-              <Sparkles class="w-6 h-6 text-white" />
-            </div>
-            <h3
-              class="text-sm font-bold uppercase tracking-widest text-indigo-300"
-            >
-              {isAnalyzing ? "Analyzing Dream..." : "Subconscious Insight"}
-            </h3>
-          </div>
-
-          {#if isAnalyzing}
-            <div class="space-y-3">
-              <div
-                class="h-4 bg-white/10 rounded-full w-3/4 animate-pulse"
-              ></div>
-              <div
-                class="h-4 bg-white/10 rounded-full w-full animate-pulse"
-              ></div>
-              <div
-                class="h-4 bg-white/10 rounded-full w-5/6 animate-pulse"
-              ></div>
-              <p class="text-slate-400 text-sm mt-4 animate-pulse font-medium">
-                Connecting to subconscious...
-              </p>
-            </div>
-          {:else if analysisResult}
-            <div class="space-y-6">
-              <div>
-                <h4 class="text-2xl font-serif font-bold text-white mb-2">
-                  {analysisResult.title}
-                </h4>
-                <p
-                  class="text-slate-100 text-lg leading-relaxed whitespace-pre-wrap font-medium"
-                >
-                  {analysisResult.insight}
-                </p>
-              </div>
-
-              <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                <h5
-                  class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-2"
-                >
-                  Video Generation Prompt
-                </h5>
-                <p class="text-slate-300 text-sm italic">
-                  "{analysisResult.video_prompt}"
-                </p>
-              </div>
-
-              <div class="flex flex-wrap gap-2">
-                {#each analysisResult.keywords as keyword}
-                  <span
-                    class="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium"
-                  >
-                    #{keyword}
-                  </span>
-                {/each}
-              </div>
-
-              <div class="pt-4 flex gap-4">
-                <button
-                  onclick={handleGenerateVideo}
-                  class="px-8 py-3 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold hover:scale-105 transition-all shadow-lg shadow-purple-500/20"
-                >
-                  Generate Video
-                </button>
-                <button
-                  onclick={handleReset}
-                  class="px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-bold hover:text-white hover:border-white/20 transition-all"
-                >
-                  New Dream
-                </button>
-              </div>
-            </div>
-          {/if}
-        </div>
-      {:else if isVideoPlaying}
-        <div
-          in:fade={{ duration: 800 }}
-          class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 group"
-        >
-          <!-- Video Element -->
-          <video
-            bind:this={videoElement}
-            src={videoSource}
-            autoplay
-            loop
-            playsinline
-            class="w-full h-full object-cover transition-all duration-1000"
-            style="filter: {isLucidMode ? 'none' : 'grayscale(50%) sepia(20%)'}"
+        {#if !isVideoPlaying}
+          <div
+            in:receive={{ key: "morph-container" }}
+            out:send={{ key: "morph-container" }}
+            class="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl"
           >
-            <track kind="captions" />
-          </video>
-
-          <!-- Holy Ambient Glow (Lucid Mode Only) -->
-          {#if isLucidMode}
-            <div
-              class="absolute inset-0 pointer-events-none z-10 shadow-[inset_0_0_100px_rgba(250,204,21,0.3),inset_0_0_200px_rgba(168,85,247,0.2)] animate-pulse-slow"
-            ></div>
-          {/if}
-
-          <!-- Lucid Button (⭐️) -->
-          {#if showLucidButton}
-            <div
-              in:fly={{ y: 20, duration: 500 }}
-              class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
-            >
-              <button
-                onclick={handleAwakening}
-                class="group/lucid relative p-6 rounded-full bg-linear-to-r from-yellow-400 via-orange-400 to-yellow-500 text-white shadow-[0_0_30px_rgba(234,179,8,0.5)] hover:scale-110 active:scale-95 transition-all animate-pulse"
-                aria-label="Trigger Awakening"
-              >
-                <Sparkles class="w-8 h-8 fill-white" />
-
-                <!-- Tooltip -->
+            <div in:fade={{ duration: 400 }}>
+              <div class="flex items-center gap-3 mb-6">
                 <div
-                  class="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/80 backdrop-blur-md rounded-lg text-xs font-bold whitespace-nowrap opacity-0 group-hover/lucid:opacity-100 transition-opacity"
+                  class="w-10 h-10 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg"
                 >
-                  Take Control
+                  <Sparkles class="w-6 h-6 text-white" />
                 </div>
+                <h3
+                  class="text-sm font-bold uppercase tracking-widest text-indigo-300"
+                >
+                  {isAnalyzing ? "Analyzing Dream..." : "Subconscious Insight"}
+                </h3>
+              </div>
+
+              {#if isAnalyzing}
+                <div class="space-y-3">
+                  <div
+                    class="h-4 bg-white/10 rounded-full w-3/4 animate-pulse"
+                  ></div>
+                  <div
+                    class="h-4 bg-white/10 rounded-full w-full animate-pulse"
+                  ></div>
+                  <div
+                    class="h-4 bg-white/10 rounded-full w-5/6 animate-pulse"
+                  ></div>
+                  <p
+                    class="text-slate-400 text-sm mt-4 animate-pulse font-medium"
+                  >
+                    Connecting to subconscious...
+                  </p>
+                </div>
+              {:else if analysisResult}
+                <div class="space-y-6">
+                  <div>
+                    <h4 class="text-2xl font-serif font-bold text-white mb-2">
+                      {analysisResult.title}
+                    </h4>
+                    <p
+                      class="text-slate-100 text-lg leading-relaxed whitespace-pre-wrap font-medium"
+                    >
+                      {analysisResult.insight}
+                    </p>
+                  </div>
+
+                  <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <h5
+                      class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-2"
+                    >
+                      Video Generation Prompt
+                    </h5>
+                    <p class="text-slate-300 text-sm italic">
+                      "{analysisResult.video_prompt}"
+                    </p>
+                  </div>
+
+                  <div class="flex flex-wrap gap-2">
+                    {#each analysisResult.keywords as keyword}
+                      <span
+                        class="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium"
+                      >
+                        #{keyword}
+                      </span>
+                    {/each}
+                  </div>
+
+                  <div class="pt-4 flex gap-4">
+                    <button
+                      onclick={handleGenerateVideo}
+                      class="px-8 py-3 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold hover:scale-105 transition-all shadow-lg shadow-purple-500/20"
+                    >
+                      Generate Video
+                    </button>
+                    <button
+                      onclick={handleReset}
+                      class="px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-bold hover:text-white hover:border-white/20 transition-all"
+                    >
+                      New Dream
+                    </button>
+                  </div>
+                </div>
+              {/if}
+            </div>
+          </div>
+        {/if}
+      {/if}
+
+      {#if isVideoPlaying}
+        <div
+          in:receive={{ key: "morph-container" }}
+          out:send={{ key: "morph-container" }}
+          class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center overflow-hidden"
+        >
+          <div
+            in:fade={{ duration: 600, delay: 400 }}
+            out:fade={{ duration: 400 }}
+            class="relative w-full h-full"
+          >
+            <!-- Video Element -->
+            <video
+              bind:this={videoElement}
+              src={videoSource}
+              autoplay
+              loop
+              playsinline
+              class="w-full h-full object-cover transition-all duration-1000"
+              style="filter: {isLucidMode
+                ? 'none'
+                : 'grayscale(50%) sepia(20%)'}"
+            >
+              <track kind="captions" />
+            </video>
+
+            <!-- Holy Ambient Glow (Lucid Mode Only) -->
+            {#if isLucidMode}
+              <div
+                class="absolute inset-0 pointer-events-none z-10 shadow-[inset_0_0_100px_rgba(250,204,21,0.3),inset_0_0_200px_rgba(168,85,247,0.2)] animate-pulse-slow"
+              ></div>
+            {/if}
+
+            <!-- Lucid Button (⭐️) -->
+            {#if showLucidButton}
+              <div
+                in:fly={{ y: 20, duration: 500 }}
+                class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
+              >
+                <button
+                  onclick={handleAwakening}
+                  class="group/lucid relative p-6 rounded-full bg-linear-to-r from-yellow-400 via-orange-400 to-yellow-500 text-white shadow-[0_0_30px_rgba(234,179,8,0.5)] hover:scale-110 active:scale-95 transition-all animate-pulse"
+                  aria-label="Trigger Awakening"
+                >
+                  <Sparkles class="w-8 h-8 fill-white" />
+
+                  <!-- Tooltip -->
+                  <div
+                    class="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/80 backdrop-blur-md rounded-lg text-xs font-bold whitespace-nowrap opacity-0 group-hover/lucid:opacity-100 transition-opacity"
+                  >
+                    Take Control
+                  </div>
+                </button>
+              </div>
+            {/if}
+
+            <!-- Souls-like Achievement Overlay -->
+            {#if showAchievement}
+              <div
+                in:fade={{ duration: 1000 }}
+                out:fade={{ duration: 1000 }}
+                class="absolute inset-x-0 bottom-24 z-30 flex flex-col items-center pointer-events-none"
+              >
+                <div class="w-full max-w-2xl px-4 flex flex-col items-center">
+                  <!-- Top Divider -->
+                  <div
+                    class="w-[120%] h-px bg-linear-to-r from-transparent via-[#FDB931] to-transparent opacity-80 mb-6"
+                  ></div>
+
+                  <h2
+                    class="text-4xl md:text-6xl font-['Cinzel_Decorative'] font-black tracking-[0.25em] text-center bg-linear-to-b from-[#FFF5C3] via-[#FDB931] to-[#9F7928] bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+                  >
+                    LUCIDITY ACHIEVED
+                  </h2>
+
+                  <!-- Bottom Divider -->
+                  <div
+                    class="w-[120%] h-px bg-linear-to-r from-transparent via-[#FDB931] to-transparent opacity-80 mt-6"
+                  ></div>
+                </div>
+              </div>
+            {/if}
+
+            <!-- Video Controls Overlay -->
+            <div class="absolute top-6 right-6 z-20 flex gap-3">
+              <button
+                onclick={toggleMute}
+                class="p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/60 hover:text-white transition-colors"
+                aria-label={isMuted ? "Unmute" : "Mute"}
+              >
+                {#if isMuted}
+                  <VolumeX class="w-6 h-6" />
+                {:else}
+                  <Volume2 class="w-6 h-6" />
+                {/if}
+              </button>
+              <button
+                onclick={handleExitVideo}
+                class="p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/60 hover:text-white transition-colors"
+                aria-label="Exit Dream"
+              >
+                <X class="w-6 h-6" />
               </button>
             </div>
-          {/if}
 
-          <!-- Souls-like Achievement Overlay -->
-          {#if showAchievement}
-            <div
-              in:fade={{ duration: 1000 }}
-              out:fade={{ duration: 1000 }}
-              class="absolute inset-x-0 bottom-24 z-30 flex flex-col items-center pointer-events-none"
-            >
-              <div class="w-full max-w-2xl px-4 flex flex-col items-center">
-                <!-- Top Divider -->
-                <div
-                  class="w-[120%] h-px bg-linear-to-r from-transparent via-[#FDB931] to-transparent opacity-80 mb-6"
-                ></div>
-
-                <h2
-                  class="text-4xl md:text-6xl font-['Cinzel_Decorative'] font-black tracking-[0.25em] text-center bg-linear-to-b from-[#FFF5C3] via-[#FDB931] to-[#9F7928] bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
-                >
-                  LUCIDITY ACHIEVED
-                </h2>
-
-                <!-- Bottom Divider -->
-                <div
-                  class="w-[120%] h-px bg-linear-to-r from-transparent via-[#FDB931] to-transparent opacity-80 mt-6"
-                ></div>
+            <!-- Dream State Label -->
+            <div class="absolute top-6 left-6 z-20">
+              <div
+                class="px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-xs font-bold uppercase tracking-widest text-white/60"
+              >
+                {isLucidMode ? "Lucid State" : "Dream State"}
               </div>
-            </div>
-          {/if}
-
-          <!-- Video Controls Overlay -->
-          <div class="absolute top-4 right-4 z-20 flex gap-2">
-            <button
-              onclick={toggleMute}
-              class="p-2 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white/60 hover:text-white transition-colors"
-              aria-label={isMuted ? "Unmute" : "Mute"}
-            >
-              {#if isMuted}
-                <VolumeX class="w-5 h-5" />
-              {:else}
-                <Volume2 class="w-5 h-5" />
-              {/if}
-            </button>
-            <button
-              onclick={handleReset}
-              class="p-2 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white/60 hover:text-white transition-colors"
-            >
-              Exit Dream
-            </button>
-          </div>
-
-          <!-- Dream State Label -->
-          <div class="absolute top-4 left-4 z-20">
-            <div
-              class="px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white/60"
-            >
-              {isLucidMode ? "Lucid State" : "Dream State"}
             </div>
           </div>
         </div>

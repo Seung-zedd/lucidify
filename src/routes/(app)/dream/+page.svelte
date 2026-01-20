@@ -5,6 +5,7 @@
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Volume2 from "@lucide/svelte/icons/volume-2";
   import VolumeX from "@lucide/svelte/icons/volume-x";
+  import Repeat from "@lucide/svelte/icons/repeat";
   import X from "@lucide/svelte/icons/x";
 
   const [send, receive] = crossfade({
@@ -36,6 +37,7 @@
   let showFlash = $state(false);
   let showAchievement = $state(false);
   let isMuted = $state(false);
+  let isLooping = $state(true);
   let videoElement = $state<HTMLVideoElement | null>(null);
 
   async function handleSubmit() {
@@ -122,16 +124,10 @@
     }
     isVideoPlaying = false;
     isLucidMode = false;
+    isLooping = true;
     showLucidButton = false;
     showAchievement = false;
     showFlash = false;
-  }
-
-  function toggleMute() {
-    if (videoElement) {
-      videoElement.muted = !videoElement.muted;
-      isMuted = videoElement.muted;
-    }
   }
 
   function handleReset() {
@@ -334,7 +330,8 @@
               bind:this={videoElement}
               src={videoSource}
               autoplay
-              loop
+              loop={isLooping}
+              muted={isMuted}
               playsinline
               class="w-full h-full object-cover transition-all duration-1000"
               style="filter: {isLucidMode
@@ -402,25 +399,52 @@
             {/if}
 
             <!-- Video Controls Overlay -->
-            <div class="absolute top-6 right-6 z-20 flex gap-3">
-              <button
-                onclick={toggleMute}
-                class="p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/60 hover:text-white transition-colors"
-                aria-label={isMuted ? "Unmute" : "Mute"}
+            <div class="absolute top-6 right-6 z-20">
+              <div
+                class="bg-black/40 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-4 border border-white/10 shadow-2xl"
               >
-                {#if isMuted}
-                  <VolumeX class="w-6 h-6" />
-                {:else}
-                  <Volume2 class="w-6 h-6" />
-                {/if}
-              </button>
-              <button
-                onclick={handleExitVideo}
-                class="p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/60 hover:text-white transition-colors"
-                aria-label="Exit Dream"
-              >
-                <X class="w-6 h-6" />
-              </button>
+                <!-- Mute Toggle -->
+                <button
+                  onclick={() => (isMuted = !isMuted)}
+                  class="p-1.5 rounded-full hover:bg-white/10 transition-colors group/control"
+                  title={isMuted ? "Unmute" : "Mute"}
+                >
+                  {#if isMuted}
+                    <VolumeX class="w-5 h-5 text-red-400" />
+                  {:else}
+                    <Volume2
+                      class="w-5 h-5 text-white/70 group-hover/control:text-white"
+                    />
+                  {/if}
+                </button>
+
+                <!-- Loop Toggle -->
+                <button
+                  onclick={() => (isLooping = !isLooping)}
+                  class="p-1.5 rounded-full hover:bg-white/10 transition-colors group/control"
+                  title={isLooping ? "Disable Loop" : "Enable Loop"}
+                >
+                  <Repeat
+                    class="w-5 h-5 transition-colors {isLooping
+                      ? 'text-amber-400'
+                      : 'text-white/30 group-hover/control:text-white/60'}"
+                  />
+                </button>
+
+                <!-- Divider -->
+                <div class="w-px h-4 bg-white/10"></div>
+
+                <!-- Exit Button -->
+                <button
+                  onclick={handleExitVideo}
+                  class="p-1.5 rounded-full hover:bg-white/10 transition-colors group/control"
+                  title="Exit Dream"
+                >
+                  <X
+                    class="w-5 h-5 text-white/70 group-hover/control:text-white"
+                  />
+                </button>
+              </div>
             </div>
 
             <!-- Dream State Label -->

@@ -41,7 +41,7 @@ export const POST: RequestHandler = async ({
     }
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-3-pro-preview",
+      model: "models/gemini-2.0-flash",
       systemInstruction: SYSTEM_INSTRUCTION,
     });
 

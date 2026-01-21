@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fade, fly, crossfade } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
+  import { cn } from "$lib/utils";
   import Send from "@lucide/svelte/icons/send";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Volume2 from "@lucide/svelte/icons/volume-2";
@@ -79,7 +80,7 @@
 
   function handleGenerateVideo() {
     isVideoPlaying = true;
-    showResult = false; // Add this to allow video player to show
+    // showResult remains true to allow morphing back
     isLucidMode = false;
     showLucidButton = false;
     isMuted = false; // Start unmuted for the full experience
@@ -120,7 +121,6 @@
   function handleExitVideo() {
     if (videoElement) {
       videoElement.pause();
-      videoElement.src = "";
     }
     isVideoPlaying = false;
     isLucidMode = false;
@@ -233,9 +233,9 @@
           <div
             in:receive={{ key: "morph-container" }}
             out:send={{ key: "morph-container" }}
-            class="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl"
+            class="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl transition-all duration-700 ease-in-out"
           >
-            <div in:fade={{ duration: 400 }}>
+            <div in:fade={{ duration: 400, delay: 300 }}>
               <div class="flex items-center gap-3 mb-6">
                 <div
                   class="w-10 h-10 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg"
@@ -325,10 +325,10 @@
         <div
           in:receive={{ key: "morph-container" }}
           out:send={{ key: "morph-container" }}
-          class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center overflow-hidden"
+          class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center overflow-hidden transition-all duration-700 ease-in-out"
         >
           <div
-            in:fade={{ duration: 600, delay: 400 }}
+            in:fade={{ duration: 600, delay: 300 }}
             out:fade={{ duration: 400 }}
             class="relative w-full h-full"
           >
@@ -444,9 +444,13 @@
                 <!-- Exit Button -->
                 <button
                   onclick={handleExitVideo}
-                  class="p-1.5 rounded-full hover:bg-white/10 transition-colors group/control"
+                  class="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 transition-colors group/control"
                   title="Exit Dream"
                 >
+                  <span
+                    class="text-xs font-bold text-white/50 group-hover/control:text-white transition-colors"
+                    >Exit Dream</span
+                  >
                   <X
                     class="w-5 h-5 text-white/70 group-hover/control:text-white"
                   />

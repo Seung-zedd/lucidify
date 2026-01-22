@@ -399,7 +399,10 @@
               loop={isLooping}
               muted={isMuted}
               playsinline
-              class="w-full h-full object-cover transition-all duration-2500 ease-in"
+              class={cn(
+                "w-full h-full object-cover transition-all duration-2500 ease-in",
+                isClearing && "animate-pulse-impact",
+              )}
               style="filter: {isLucidMode
                 ? isFocused
                   ? 'blur(0px) brightness(1.0)'
@@ -710,6 +713,28 @@
 
   .animate-pulse-slow {
     animation: pulse-slow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-impact {
+    0% {
+      transform: scale(1);
+    }
+    20% {
+      transform: scale(1.015);
+    } /* Push in */
+    40% {
+      transform: scale(0.99);
+    } /* Pull back slightly */
+    60% {
+      transform: scale(1.005);
+    } /* Stabilize */
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .animate-pulse-impact {
+    animation: pulse-impact 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
   }
 
   /* Custom scrollbar for textarea if needed */

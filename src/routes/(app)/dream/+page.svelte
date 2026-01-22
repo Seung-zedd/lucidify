@@ -10,6 +10,9 @@
   import X from "@lucide/svelte/icons/x";
   import Mountain from "@lucide/svelte/icons/mountain";
   import Zap from "@lucide/svelte/icons/zap";
+  import ZapOff from "@lucide/svelte/icons/zap-off";
+  import Shield from "@lucide/svelte/icons/shield";
+  import ShieldCheck from "@lucide/svelte/icons/shield-check";
 
   const [send, receive] = crossfade({
     duration: 800,
@@ -42,6 +45,7 @@
   let isMuted = $state(false);
   let isLooping = $state(true);
   let videoElement = $state<HTMLVideoElement | null>(null);
+  let isSafeMode = $state(false);
 
   // Gamified Lucid Flow State
   let showLucidChoice = $state(false);
@@ -145,6 +149,7 @@
 
     // Play optional sound
     const audio = new Audio("/audios/awakening.mp3");
+    audio.volume = isSafeMode ? 0.2 : 0.5;
     audio.play().catch(() => {
       if (import.meta.env.DEV) {
         console.log("Optional awakening audio not found or blocked.");
@@ -476,6 +481,26 @@
                 <!-- Divider -->
                 <div class="w-px h-4 bg-white/10"></div>
 
+                <!-- Safe Mode Toggle -->
+                <button
+                  onclick={() => (isSafeMode = !isSafeMode)}
+                  class="p-1.5 rounded-full hover:bg-white/10 transition-colors group/control"
+                  title={isSafeMode
+                    ? "Disable Safe Mode"
+                    : "Enable Safe Mode (Photosensitivity)"}
+                >
+                  {#if isSafeMode}
+                    <ShieldCheck class="w-5 h-5 text-emerald-400" />
+                  {:else}
+                    <Shield
+                      class="w-5 h-5 text-white/30 group-hover/control:text-white/60"
+                    />
+                  {/if}
+                </button>
+
+                <!-- Divider -->
+                <div class="w-px h-4 bg-white/10"></div>
+
                 <!-- Exit Button -->
                 <button
                   onclick={handleExitVideo}
@@ -645,10 +670,26 @@
   <!-- Full Screen Flash Overlay -->
   {#if showFlash}
     <div
-      in:fade={{ duration: 100 }}
-      out:fade={{ duration: 2000 }}
-      class="fixed inset-0 bg-white z-100 flex items-center justify-center"
-    ></div>
+      in:fade={{ duration: isSafeMode ? 800 : 100 }}
+      out:fade={{ duration: isSafeMode ? 1500 : 2000 }}
+      class={cn(
+        "fixed inset-0 z-100 flex items-center justify-center",
+        isSafeMode ? "bg-slate-950/90 backdrop-blur-2xl" : "bg-white",
+      )}
+    >
+      {#if isSafeMode}
+        <div
+          in:scale={{ duration: 1000, start: 0.9 }}
+          class="flex flex-col items-center gap-4"
+        >
+          <ShieldCheck class="w-12 h-12 text-emerald-400/50 animate-pulse" />
+          <span
+            class="text-emerald-400/30 font-mono text-xs tracking-[0.3em] uppercase"
+            >Transitioning Safely</span
+          >
+        </div>
+      {/if}
+    </div>
   {/if}
 </div>
 

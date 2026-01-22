@@ -374,15 +374,16 @@
               loop={isLooping}
               muted={isMuted}
               playsinline
-              class="w-full h-full object-cover transition-all duration-1000"
+              class="w-full h-full object-cover transition-all duration-700"
               style="filter: {isLucidMode
-                ? 'none'
-                : 'grayscale(50%) sepia(20%)'}"
+                ? ''
+                : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
+              showLucidInput
+                ? 'blur(4px) brightness(0.5)'
+                : ''};"
             >
               <track kind="captions" />
             </video>
-
-            <!-- Holy Ambient Glow (Lucid Mode Only) -->
             {#if isLucidMode}
               <div
                 class="absolute inset-0 pointer-events-none z-10 shadow-[inset_0_0_100px_rgba(250,204,21,0.3),inset_0_0_200px_rgba(168,85,247,0.2)] animate-pulse-slow"

@@ -45,6 +45,7 @@
   let showMist = $state(false);
   let isClearing = $state(false);
   let isFocused = $state(true);
+  let mistVideo = $state<HTMLVideoElement | null>(null);
 
   // Gamified Lucid Flow State
   let showLucidChoice = $state(false);
@@ -149,7 +150,7 @@
     setTimeout(() => {
       showMist = false;
       isClearing = false;
-    }, 2000);
+    }, 2500);
 
     // Hide achievement later
     setTimeout(() => (showAchievement = false), 4000);
@@ -393,12 +394,14 @@
               loop={isLooping}
               muted={isMuted}
               playsinline
-              class="w-full h-full object-cover transition-all duration-2000 ease-out"
+              class="w-full h-full object-cover transition-all duration-2500 ease-out"
               style="filter: {isLucidMode
                 ? isFocused
                   ? 'blur(0px) brightness(1.0)'
                   : 'blur(16px) brightness(1.25)'
-                : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
+                : showMist
+                  ? 'blur(2px) brightness(1.05)'
+                  : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
               showLucidInput
                 ? 'blur(4px) brightness(0.5)'
                 : ''};"
@@ -528,15 +531,24 @@
           {#if showMist}
             <div
               class={cn(
-                "fixed inset-0 z-40 pointer-events-none transition-all duration-1500 ease-in mix-blend-screen",
+                "fixed inset-0 z-40 pointer-events-none transition-all duration-2500 ease-out mix-blend-screen",
                 isClearing ? "opacity-0 scale-[2.5]" : "opacity-70 scale-100",
               )}
             >
-              <img
-                src="/images/mist.gif"
-                alt=""
+              <video
+                bind:this={mistVideo}
+                src="/images/mist.mp4"
+                autoplay
+                muted
+                loop
+                playsinline
                 class="w-full h-full object-cover"
-              />
+                onplay={() => {
+                  if (mistVideo) mistVideo.playbackRate = 0.3;
+                }}
+              >
+                <track kind="captions" />
+              </video>
             </div>
           {/if}
 

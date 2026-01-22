@@ -141,6 +141,11 @@
     isLucidMode = true;
     showLucidButton = false;
 
+    // Warp Drive engage!
+    if (mistVideo) {
+      mistVideo.playbackRate = 4.0;
+    }
+
     // Trigger focus transition
     setTimeout(() => {
       isFocused = true;
@@ -394,7 +399,7 @@
               loop={isLooping}
               muted={isMuted}
               playsinline
-              class="w-full h-full object-cover transition-all duration-2500 ease-out"
+              class="w-full h-full object-cover transition-all duration-2500 ease-in"
               style="filter: {isLucidMode
                 ? isFocused
                   ? 'blur(0px) brightness(1.0)'
@@ -531,7 +536,7 @@
           {#if showMist}
             <div
               class={cn(
-                "fixed inset-0 z-40 pointer-events-none transition-all duration-2500 ease-out mix-blend-screen",
+                "fixed inset-0 z-40 pointer-events-none transition-all duration-2500 ease-in mix-blend-screen",
                 isClearing ? "opacity-0 scale-[2.5]" : "opacity-70 scale-100",
               )}
             >

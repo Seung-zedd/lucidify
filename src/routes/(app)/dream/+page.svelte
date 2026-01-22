@@ -11,8 +11,6 @@
   import Mountain from "@lucide/svelte/icons/mountain";
   import Zap from "@lucide/svelte/icons/zap";
   import ZapOff from "@lucide/svelte/icons/zap-off";
-  import Shield from "@lucide/svelte/icons/shield";
-  import ShieldCheck from "@lucide/svelte/icons/shield-check";
 
   const [send, receive] = crossfade({
     duration: 800,
@@ -40,12 +38,12 @@
   let isLucidMode = $state(false);
   let showLucidButton = $state(false);
   let videoSource = $state("/videos/demo_dream.mp4");
-  let showFlash = $state(false);
   let showAchievement = $state(false);
   let isMuted = $state(false);
   let isLooping = $state(true);
   let videoElement = $state<HTMLVideoElement | null>(null);
-  let isSafeMode = $state(false);
+  let showMist = $state(false);
+  let isClearing = $state(false);
 
   // Gamified Lucid Flow State
   let showLucidChoice = $state(false);
@@ -92,6 +90,8 @@
 
   function handleGenerateVideo() {
     isVideoPlaying = true;
+    showMist = true;
+    isClearing = false;
     // showResult remains true to allow morphing back
     isLucidMode = false;
     showLucidButton = false;
@@ -128,17 +128,21 @@
       videoSource = "/videos/demo_lucid.mp4";
     }
 
-    // Trigger Flash & Achievement
-    showFlash = true;
+    // Trigger Breakthrough Effect
+    isClearing = true;
     showAchievement = true;
     showLucidInput = false;
 
-    // Switch to Lucid Mode immediately behind the flash
+    // Switch to Lucid Mode immediately behind the mist
     isLucidMode = true;
     showLucidButton = false;
 
-    // Reveal slowly
-    setTimeout(() => (showFlash = false), 2000);
+    // Cleanup mist after animation
+    setTimeout(() => {
+      showMist = false;
+      isClearing = false;
+    }, 2000);
+
     // Hide achievement later
     setTimeout(() => (showAchievement = false), 4000);
 
@@ -147,12 +151,12 @@
       videoElement.play().catch(() => {});
     }
 
-    // Play optional sound
+    // Play awakening sound (Whoosh)
     const audio = new Audio("/audios/awakening.mp3");
-    audio.volume = isSafeMode ? 0.2 : 0.5;
+    audio.volume = 0.5;
     audio.play().catch(() => {
       if (import.meta.env.DEV) {
-        console.log("Optional awakening audio not found or blocked.");
+        console.log("Awakening audio not found or blocked.");
       }
     });
   }
@@ -166,7 +170,8 @@
     isLooping = true;
     showLucidButton = false;
     showAchievement = false;
-    showFlash = false;
+    showMist = false;
+    isClearing = false;
   }
 
   function toggleLoop() {
@@ -481,26 +486,6 @@
                 <!-- Divider -->
                 <div class="w-px h-4 bg-white/10"></div>
 
-                <!-- Safe Mode Toggle -->
-                <button
-                  onclick={() => (isSafeMode = !isSafeMode)}
-                  class="p-1.5 rounded-full hover:bg-white/10 transition-colors group/control"
-                  title={isSafeMode
-                    ? "Disable Safe Mode"
-                    : "Enable Safe Mode (Photosensitivity)"}
-                >
-                  {#if isSafeMode}
-                    <ShieldCheck class="w-5 h-5 text-emerald-400" />
-                  {:else}
-                    <Shield
-                      class="w-5 h-5 text-white/30 group-hover/control:text-white/60"
-                    />
-                  {/if}
-                </button>
-
-                <!-- Divider -->
-                <div class="w-px h-4 bg-white/10"></div>
-
                 <!-- Exit Button -->
                 <button
                   onclick={handleExitVideo}
@@ -527,6 +512,22 @@
               </div>
             </div>
           </div>
+
+          <!-- Mist Overlay -->
+          {#if showMist}
+            <div
+              class={cn(
+                "fixed inset-0 z-40 pointer-events-none transition-all duration-1500 ease-in mix-blend-screen",
+                isClearing ? "opacity-0 scale-[2.5]" : "opacity-70 scale-100",
+              )}
+            >
+              <img
+                src="/images/mist.gif"
+                alt=""
+                class="w-full h-full object-cover"
+              />
+            </div>
+          {/if}
 
           <!-- Choice Modal -->
           {#if showLucidChoice}
@@ -666,31 +667,6 @@
       {/if}
     </div>
   </div>
-
-  <!-- Full Screen Flash Overlay -->
-  {#if showFlash}
-    <div
-      in:fade={{ duration: isSafeMode ? 800 : 100 }}
-      out:fade={{ duration: isSafeMode ? 1500 : 2000 }}
-      class={cn(
-        "fixed inset-0 z-100 flex items-center justify-center",
-        isSafeMode ? "bg-slate-950/90 backdrop-blur-2xl" : "bg-white",
-      )}
-    >
-      {#if isSafeMode}
-        <div
-          in:scale={{ duration: 1000, start: 0.9 }}
-          class="flex flex-col items-center gap-4"
-        >
-          <ShieldCheck class="w-12 h-12 text-emerald-400/50 animate-pulse" />
-          <span
-            class="text-emerald-400/30 font-mono text-xs tracking-[0.3em] uppercase"
-            >Transitioning Safely</span
-          >
-        </div>
-      {/if}
-    </div>
-  {/if}
 </div>
 
 <style>

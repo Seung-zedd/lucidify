@@ -554,6 +554,7 @@
                 <button
                   onclick={() => {
                     showLucidChoice = false;
+                    showLucidButton = true;
                     if (videoElement) videoElement.play().catch(() => {});
                   }}
                   class="text-slate-400 hover:text-white text-sm font-medium transition-colors"
@@ -624,6 +625,7 @@
                   <button
                     onclick={() => {
                       showLucidInput = false;
+                      showLucidButton = true;
                       if (videoElement) videoElement.play().catch(() => {});
                     }}
                     class="text-white/40 hover:text-white/80 text-sm transition-colors"

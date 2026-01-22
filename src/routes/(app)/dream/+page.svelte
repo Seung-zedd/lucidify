@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { fade, fly, crossfade } from "svelte/transition";
+  import { fade, fly, crossfade, scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { cn } from "$lib/utils";
   import Send from "@lucide/svelte/icons/send";
@@ -8,6 +8,8 @@
   import VolumeX from "@lucide/svelte/icons/volume-x";
   import Repeat from "@lucide/svelte/icons/repeat";
   import X from "@lucide/svelte/icons/x";
+  import Mountain from "@lucide/svelte/icons/mountain";
+  import Zap from "@lucide/svelte/icons/zap";
 
   const [send, receive] = crossfade({
     duration: 800,
@@ -40,6 +42,12 @@
   let isMuted = $state(false);
   let isLooping = $state(true);
   let videoElement = $state<HTMLVideoElement | null>(null);
+
+  // Gamified Lucid Flow State
+  let showLucidChoice = $state(false);
+  let showLucidInput = $state(false);
+  let controlType = $state<"surrounding" | "behavior" | null>(null);
+  let lucidAction = $state("");
 
   async function handleSubmit() {
     if (!message.trim() || isAnalyzing) return;
@@ -94,20 +102,46 @@
     }, 3000);
   }
 
-  function handleAwakening() {
+  function handleOpenLucidChoice() {
+    if (videoElement) {
+      videoElement.pause();
+    }
+    showLucidChoice = true;
+    showLucidButton = false;
+  }
+
+  function handleSelectControlType(type: "surrounding" | "behavior") {
+    controlType = type;
+    showLucidChoice = false;
+    showLucidInput = true;
+  }
+
+  function handleAwakening(action: string) {
+    // Branching Logic (Mock)
+    if (action.toLowerCase().includes("fly")) {
+      videoSource = "/videos/demo_fly.mp4";
+    } else {
+      videoSource = "/videos/demo_lucid.mp4";
+    }
+
     // Trigger Flash & Achievement
     showFlash = true;
     showAchievement = true;
+    showLucidInput = false;
 
     // Switch to Lucid Mode immediately behind the flash
     isLucidMode = true;
-    videoSource = "/videos/demo_lucid.mp4";
     showLucidButton = false;
 
     // Reveal slowly
     setTimeout(() => (showFlash = false), 2000);
     // Hide achievement later
     setTimeout(() => (showAchievement = false), 4000);
+
+    // Resume video
+    if (videoElement) {
+      videoElement.play().catch(() => {});
+    }
 
     // Play optional sound
     const audio = new Audio("/audios/awakening.mp3");
@@ -362,7 +396,7 @@
                 class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
               >
                 <button
-                  onclick={handleAwakening}
+                  onclick={handleOpenLucidChoice}
                   class="group/lucid relative p-6 rounded-full bg-linear-to-r from-yellow-400 via-orange-400 to-yellow-500 text-white shadow-[0_0_30px_rgba(234,179,8,0.5)] hover:scale-110 active:scale-95 transition-all animate-pulse"
                   aria-label="Trigger Awakening"
                 >
@@ -467,6 +501,139 @@
               </div>
             </div>
           </div>
+
+          <!-- Choice Modal -->
+          {#if showLucidChoice}
+            <div
+              in:fade={{ duration: 300 }}
+              out:fade={{ duration: 200 }}
+              class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            >
+              <div
+                in:scale={{ start: 0.9, duration: 400, easing: cubicInOut }}
+                class="text-center space-y-8 p-8"
+              >
+                <h3
+                  class="text-3xl md:text-4xl font-serif font-bold text-white tracking-tight"
+                >
+                  Which way do you want to control the dream?
+                </h3>
+
+                <div class="flex flex-wrap justify-center gap-6">
+                  <!-- Control Surrounding -->
+                  <button
+                    onclick={() => handleSelectControlType("surrounding")}
+                    class="w-48 h-48 flex flex-col items-center justify-center gap-4 bg-slate-900/50 border border-white/10 rounded-2xl hover:bg-slate-800/80 hover:scale-105 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)] transition-all cursor-pointer group"
+                  >
+                    <div
+                      class="p-4 rounded-xl bg-purple-500/10 text-purple-400 group-hover:scale-110 transition-transform"
+                    >
+                      <Mountain class="w-10 h-10" />
+                    </div>
+                    <span class="text-sm font-semibold text-slate-200"
+                      >Control Surrounding</span
+                    >
+                  </button>
+
+                  <!-- Control Behavior -->
+                  <button
+                    onclick={() => handleSelectControlType("behavior")}
+                    class="w-48 h-48 flex flex-col items-center justify-center gap-4 bg-slate-900/50 border border-white/10 rounded-2xl hover:bg-slate-800/80 hover:scale-105 hover:border-amber-500/50 hover:shadow-[0_0_30px_rgba(245,158,11,0.2)] transition-all cursor-pointer group"
+                  >
+                    <div
+                      class="p-4 rounded-xl bg-amber-500/10 text-amber-400 group-hover:scale-110 transition-transform"
+                    >
+                      <Zap class="w-10 h-10" />
+                    </div>
+                    <span class="text-sm font-semibold text-slate-200"
+                      >Control Behavior</span
+                    >
+                  </button>
+                </div>
+
+                <button
+                  onclick={() => {
+                    showLucidChoice = false;
+                    if (videoElement) videoElement.play().catch(() => {});
+                  }}
+                  class="text-slate-400 hover:text-white text-sm font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          {/if}
+
+          <!-- Mini Prompt Window -->
+          {#if showLucidInput}
+            <div
+              in:fade={{ duration: 300 }}
+              out:fade={{ duration: 200 }}
+              class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md"
+            >
+              <div
+                in:scale={{ start: 0.9, duration: 400, easing: cubicInOut }}
+                class="w-full max-w-2xl px-6"
+              >
+                <div class="mb-2 flex flex-col items-center">
+                  <span
+                    class="text-xs text-purple-300 font-mono tracking-wide animate-pulse"
+                  >
+                    {controlType === "surrounding"
+                      ? "Constructing new reality..."
+                      : "Modifying physical laws..."}
+                  </span>
+                </div>
+
+                <div class="relative group">
+                  <div
+                    class="absolute -inset-1 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl blur opacity-75 group-focus-within:opacity-100 transition duration-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+                  ></div>
+
+                  <div
+                    class="relative bg-slate-900/60 backdrop-blur-xl border border-white/20 rounded-2xl p-2 shadow-2xl"
+                  >
+                    <div class="flex items-end gap-2">
+                      <textarea
+                        bind:value={lucidAction}
+                        placeholder={controlType === "surrounding"
+                          ? "Input the specific surrounding you want to create..."
+                          : "Input the specific behavior you want to perform..."}
+                        class="flex-1 bg-transparent border-none focus:ring-0 p-4 text-white placeholder-white/40 text-xl text-center min-h-[100px] resize-none outline-none font-sans"
+                        onkeydown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleAwakening(lucidAction);
+                          }
+                        }}
+                      ></textarea>
+
+                      <button
+                        onclick={() => handleAwakening(lucidAction)}
+                        disabled={!lucidAction.trim()}
+                        class="mb-2 mr-2 p-4 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+                        aria-label="Manifest Reality"
+                      >
+                        <Send class="w-6 h-6" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-6 text-center">
+                  <button
+                    onclick={() => {
+                      showLucidInput = false;
+                      if (videoElement) videoElement.play().catch(() => {});
+                    }}
+                    class="text-white/40 hover:text-white/80 text-sm transition-colors"
+                  >
+                    Back to Dream
+                  </button>
+                </div>
+              </div>
+            </div>
+          {/if}
         </div>
       {/if}
     </div>

@@ -44,6 +44,7 @@
   let videoElement = $state<HTMLVideoElement | null>(null);
   let showMist = $state(false);
   let isClearing = $state(false);
+  let isFocused = $state(true);
 
   // Gamified Lucid Flow State
   let showLucidChoice = $state(false);
@@ -92,6 +93,7 @@
     isVideoPlaying = true;
     showMist = true;
     isClearing = false;
+    isFocused = true;
     // showResult remains true to allow morphing back
     isLucidMode = false;
     showLucidButton = false;
@@ -129,6 +131,7 @@
     }
 
     // Trigger Breakthrough Effect
+    isFocused = false;
     isClearing = true;
     showAchievement = true;
     showLucidInput = false;
@@ -136,6 +139,11 @@
     // Switch to Lucid Mode immediately behind the mist
     isLucidMode = true;
     showLucidButton = false;
+
+    // Trigger focus transition
+    setTimeout(() => {
+      isFocused = true;
+    }, 100);
 
     // Cleanup mist after animation
     setTimeout(() => {
@@ -172,6 +180,7 @@
     showAchievement = false;
     showMist = false;
     isClearing = false;
+    isFocused = true;
   }
 
   function toggleLoop() {
@@ -384,9 +393,11 @@
               loop={isLooping}
               muted={isMuted}
               playsinline
-              class="w-full h-full object-cover transition-all duration-700"
+              class="w-full h-full object-cover transition-all duration-2000 ease-out"
               style="filter: {isLucidMode
-                ? ''
+                ? isFocused
+                  ? 'blur(0px) brightness(1.0)'
+                  : 'blur(16px) brightness(1.25)'
                 : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
               showLucidInput
                 ? 'blur(4px) brightness(0.5)'

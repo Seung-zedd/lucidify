@@ -56,6 +56,25 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 16px);
+
+  --animate-engulf-breakthrough: engulf-breakthrough 2.5s
+    cubic-bezier(0.5, 0, 0, 1) forwards;
+
+  @keyframes engulf-breakthrough {
+    0% {
+      opacity: 0.7;
+      transform: scale(1);
+    }
+    10%,
+    20% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(3.5);
+    }
+  }
 }
 
 @layer base {

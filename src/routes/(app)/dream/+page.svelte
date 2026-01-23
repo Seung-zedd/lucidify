@@ -50,7 +50,6 @@
   // Gamified Lucid Flow State
   let showLucidChoice = $state(false);
   let showLucidInput = $state(false);
-  let showBlackFade = $state(false);
   let controlType = $state<"surrounding" | "behavior" | null>(null);
   let lucidAction = $state("");
 
@@ -125,61 +124,53 @@
   }
 
   function handleAwakening(action: string) {
-    showBlackFade = true;
     showLucidInput = false;
+    isClearing = true; // Start "Engulf" animation
+    isFocused = false; // Blur background during transition
 
-    // Wait for black overlay to cover the screen before swapping video
+    if (mistVideo) {
+      mistVideo.playbackRate = 4.0;
+    }
+
+    // Swap background video during the 100% opacity window (approx 300ms)
     setTimeout(() => {
-      // Branching Logic (Mock)
       if (action.toLowerCase().includes("fly")) {
         videoSource = "/videos/demo_fly.mp4";
       } else {
         videoSource = "/videos/demo_lucid.mp4";
       }
 
-      // Trigger Breakthrough Effect
-      isFocused = false;
-      isClearing = true;
-      showAchievement = true;
-
-      // Switch to Lucid Mode immediately behind the mist
       isLucidMode = true;
       showLucidButton = false;
+      showAchievement = true;
 
-      // Warp Drive engage!
-      if (mistVideo) {
-        mistVideo.playbackRate = 4.0;
-      }
-
-      // Trigger focus transition and reveal from black
-      setTimeout(() => {
-        isFocused = true;
-        showBlackFade = false;
-      }, 100);
-
-      // Cleanup mist after animation
-      setTimeout(() => {
-        showMist = false;
-        isClearing = false;
-      }, 2500);
-
-      // Hide achievement later
-      setTimeout(() => (showAchievement = false), 4000);
-
-      // Resume video
       if (videoElement) {
         videoElement.play().catch(() => {});
       }
+    }, 300);
 
-      // Play awakening sound (Whoosh)
-      const audio = new Audio("/audios/awakening.mp3");
-      audio.volume = 0.5;
-      audio.play().catch(() => {
-        if (import.meta.env.DEV) {
-          console.log("Awakening audio not found or blocked.");
-        }
-      });
-    }, 400);
+    // Reveal the new video (Explode)
+    setTimeout(() => {
+      isFocused = true;
+    }, 600);
+
+    // Cleanup mist after animation
+    setTimeout(() => {
+      showMist = false;
+      isClearing = false;
+    }, 2500);
+
+    // Hide achievement later
+    setTimeout(() => (showAchievement = false), 4000);
+
+    // Play awakening sound (Whoosh)
+    const audio = new Audio("/audios/awakening.mp3");
+    audio.volume = 0.5;
+    audio.play().catch(() => {
+      if (import.meta.env.DEV) {
+        console.log("Awakening audio not found or blocked.");
+      }
+    });
   }
 
   function handleExitVideo() {
@@ -551,8 +542,10 @@
           {#if showMist}
             <div
               class={cn(
-                "fixed inset-0 z-40 pointer-events-none transition-all duration-2500 ease-in mix-blend-screen",
-                isClearing ? "opacity-0 scale-[2.5]" : "opacity-70 scale-100",
+                "fixed inset-0 z-40 pointer-events-none mix-blend-screen",
+                isClearing
+                  ? "animate-engulf-breakthrough"
+                  : "opacity-70 scale-100",
               )}
             >
               <video
@@ -570,14 +563,6 @@
                 <track kind="captions" />
               </video>
             </div>
-          {/if}
-
-          <!-- Black Fade Overlay -->
-          {#if showBlackFade}
-            <div
-              transition:fade={{ duration: 400 }}
-              class="fixed inset-0 z-70 bg-black pointer-events-none"
-            ></div>
           {/if}
 
           <!-- Choice Modal -->

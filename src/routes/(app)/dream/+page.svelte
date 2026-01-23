@@ -50,6 +50,7 @@
   // Gamified Lucid Flow State
   let showLucidChoice = $state(false);
   let showLucidInput = $state(false);
+  let showBlackFade = $state(false);
   let controlType = $state<"surrounding" | "behavior" | null>(null);
   let lucidAction = $state("");
 
@@ -124,55 +125,61 @@
   }
 
   function handleAwakening(action: string) {
-    // Branching Logic (Mock)
-    if (action.toLowerCase().includes("fly")) {
-      videoSource = "/videos/demo_fly.mp4";
-    } else {
-      videoSource = "/videos/demo_lucid.mp4";
-    }
-
-    // Trigger Breakthrough Effect
-    isFocused = false;
-    isClearing = true;
-    showAchievement = true;
+    showBlackFade = true;
     showLucidInput = false;
 
-    // Switch to Lucid Mode immediately behind the mist
-    isLucidMode = true;
-    showLucidButton = false;
-
-    // Warp Drive engage!
-    if (mistVideo) {
-      mistVideo.playbackRate = 4.0;
-    }
-
-    // Trigger focus transition
+    // Wait for black overlay to cover the screen before swapping video
     setTimeout(() => {
-      isFocused = true;
-    }, 100);
-
-    // Cleanup mist after animation
-    setTimeout(() => {
-      showMist = false;
-      isClearing = false;
-    }, 2500);
-
-    // Hide achievement later
-    setTimeout(() => (showAchievement = false), 4000);
-
-    // Resume video
-    if (videoElement) {
-      videoElement.play().catch(() => {});
-    }
-
-    // Play awakening sound (Whoosh)
-    const audio = new Audio("/audios/awakening.mp3");
-    audio.volume = 0.5;
-    audio.play().catch(() => {
-      if (import.meta.env.DEV) {
-        console.log("Awakening audio not found or blocked.");
+      // Branching Logic (Mock)
+      if (action.toLowerCase().includes("fly")) {
+        videoSource = "/videos/demo_fly.mp4";
+      } else {
+        videoSource = "/videos/demo_lucid.mp4";
       }
-    });
+
+      // Trigger Breakthrough Effect
+      isFocused = false;
+      isClearing = true;
+      showAchievement = true;
+
+      // Switch to Lucid Mode immediately behind the mist
+      isLucidMode = true;
+      showLucidButton = false;
+
+      // Warp Drive engage!
+      if (mistVideo) {
+        mistVideo.playbackRate = 4.0;
+      }
+
+      // Trigger focus transition and reveal from black
+      setTimeout(() => {
+        isFocused = true;
+        showBlackFade = false;
+      }, 100);
+
+      // Cleanup mist after animation
+      setTimeout(() => {
+        showMist = false;
+        isClearing = false;
+      }, 2500);
+
+      // Hide achievement later
+      setTimeout(() => (showAchievement = false), 4000);
+
+      // Resume video
+      if (videoElement) {
+        videoElement.play().catch(() => {});
+      }
+
+      // Play awakening sound (Whoosh)
+      const audio = new Audio("/audios/awakening.mp3");
+      audio.volume = 0.5;
+      audio.play().catch(() => {
+        if (import.meta.env.DEV) {
+          console.log("Awakening audio not found or blocked.");
+        }
+      });
+    }, 400);
   }
 
   function handleExitVideo() {
@@ -408,7 +415,7 @@
                   ? 'blur(0px) brightness(1.0)'
                   : 'blur(16px) brightness(1.25)'
                 : showMist
-                  ? 'blur(2px) brightness(1.05)'
+                  ? 'blur(1px) brightness(1.05)'
                   : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
               showLucidInput
                 ? 'blur(4px) brightness(0.5)'
@@ -528,7 +535,12 @@
             <!-- Dream State Label -->
             <div class="absolute top-24 left-6 z-20">
               <div
-                class="px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-xs font-bold uppercase tracking-widest text-white/60"
+                class={cn(
+                  "px-4 py-2 rounded-full backdrop-blur-md border transition-all duration-1000 text-xs font-bold uppercase tracking-widest",
+                  isLucidMode
+                    ? "bg-amber-500/10 border-amber-500/50 text-amber-400 animate-lucid-glow"
+                    : "bg-black/40 border-white/10 text-white/60 animate-daze",
+                )}
               >
                 {isLucidMode ? "Lucid State" : "Dream State"}
               </div>
@@ -552,12 +564,20 @@
                 playsinline
                 class="w-full h-full object-cover"
                 onplay={() => {
-                  if (mistVideo) mistVideo.playbackRate = 0.3;
+                  if (mistVideo) mistVideo.playbackRate = 0.5;
                 }}
               >
                 <track kind="captions" />
               </video>
             </div>
+          {/if}
+
+          <!-- Black Fade Overlay -->
+          {#if showBlackFade}
+            <div
+              transition:fade={{ duration: 400 }}
+              class="fixed inset-0 z-70 bg-black pointer-events-none"
+            ></div>
           {/if}
 
           <!-- Choice Modal -->
@@ -735,6 +755,38 @@
 
   .animate-pulse-impact {
     animation: pulse-impact 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  @keyframes daze {
+    0%,
+    100% {
+      opacity: 0.5;
+      filter: blur(0.5px);
+    }
+    50% {
+      opacity: 0.8;
+      filter: blur(1.5px);
+    }
+  }
+
+  .animate-daze {
+    animation: daze 4s ease-in-out infinite;
+  }
+
+  @keyframes lucid-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+      text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.8);
+    }
+  }
+
+  .animate-lucid-glow {
+    animation: lucid-glow 2s ease-in-out infinite;
   }
 
   /* Custom scrollbar for textarea if needed */

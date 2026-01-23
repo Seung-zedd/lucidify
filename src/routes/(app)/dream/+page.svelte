@@ -283,7 +283,7 @@
       class="absolute inset-0 flex items-center justify-center pointer-events-none"
     >
       <p
-        class="text-purple-200/50 font-serif text-xl animate-pulse tracking-widest"
+        class="text-purple-100/80 font-serif text-4xl md:text-6xl font-black animate-pulse tracking-[0.3em] text-center drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]"
       >
         CONSTRUCTING REALITY...
       </p>

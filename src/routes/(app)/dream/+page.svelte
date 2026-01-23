@@ -64,6 +64,8 @@
     isAnalyzing = true;
     showResult = false;
     analysisResult = null;
+    isReadyToEnter = false;
+    generatedVideoUrl = "";
 
     try {
       const res = await fetch("/api/dream", {
@@ -160,15 +162,19 @@
 
   async function handleAwakening(action: string) {
     showLucidInput = false;
-    isClearing = true; // Start "Engulf" animation
-    isFocused = false; // Blur background during transition
-    showMist = true;
 
+    // 1. Enter Waiting State
+    showMist = true; // Summon mist
+    isClearing = false; // 🚨 IMPORTANT: Do not explode yet! (Only cover with mist)
+    isFocused = false; // Blur background
+
+    // Slow mist speed (Dreaming)
     if (mistVideo) {
-      mistVideo.playbackRate = 0.5; // Deep dreaming state
+      mistVideo.playbackRate = 0.5;
     }
 
     try {
+      // 2. Request from Director (Latency 4s)
       const res = await fetch("/api/dream/generate-video", {
         method: "POST",
         headers: {
@@ -181,49 +187,49 @@
 
       const data = await res.json();
 
-      // Swap background video during the 100% opacity window (approx 300ms)
+      // 3. Response arrived! (Ready to Explode)
+      // Swap video source and accelerate mist
+      videoSource = data.videoUrl;
+
+      // Give a small tick to ensure video loading time
       setTimeout(() => {
-        videoSource = data.videoUrl;
+        // Start video playback
+        if (videoElement) videoElement.play().catch(() => {});
+
+        // 4. Start Awakening Sequence
         isLucidMode = true;
         showLucidButton = false;
         showAchievement = true;
 
-        if (mistVideo) {
-          mistVideo.playbackRate = 4.0; // Accelerate for explosion
-        }
+        // Activate mist warp drive!
+        if (mistVideo) mistVideo.playbackRate = 4.0;
 
-        if (videoElement) {
-          videoElement.play().catch(() => {});
-        }
-      }, 300);
+        // 💥 Explode now! (Explosion Animation Trigger)
+        isClearing = true;
 
-      // Reveal the new video (Explode)
-      setTimeout(() => {
-        isFocused = true;
-      }, 600);
+        // Play sound
+        const audio = new Audio("/audios/awakening.mp3");
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
 
-      // Cleanup mist after animation
+        // Return background focus (with explosion)
+        setTimeout(() => {
+          isFocused = true;
+        }, 600);
+      }, 100); // 0.1s delay (Safety buffer)
+
+      // 5. Cleanup
       setTimeout(() => {
         showMist = false;
         isClearing = false;
-      }, 2500);
+      }, 2500); // Match with animation duration
 
-      // Hide achievement later
       setTimeout(() => (showAchievement = false), 4000);
-
-      // Play awakening sound (Whoosh)
-      const audio = new Audio("/audios/awakening.mp3");
-      audio.volume = 0.5;
-      audio.play().catch(() => {
-        if (import.meta.env.DEV) {
-          console.log("Awakening audio not found or blocked.");
-        }
-      });
     } catch (e) {
       if (import.meta.env.DEV) {
         console.error("Awakening Error:", e);
       }
-      alert("Failed to manifest your will. The dream remains unchanged.");
+      alert("Failed to manifest your will.");
       isClearing = false;
       isFocused = true;
       showMist = false;
@@ -255,6 +261,9 @@
     message = "";
     showResult = false;
     analysisResult = null;
+    isReadyToEnter = false;
+    isGenerating = false;
+    generatedVideoUrl = "";
     handleExitVideo();
   }
 </script>

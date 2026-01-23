@@ -47,6 +47,11 @@
   let isFocused = $state(true);
   let mistVideo = $state<HTMLVideoElement | null>(null);
 
+  // Real Dream Engine: Relay Sequence State
+  let isGenerating = $state(false);
+  let isReadyToEnter = $state(false);
+  let generatedVideoUrl = $state("");
+
   // Gamified Lucid Flow State
   let showLucidChoice = $state(false);
   let showLucidInput = $state(false);
@@ -90,16 +95,46 @@
     }
   }
 
-  function handleGenerateVideo() {
+  async function handleGenerateVideo() {
+    if (!analysisResult) return;
+
+    isGenerating = true;
+    isReadyToEnter = false;
+
+    try {
+      const res = await fetch("/api/dream/generate-video", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: analysisResult.video_prompt }),
+      });
+
+      if (!res.ok) throw new Error("Failed to generate video");
+
+      const data = await res.json();
+      generatedVideoUrl = data.videoUrl;
+      isReadyToEnter = true;
+    } catch (e) {
+      if (import.meta.env.DEV) {
+        console.error("Video Generation Error:", e);
+      }
+      alert("Failed to construct the dream reality. Please try again.");
+    } finally {
+      isGenerating = false;
+    }
+  }
+
+  function handleEnterDream() {
+    videoSource = generatedVideoUrl;
     isVideoPlaying = true;
     showMist = true;
     isClearing = false;
     isFocused = true;
-    // showResult remains true to allow morphing back
     isLucidMode = false;
     showLucidButton = false;
-    isMuted = false; // Start unmuted for the full experience
-    videoSource = "/videos/demo_dream.mp4";
+    isMuted = false;
+    isReadyToEnter = false;
 
     // Show Lucid Button after 3 seconds
     setTimeout(() => {
@@ -123,54 +158,76 @@
     showLucidInput = true;
   }
 
-  function handleAwakening(action: string) {
+  async function handleAwakening(action: string) {
     showLucidInput = false;
     isClearing = true; // Start "Engulf" animation
     isFocused = false; // Blur background during transition
+    showMist = true;
 
     if (mistVideo) {
-      mistVideo.playbackRate = 4.0;
+      mistVideo.playbackRate = 0.5; // Deep dreaming state
     }
 
-    // Swap background video during the 100% opacity window (approx 300ms)
-    setTimeout(() => {
-      if (action.toLowerCase().includes("fly")) {
-        videoSource = "/videos/demo_fly.mp4";
-      } else {
-        videoSource = "/videos/demo_lucid.mp4";
-      }
+    try {
+      const res = await fetch("/api/dream/generate-video", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action }),
+      });
 
-      isLucidMode = true;
-      showLucidButton = false;
-      showAchievement = true;
+      if (!res.ok) throw new Error("Failed to manifest reality");
 
-      if (videoElement) {
-        videoElement.play().catch(() => {});
-      }
-    }, 300);
+      const data = await res.json();
 
-    // Reveal the new video (Explode)
-    setTimeout(() => {
-      isFocused = true;
-    }, 600);
+      // Swap background video during the 100% opacity window (approx 300ms)
+      setTimeout(() => {
+        videoSource = data.videoUrl;
+        isLucidMode = true;
+        showLucidButton = false;
+        showAchievement = true;
 
-    // Cleanup mist after animation
-    setTimeout(() => {
-      showMist = false;
-      isClearing = false;
-    }, 2500);
+        if (mistVideo) {
+          mistVideo.playbackRate = 4.0; // Accelerate for explosion
+        }
 
-    // Hide achievement later
-    setTimeout(() => (showAchievement = false), 4000);
+        if (videoElement) {
+          videoElement.play().catch(() => {});
+        }
+      }, 300);
 
-    // Play awakening sound (Whoosh)
-    const audio = new Audio("/audios/awakening.mp3");
-    audio.volume = 0.5;
-    audio.play().catch(() => {
+      // Reveal the new video (Explode)
+      setTimeout(() => {
+        isFocused = true;
+      }, 600);
+
+      // Cleanup mist after animation
+      setTimeout(() => {
+        showMist = false;
+        isClearing = false;
+      }, 2500);
+
+      // Hide achievement later
+      setTimeout(() => (showAchievement = false), 4000);
+
+      // Play awakening sound (Whoosh)
+      const audio = new Audio("/audios/awakening.mp3");
+      audio.volume = 0.5;
+      audio.play().catch(() => {
+        if (import.meta.env.DEV) {
+          console.log("Awakening audio not found or blocked.");
+        }
+      });
+    } catch (e) {
       if (import.meta.env.DEV) {
-        console.log("Awakening audio not found or blocked.");
+        console.error("Awakening Error:", e);
       }
-    });
+      alert("Failed to manifest your will. The dream remains unchanged.");
+      isClearing = false;
+      isFocused = true;
+      showMist = false;
+    }
   }
 
   function handleExitVideo() {
@@ -201,6 +258,29 @@
     handleExitVideo();
   }
 </script>
+
+{#if isGenerating}
+  <div transition:fade={{ duration: 1500 }} class="fixed inset-0 z-50 bg-black">
+    <video
+      src="/images/purple-dream.mp4"
+      autoplay
+      loop
+      muted
+      playsinline
+      class="w-full h-full object-cover opacity-90"
+    ></video>
+
+    <div
+      class="absolute inset-0 flex items-center justify-center pointer-events-none"
+    >
+      <p
+        class="text-purple-200/50 font-serif text-xl animate-pulse tracking-widest"
+      >
+        CONSTRUCTING REALITY...
+      </p>
+    </div>
+  </div>
+{/if}
 
 <div
   class="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center p-6 relative overflow-hidden"
@@ -358,15 +438,35 @@
                   </div>
 
                   <div class="pt-4 flex gap-4">
-                    <button
-                      onclick={handleGenerateVideo}
-                      class="px-8 py-3 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold hover:scale-105 transition-all shadow-lg shadow-purple-500/20"
-                    >
-                      Generate Video
-                    </button>
+                    {#if isReadyToEnter}
+                      <button
+                        onclick={handleEnterDream}
+                        class="px-8 py-3 rounded-xl bg-linear-to-r from-emerald-500 to-teal-500 text-white font-bold hover:scale-105 transition-all shadow-lg shadow-emerald-500/20 animate-pulse"
+                      >
+                        Enter Dream
+                      </button>
+                    {:else}
+                      <button
+                        onclick={handleGenerateVideo}
+                        disabled={isGenerating}
+                        class="px-8 py-3 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold hover:scale-105 transition-all shadow-lg shadow-purple-500/20 disabled:opacity-50"
+                      >
+                        {#if isGenerating}
+                          <div class="flex items-center gap-2">
+                            <div
+                              class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
+                            ></div>
+                            <span>Generating...</span>
+                          </div>
+                        {:else}
+                          Generate Video
+                        {/if}
+                      </button>
+                    {/if}
                     <button
                       onclick={handleReset}
-                      class="px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-bold hover:text-white hover:border-white/20 transition-all"
+                      disabled={isGenerating}
+                      class="px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-bold hover:text-white hover:border-white/20 transition-all disabled:opacity-50"
                     >
                       New Dream
                     </button>

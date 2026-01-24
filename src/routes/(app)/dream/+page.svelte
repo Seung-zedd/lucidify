@@ -659,10 +659,10 @@
             <div class="absolute top-24 left-6 z-20">
               <div
                 class={cn(
-                  "px-4 py-2 rounded-full backdrop-blur-md border transition-all duration-1000 text-xs font-bold uppercase tracking-widest",
+                  "px-5 py-2.5 rounded-full backdrop-blur-md border transition-all duration-1000 font-bold uppercase tracking-widest text-sm md:text-base shadow-lg",
                   isLucidMode
                     ? "bg-amber-500/10 border-amber-500/50 text-amber-400 animate-lucid-glow"
-                    : "bg-black/40 border-white/10 text-white/60 animate-daze",
+                    : "bg-black/30 border-white/20 text-white/80 animate-daze",
                 )}
               >
                 {isLucidMode ? "Lucid State" : "Dream State"}

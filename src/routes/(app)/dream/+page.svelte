@@ -58,13 +58,7 @@
   let controlType = $state<"surrounding" | "behavior" | null>(null);
   let lucidAction = $state("");
   let loadingText = $state("Manifesting Your Will...");
-  let loadingInterval: any = null;
-
-  $effect(() => {
-    return () => {
-      if (loadingInterval) clearInterval(loadingInterval);
-    };
-  });
+  let isAwakening = $state(false);
 
   async function handleSubmit() {
     if (!message.trim() || isAnalyzing) return;
@@ -174,24 +168,21 @@
     showLucidInput = false;
 
     // 1. Immediate UI Feedback (Enter Waiting State)
+    isAwakening = true;
     showMist = true; // Summon mist
     isClearing = false; // 🚨 IMPORTANT: Do not explode yet! (Only cover with mist)
     isFocused = false; // Blur background
 
-    // Start Text Cycling
-    let i = 0;
+    // Select a single random phrase for this action
     const phrases = [
       "Manifesting Your Will...",
       "Warping Reality...",
       "Reconstructing Visuals...",
       "Injecting Lucid Thought...",
+      "Bending Physics...",
+      "Altering Perception...",
     ];
-    loadingText = phrases[0];
-    if (loadingInterval) clearInterval(loadingInterval);
-    loadingInterval = setInterval(() => {
-      i = (i + 1) % phrases.length;
-      loadingText = phrases[i];
-    }, 800);
+    loadingText = phrases[Math.floor(Math.random() * phrases.length)];
 
     // Slow mist speed (Dreaming)
     if (mistVideo) {
@@ -218,7 +209,7 @@
 
       // Give a small tick to ensure video loading time
       setTimeout(() => {
-        if (loadingInterval) clearInterval(loadingInterval);
+        isAwakening = false;
 
         // Start video playback
         if (videoElement) {
@@ -256,7 +247,7 @@
 
       setTimeout(() => (showAchievement = false), 4000);
     } catch (e) {
-      if (loadingInterval) clearInterval(loadingInterval);
+      isAwakening = false;
       if (import.meta.env.DEV) {
         console.error("Awakening Error:", e);
       }
@@ -279,6 +270,7 @@
     showMist = false;
     isClearing = false;
     isFocused = true;
+    isAwakening = false;
   }
 
   function toggleLoop() {
@@ -703,13 +695,13 @@
                 <track kind="captions" />
               </video>
 
-              {#if !isClearing}
+              {#if isAwakening && !isClearing}
                 <div
                   class="absolute inset-0 flex items-center justify-center"
                   transition:fade={{ duration: 500 }}
                 >
                   <p
-                    class="text-purple-200/80 font-serif text-xl animate-pulse tracking-widest uppercase text-center px-6"
+                    class="text-purple-100/80 font-serif text-3xl md:text-5xl font-black animate-pulse tracking-[0.25em] uppercase text-center px-6 drop-shadow-[0_0_25px_rgba(168,85,247,0.6)]"
                   >
                     {loadingText}
                   </p>

@@ -57,6 +57,14 @@
   let showLucidInput = $state(false);
   let controlType = $state<"surrounding" | "behavior" | null>(null);
   let lucidAction = $state("");
+  let loadingText = $state("Manifesting Your Will...");
+  let loadingInterval: any = null;
+
+  $effect(() => {
+    return () => {
+      if (loadingInterval) clearInterval(loadingInterval);
+    };
+  });
 
   async function handleSubmit() {
     if (!message.trim() || isAnalyzing) return;
@@ -161,12 +169,29 @@
   }
 
   async function handleAwakening(action: string) {
+    if (!action.trim()) return;
+
     showLucidInput = false;
 
-    // 1. Enter Waiting State
+    // 1. Immediate UI Feedback (Enter Waiting State)
     showMist = true; // Summon mist
     isClearing = false; // 🚨 IMPORTANT: Do not explode yet! (Only cover with mist)
     isFocused = false; // Blur background
+
+    // Start Text Cycling
+    let i = 0;
+    const phrases = [
+      "Manifesting Your Will...",
+      "Warping Reality...",
+      "Reconstructing Visuals...",
+      "Injecting Lucid Thought...",
+    ];
+    loadingText = phrases[0];
+    if (loadingInterval) clearInterval(loadingInterval);
+    loadingInterval = setInterval(() => {
+      i = (i + 1) % phrases.length;
+      loadingText = phrases[i];
+    }, 800);
 
     // Slow mist speed (Dreaming)
     if (mistVideo) {
@@ -193,8 +218,13 @@
 
       // Give a small tick to ensure video loading time
       setTimeout(() => {
+        if (loadingInterval) clearInterval(loadingInterval);
+
         // Start video playback
-        if (videoElement) videoElement.play().catch(() => {});
+        if (videoElement) {
+          videoElement.load();
+          videoElement.play().catch(() => {});
+        }
 
         // 4. Start Awakening Sequence
         isLucidMode = true;
@@ -226,6 +256,7 @@
 
       setTimeout(() => (showAchievement = false), 4000);
     } catch (e) {
+      if (loadingInterval) clearInterval(loadingInterval);
       if (import.meta.env.DEV) {
         console.error("Awakening Error:", e);
       }
@@ -671,6 +702,19 @@
               >
                 <track kind="captions" />
               </video>
+
+              {#if !isClearing}
+                <div
+                  class="absolute inset-0 flex items-center justify-center"
+                  transition:fade={{ duration: 500 }}
+                >
+                  <p
+                    class="text-purple-200/80 font-serif text-xl animate-pulse tracking-widest uppercase text-center px-6"
+                  >
+                    {loadingText}
+                  </p>
+                </div>
+              {/if}
             </div>
           {/if}
 

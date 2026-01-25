@@ -31,8 +31,16 @@ export const POST: RequestHandler = async ({ request }) => {
         };
 
         try {
+          const isLucid = !!action;
+
           // 1. INIT
-          send("INIT", { message: "Establishing Neural Link..." });
+          if (!isLucid) {
+            send("INIT", { message: "CONSTRUCTING YOUR SUBCONSCIOUS..." });
+          } else {
+            // For Lucid, we let the frontend keep its random flavor text for a bit
+            // or send a more specific lucid init
+            send("INIT", { message: "Injecting Lucid Thought..." });
+          }
           await new Promise((r) => setTimeout(r, 800));
 
           // 2. Director Phase (Gemini)
@@ -50,17 +58,28 @@ export const POST: RequestHandler = async ({ request }) => {
           const text = response.text();
           const { category, refined_prompt } = JSON.parse(text);
 
-          send("PROGRESS", {
-            message: `Director selected theme: ${category}...`,
-          });
+          if (isLucid) {
+            send("PROGRESS", {
+              message: `Director selected theme: ${category}...`,
+            });
+          } else {
+            // Keep the initial message for the first phase as requested
+            send("PROGRESS", { message: "CONSTRUCTING YOUR SUBCONSCIOUS..." });
+          }
           await new Promise((r) => setTimeout(r, 1000));
 
           // 3. Simulation Loop
-          const steps = [
-            "Constructing Visuals...",
-            "Warping Reality...",
-            "Finalizing Dreamscape...",
-          ];
+          const steps = isLucid
+            ? [
+                "Constructing Visuals...",
+                "Warping Reality...",
+                "Finalizing Dreamscape...",
+              ]
+            : [
+                "CONSTRUCTING YOUR SUBCONSCIOUS...",
+                "CONSTRUCTING YOUR SUBCONSCIOUS...",
+                "CONSTRUCTING YOUR SUBCONSCIOUS...",
+              ];
 
           for (const step of steps) {
             send("PROGRESS", { message: step });

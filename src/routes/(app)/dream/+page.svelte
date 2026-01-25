@@ -104,7 +104,7 @@
 
     isGenerating = true;
     isReadyToEnter = false;
-    loadingText = "Constructing Reality...";
+    loadingText = "CONSTRUCTING YOUR SUBCONSCIOUS...";
 
     try {
       const res = await fetch("/api/dream/generate-video", {
@@ -365,7 +365,7 @@
       class="absolute inset-0 flex items-center justify-center pointer-events-none"
     >
       <p
-        class="text-purple-100/80 font-serif text-4xl md:text-6xl font-black animate-pulse tracking-widest uppercase text-center drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]"
+        class="text-purple-100/80 font-serif text-4xl md:text-6xl font-black animate-pulse tracking-[0.3em] uppercase text-center drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]"
       >
         {loadingText}
       </p>
@@ -759,7 +759,7 @@
                   transition:fade={{ duration: 500 }}
                 >
                   <p
-                    class="text-purple-100/80 font-serif text-3xl md:text-5xl font-black animate-pulse tracking-widest uppercase text-center px-6 drop-shadow-[0_0_25px_rgba(168,85,247,0.6)]"
+                    class="text-purple-100/80 font-serif text-3xl md:text-5xl font-black animate-pulse tracking-[0.3em] uppercase text-center px-6 drop-shadow-[0_0_25px_rgba(168,85,247,0.6)]"
                   >
                     {loadingText}
                   </p>

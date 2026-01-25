@@ -104,6 +104,7 @@
 
     isGenerating = true;
     isReadyToEnter = false;
+    loadingText = "Constructing Reality...";
 
     try {
       const res = await fetch("/api/dream/generate-video", {
@@ -116,9 +117,39 @@
 
       if (!res.ok) throw new Error("Failed to generate video");
 
-      const data = await res.json();
-      generatedVideoUrl = data.videoUrl;
-      isReadyToEnter = true;
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("Failed to get reader");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const eventMatch = line.match(/^event: (.*)$/m);
+          const dataMatch = line.match(/^data: (.*)$/m);
+
+          if (eventMatch && dataMatch) {
+            const event = eventMatch[1];
+            const data = JSON.parse(dataMatch[1]);
+
+            if (event === "INIT" || event === "PROGRESS") {
+              loadingText = data.message;
+            } else if (event === "COMPLETE") {
+              generatedVideoUrl = data.videoUrl;
+              isReadyToEnter = true;
+            } else if (event === "ERROR") {
+              throw new Error(data.message);
+            }
+          }
+        }
+      }
     } catch (e) {
       if (import.meta.env.DEV) {
         console.error("Video Generation Error:", e);
@@ -190,7 +221,7 @@
     }
 
     try {
-      // 2. Request from Director (Latency 4s)
+      // 2. Request from Director (SSE Stream)
       const res = await fetch("/api/dream/generate-video", {
         method: "POST",
         headers: {
@@ -201,43 +232,71 @@
 
       if (!res.ok) throw new Error("Failed to manifest reality");
 
-      const data = await res.json();
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("Failed to get reader");
 
-      // 3. Response arrived! (Ready to Explode)
-      // Swap video source and accelerate mist
-      videoSource = data.videoUrl;
+      const decoder = new TextDecoder();
+      let buffer = "";
 
-      // Give a small tick to ensure video loading time
-      setTimeout(() => {
-        isAwakening = false;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-        // Start video playback
-        if (videoElement) {
-          videoElement.load();
-          videoElement.play().catch(() => {});
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const eventMatch = line.match(/^event: (.*)$/m);
+          const dataMatch = line.match(/^data: (.*)$/m);
+
+          if (eventMatch && dataMatch) {
+            const event = eventMatch[1];
+            const data = JSON.parse(dataMatch[1]);
+
+            if (event === "INIT" || event === "PROGRESS") {
+              loadingText = data.message;
+            } else if (event === "COMPLETE") {
+              // 3. Response arrived! (Ready to Explode)
+              videoSource = data.videoUrl;
+
+              // Give a small tick to ensure video loading time
+              setTimeout(() => {
+                isAwakening = false;
+
+                // Start video playback
+                if (videoElement) {
+                  videoElement.load();
+                  videoElement.play().catch(() => {});
+                }
+
+                // 4. Start Awakening Sequence
+                isLucidMode = true;
+                showLucidButton = false;
+                showAchievement = true;
+
+                // Activate mist warp drive!
+                if (mistVideo) mistVideo.playbackRate = 4.0;
+
+                // 💥 Explode now! (Explosion Animation Trigger)
+                isClearing = true;
+
+                // Play sound
+                const audio = new Audio("/audios/awakening.mp3");
+                audio.volume = 0.5;
+                audio.play().catch(() => {});
+
+                // Return background focus (with explosion)
+                setTimeout(() => {
+                  isFocused = true;
+                }, 600);
+              }, 100); // 0.1s delay (Safety buffer)
+            } else if (event === "ERROR") {
+              throw new Error(data.message);
+            }
+          }
         }
-
-        // 4. Start Awakening Sequence
-        isLucidMode = true;
-        showLucidButton = false;
-        showAchievement = true;
-
-        // Activate mist warp drive!
-        if (mistVideo) mistVideo.playbackRate = 4.0;
-
-        // 💥 Explode now! (Explosion Animation Trigger)
-        isClearing = true;
-
-        // Play sound
-        const audio = new Audio("/audios/awakening.mp3");
-        audio.volume = 0.5;
-        audio.play().catch(() => {});
-
-        // Return background focus (with explosion)
-        setTimeout(() => {
-          isFocused = true;
-        }, 600);
-      }, 100); // 0.1s delay (Safety buffer)
+      }
 
       // 5. Cleanup
       setTimeout(() => {
@@ -306,9 +365,9 @@
       class="absolute inset-0 flex items-center justify-center pointer-events-none"
     >
       <p
-        class="text-purple-100/80 font-serif text-4xl md:text-6xl font-black animate-pulse tracking-[0.3em] text-center drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]"
+        class="text-purple-100/80 font-serif text-4xl md:text-6xl font-black animate-pulse tracking-widest uppercase text-center drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]"
       >
-        CONSTRUCTING REALITY...
+        {loadingText}
       </p>
     </div>
   </div>
@@ -655,7 +714,6 @@
               </div>
             </div>
 
-            <!-- Dream State Label -->
             <div class="absolute top-24 left-6 z-20">
               <div
                 class={cn(
@@ -701,7 +759,7 @@
                   transition:fade={{ duration: 500 }}
                 >
                   <p
-                    class="text-purple-100/80 font-serif text-3xl md:text-5xl font-black animate-pulse tracking-[0.25em] uppercase text-center px-6 drop-shadow-[0_0_25px_rgba(168,85,247,0.6)]"
+                    class="text-purple-100/80 font-serif text-3xl md:text-5xl font-black animate-pulse tracking-widest uppercase text-center px-6 drop-shadow-[0_0_25px_rgba(168,85,247,0.6)]"
                   >
                     {loadingText}
                   </p>

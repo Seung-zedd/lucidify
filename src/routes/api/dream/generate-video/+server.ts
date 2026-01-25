@@ -34,7 +34,7 @@ export const POST: RequestHandler = async ({ request }) => {
           const isLucid = !!action;
 
           // 1. INIT
-          send("INIT", { message: "" });
+          send("INIT", {});
           await new Promise((r) => setTimeout(r, 800));
 
           // 2. Director Phase (Gemini)
@@ -52,13 +52,13 @@ export const POST: RequestHandler = async ({ request }) => {
           const text = response.text();
           const { category, refined_prompt } = JSON.parse(text);
 
-          send("PROGRESS", { message: "" });
+          send("PROGRESS", {});
           await new Promise((r) => setTimeout(r, 1000));
 
           // 3. Simulation Loop
           // Keep connection alive with empty progress events
           for (let i = 0; i < 3; i++) {
-            send("PROGRESS", { message: "" });
+            send("PROGRESS", {});
             await new Promise((r) => setTimeout(r, 1000));
           }
 

@@ -140,7 +140,7 @@
             const data = JSON.parse(dataMatch[1]);
 
             if (event === "INIT" || event === "PROGRESS") {
-              loadingText = data.message;
+              // Keep the initial loadingText to avoid shuffling
             } else if (event === "COMPLETE") {
               generatedVideoUrl = data.videoUrl;
               isReadyToEnter = true;
@@ -255,7 +255,7 @@
             const data = JSON.parse(dataMatch[1]);
 
             if (event === "INIT" || event === "PROGRESS") {
-              loadingText = data.message;
+              // Keep the random flavor text, don't let the server shuffle it
             } else if (event === "COMPLETE") {
               // 3. Response arrived! (Ready to Explode)
               videoSource = data.videoUrl;

@@ -77,6 +77,11 @@ export const POST: RequestHandler = async ({ request }) => {
             videoUrl = "/videos/demo_lucid.mp4";
           }
 
+          if (import.meta.env.DEV) {
+            console.log("Director Category:", category);
+            console.log("Selected Video:", videoUrl);
+          }
+
           // 5. COMPLETE
           send("COMPLETE", {
             videoUrl,

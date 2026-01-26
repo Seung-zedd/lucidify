@@ -115,12 +115,11 @@ export const POST: RequestHandler = async ({ request }) => {
 
           // Handle LRO or Immediate Response
           if (veoData.name && veoData.name.startsWith("projects/")) {
-            const apiHost = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1beta1`;
-            const resourcePath = veoData.name;
-            const pollEndpoint = `${apiHost}/${resourcePath}`;
+            const operationId = veoData.name.split("/").pop();
+            const pollUrl = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1beta1/projects/${GCP_PROJECT_ID}/locations/${GCP_LOCATION}/operations/${operationId}`;
 
             if (import.meta.env.DEV) {
-              console.log("Polling Full URL:", pollEndpoint);
+              console.log("Fixed Polling URL:", pollUrl);
             }
 
             let isDone = false;
@@ -132,7 +131,7 @@ export const POST: RequestHandler = async ({ request }) => {
                 );
               }
 
-              const pollResponse = await fetch(pollEndpoint, {
+              const pollResponse = await fetch(pollUrl, {
                 headers: { Authorization: `Bearer ${accessToken.token}` },
               });
 

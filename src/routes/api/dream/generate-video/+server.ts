@@ -116,9 +116,12 @@ export const POST: RequestHandler = async ({ request }) => {
           // Handle LRO or Immediate Response
           if (veoData.name && veoData.name.startsWith("projects/")) {
             const operationName = veoData.name;
-            // The operationName for Veo is a nested path that requires the full string for polling.
-            // The generic /operations/ endpoint only accepts numeric (Long) IDs.
-            const pollEndpoint = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1beta1/${operationName}`;
+            // Use the global endpoint for polling nested publisher model operations
+            const pollEndpoint = `https://aiplatform.googleapis.com/v1beta1/${operationName}`;
+
+            if (import.meta.env.DEV) {
+              console.log("FETCHING POLL URL:", pollEndpoint);
+            }
 
             let isDone = false;
             while (!isDone) {

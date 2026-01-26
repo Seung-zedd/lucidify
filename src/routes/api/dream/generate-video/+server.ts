@@ -1,6 +1,14 @@
 import { error } from "@sveltejs/kit";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
+import { GoogleAuth } from "google-auth-library";
+import { Storage } from "@google-cloud/storage";
+import {
+  GOOGLE_GENERATIVE_AI_API_KEY,
+  GCP_PROJECT_ID,
+  GCP_LOCATION,
+  GCP_GCS_BUCKET_NAME,
+  GCP_CREDENTIALS_JSON,
+} from "$env/static/private";
 import type { RequestHandler } from "./$types";
 
 const genAI = new GoogleGenerativeAI(GOOGLE_GENERATIVE_AI_API_KEY);
@@ -8,6 +16,14 @@ const genAI = new GoogleGenerativeAI(GOOGLE_GENERATIVE_AI_API_KEY);
 const SYSTEM_INSTRUCTION = `You are a Cinematic Director. Analyze the provided dream prompt or lucid action. 
 Determine the visual category: 'FLY', 'EXPLORE', 'TRANSFORM', or 'NIGHTMARE'. 
 Output MUST be a valid JSON object: { "category": string, "refined_prompt": string }.`;
+
+// Initialize GCP Auth and Storage
+const credentials = JSON.parse(GCP_CREDENTIALS_JSON);
+const auth = new GoogleAuth({
+  credentials,
+  scopes: "https://www.googleapis.com/auth/cloud-platform",
+});
+const storage = new Storage({ credentials });
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
@@ -19,6 +35,7 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     const encoder = new TextEncoder();
+    const startTime = Date.now();
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -31,11 +48,8 @@ export const POST: RequestHandler = async ({ request }) => {
         };
 
         try {
-          const isLucid = !!action;
-
           // 1. INIT
           send("INIT", {});
-          await new Promise((r) => setTimeout(r, 800));
 
           // 2. Director Phase (Gemini)
           const model = genAI.getGenerativeModel({
@@ -48,49 +62,111 @@ export const POST: RequestHandler = async ({ request }) => {
             generationConfig: { responseMimeType: "application/json" },
           });
 
-          const response = result.response;
-          const text = response.text();
-          const { category, refined_prompt } = JSON.parse(text);
+          const { category, refined_prompt } = JSON.parse(
+            result.response.text(),
+          );
 
-          send("PROGRESS", {});
-          await new Promise((r) => setTimeout(r, 1000));
+          send("PROGRESS", { message: "Director refined the prompt..." });
 
-          // 3. Simulation Loop
-          // Keep connection alive with empty progress events
-          for (let i = 0; i < 3; i++) {
-            send("PROGRESS", {});
-            await new Promise((r) => setTimeout(r, 1000));
+          // 3. Veo Generation Phase
+          const client = await auth.getClient();
+          const accessToken = await client.getAccessToken();
+
+          const veoEndpoint = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1/projects/${GCP_PROJECT_ID}/locations/${GCP_LOCATION}/publishers/google/models/veo-2.0-generate-001:predict`;
+
+          const veoResponse = await fetch(veoEndpoint, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${accessToken.token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              instances: [{ prompt: refined_prompt }],
+              parameters: {
+                aspectRatio: "16:9",
+                storageUri: `gs://${GCP_GCS_BUCKET_NAME}/videos`,
+              },
+            }),
+          });
+
+          if (!veoResponse.ok) {
+            const errData = await veoResponse.json();
+            throw new Error(
+              `Veo API Error: ${errData.error?.message || veoResponse.statusText}`,
+            );
           }
 
-          // 4. Smart Mocking (Router)
-          let videoUrl = "/videos/demo_dream.mp4";
-          const lowerInput = input.toLowerCase();
+          const veoData = await veoResponse.json();
+          let gcsUri = "";
 
-          if (
-            category === "FLY" ||
-            lowerInput.includes("sky") ||
-            lowerInput.includes("wings") ||
-            lowerInput.includes("float")
-          ) {
-            videoUrl = "/videos/demo_fly.mp4";
-          } else if (category === "TRANSFORM" || action) {
-            videoUrl = "/videos/demo_lucid.mp4";
+          // Handle LRO or Immediate Response
+          if (veoData.name && veoData.name.startsWith("projects/")) {
+            const operationName = veoData.name;
+            const pollEndpoint = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1/${operationName}`;
+
+            let isDone = false;
+            while (!isDone) {
+              // Safety Timeout Check (55s)
+              if (Date.now() - startTime > 55000) {
+                throw new Error(
+                  "Generation timed out (limit 55s). Please try again.",
+                );
+              }
+
+              const pollResponse = await fetch(pollEndpoint, {
+                headers: { Authorization: `Bearer ${accessToken.token}` },
+              });
+              const pollData = await pollResponse.json();
+
+              if (pollData.done) {
+                if (pollData.error) {
+                  throw new Error(`Veo LRO Error: ${pollData.error.message}`);
+                }
+                // Extract GCS URI from response
+                // Note: Structure might vary, typically in pollData.response.outputs[0].uri
+                gcsUri = pollData.response?.outputs?.[0]?.uri || "";
+                isDone = true;
+              } else {
+                send("PROGRESS", { message: "Generating video..." });
+                await new Promise((r) => setTimeout(r, 4000)); // Poll every 4s
+              }
+            }
+          } else {
+            // Immediate response handling
+            gcsUri = veoData.predictions?.[0]?.uri || "";
           }
+
+          if (!gcsUri) {
+            throw new Error("Failed to retrieve video URI from Veo");
+          }
+
+          // 4. Generate Signed URL
+          const bucketName = gcsUri.replace("gs://", "").split("/")[0];
+          const fileName = gcsUri.replace(`gs://${bucketName}/`, "");
+
+          const [signedUrl] = await storage
+            .bucket(bucketName)
+            .file(fileName)
+            .getSignedUrl({
+              version: "v4",
+              action: "read",
+              expires: Date.now() + 60 * 60 * 1000, // 1 hour
+            });
 
           if (import.meta.env.DEV) {
             console.log("Director Category:", category);
-            console.log("Selected Video:", videoUrl);
+            console.log("Signed Video URL:", signedUrl);
           }
 
           // 5. COMPLETE
           send("COMPLETE", {
-            videoUrl,
+            videoUrl: signedUrl,
             enhancedPrompt: refined_prompt,
           });
           controller.close();
         } catch (err: any) {
           send("ERROR", {
-            message: err.message || "The Cinematic Director is unavailable",
+            message: err.message || "Video generation failed",
           });
           controller.close();
         }

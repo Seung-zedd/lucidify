@@ -14,7 +14,9 @@ const config = {
   ],
 
   kit: {
-    adapter: adapter(),
+    adapter: adapter({
+      maxDuration: 60,
+    }),
     version: {
       name: Date.now().toString(),
       pollInterval: 60000,

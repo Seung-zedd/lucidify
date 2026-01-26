@@ -116,10 +116,9 @@ export const POST: RequestHandler = async ({ request }) => {
           // Handle LRO or Immediate Response
           if (veoData.name && veoData.name.startsWith("projects/")) {
             const operationName = veoData.name;
-            // Extract location from operation name if present, otherwise fallback to GCP_LOCATION
-            const locationMatch = operationName.match(/locations\/([^/]+)/);
-            const opLocation = locationMatch ? locationMatch[1] : GCP_LOCATION;
-            const pollEndpoint = `https://${opLocation}-aiplatform.googleapis.com/v1beta1/${operationName}`;
+            // The operationName for Veo is a nested path that requires the full string for polling.
+            // The generic /operations/ endpoint only accepts numeric (Long) IDs.
+            const pollEndpoint = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1beta1/${operationName}`;
 
             let isDone = false;
             while (!isDone) {

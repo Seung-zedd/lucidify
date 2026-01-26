@@ -115,12 +115,12 @@ export const POST: RequestHandler = async ({ request }) => {
 
           // Handle LRO or Immediate Response
           if (veoData.name && veoData.name.startsWith("projects/")) {
-            const operationName = veoData.name;
-            // Use the global endpoint for polling nested publisher model operations
-            const pollEndpoint = `https://aiplatform.googleapis.com/v1beta1/${operationName}`;
+            const apiHost = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1beta1`;
+            const resourcePath = veoData.name;
+            const pollEndpoint = `${apiHost}/${resourcePath}`;
 
             if (import.meta.env.DEV) {
-              console.log("FETCHING POLL URL:", pollEndpoint);
+              console.log("Polling Full URL:", pollEndpoint);
             }
 
             let isDone = false;

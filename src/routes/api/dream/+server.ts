@@ -6,6 +6,7 @@ import {
 } from "@google/generative-ai";
 import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
 import type { RequestHandler } from "./$types";
+import { IS_DEV_MODE } from "$lib/utils/env";
 
 const genAI = new GoogleGenerativeAI(GOOGLE_GENERATIVE_AI_API_KEY);
 
@@ -81,14 +82,14 @@ export const POST: RequestHandler = async ({
     const response = result.response;
     const text = response.text();
 
-    if (import.meta.env.DEV) {
-      console.log("Gemini Response:", text);
+    if (IS_DEV_MODE) {
+      console.log("[Gemini] Response:", text);
     }
 
     return json(JSON.parse(text));
   } catch (err: any) {
-    if (import.meta.env.DEV) {
-      console.error("Dream Analysis Error:", err);
+    if (IS_DEV_MODE) {
+      console.error("[Gemini] Analysis Error:", err);
     }
 
     // Handle SvelteKit errors (like the one we throw for 400)

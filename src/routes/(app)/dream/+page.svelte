@@ -11,6 +11,7 @@
   import Mountain from "@lucide/svelte/icons/mountain";
   import Zap from "@lucide/svelte/icons/zap";
   import ZapOff from "@lucide/svelte/icons/zap-off";
+  import { IS_DEV_MODE } from "$lib/utils/env";
 
   const [send, receive] = crossfade({
     duration: 800,
@@ -88,8 +89,8 @@
       analysisResult = await res.json();
       showResult = true;
     } catch (e: any) {
-      if (import.meta.env.DEV) {
-        console.error("Analysis Error:", e);
+      if (IS_DEV_MODE) {
+        console.log("[Dream] Analysis Error:", e);
       }
       alert(
         e.message || "Connection to the dream world failed. Please try again.",
@@ -151,8 +152,8 @@
         }
       }
     } catch (e: any) {
-      if (import.meta.env.DEV) {
-        console.error("Video Generation Error:", e);
+      if (IS_DEV_MODE) {
+        console.log("[Dream] Video Generation Error:", e);
       }
       alert(
         e.message || "Failed to construct the dream reality. Please try again.",
@@ -309,8 +310,8 @@
       setTimeout(() => (showAchievement = false), 4000);
     } catch (e) {
       isAwakening = false;
-      if (import.meta.env.DEV) {
-        console.error("Awakening Error:", e);
+      if (IS_DEV_MODE) {
+        console.log("[Dream] Awakening Error:", e);
       }
       alert("Failed to manifest your will.");
       isClearing = false;

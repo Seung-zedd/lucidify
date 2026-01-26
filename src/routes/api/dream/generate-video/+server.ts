@@ -10,6 +10,7 @@ import {
   GCP_CREDENTIALS_JSON,
 } from "$env/static/private";
 import type { RequestHandler } from "./$types";
+import { IS_DEV_MODE } from "$lib/utils/env";
 
 export const config = {
   maxDuration: 60,
@@ -74,14 +75,19 @@ export const POST: RequestHandler = async ({ request }) => {
 
           // 3. Veo Generation Phase
           const client = await auth.getClient();
-          const accessToken = await client.getAccessToken();
+          const accessTokenResponse = await client.getAccessToken();
+          const accessToken = accessTokenResponse.token;
+
+          if (!accessToken) {
+            throw new Error("Failed to retrieve access token");
+          }
 
           const veoEndpoint = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1beta1/projects/${GCP_PROJECT_ID}/locations/${GCP_LOCATION}/publishers/google/models/veo-2.0-generate-001:predictLongRunning`;
 
           const veoResponse = await fetch(veoEndpoint, {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${accessToken.token}`,
+              Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
@@ -109,9 +115,9 @@ export const POST: RequestHandler = async ({ request }) => {
           }
 
           const veoData = await veoResponse.json();
-          if (import.meta.env.DEV) {
+          if (IS_DEV_MODE) {
             console.log(
-              "Veo Initial Response:",
+              "[Veo API] Initial Response:",
               JSON.stringify(veoData, null, 2),
             );
           }
@@ -120,13 +126,6 @@ export const POST: RequestHandler = async ({ request }) => {
           // 3. Polling Loop (BLOCKING)
           let isVideoDone = false;
           if (veoData.name && veoData.name.startsWith("projects/")) {
-            const apiHost = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1beta1`;
-            const pollUrl = `${apiHost}/${veoData.name}`;
-
-            if (import.meta.env.DEV) {
-              console.log("Fixed Polling URL:", pollUrl);
-            }
-
             while (!isVideoDone) {
               // Check timeout (55s rule)
               if (Date.now() - startTime > 55000) {
@@ -135,19 +134,44 @@ export const POST: RequestHandler = async ({ request }) => {
                 );
               }
 
-              // Fetch Status (await is CRITICAL here)
-              const pollResponse = await fetch(pollUrl, {
-                headers: { Authorization: `Bearer ${accessToken.token}` },
+              // ---------------------------------------------------------
+              // 1. Force Construct the Absolute URL (No Relative Paths!)
+              // ---------------------------------------------------------
+              const apiHost = `https://${GCP_LOCATION}-aiplatform.googleapis.com`;
+              const apiVersion = "v1beta1";
+
+              // Ensure we have a clean resource name (remove leading slash)
+              let resourceName = veoData.name;
+              if (resourceName.startsWith("/")) {
+                resourceName = resourceName.substring(1);
+              }
+
+              // Combine: https://{host}/{version}/{resource}
+              const pollUrl = `${apiHost}/${apiVersion}/${resourceName}`;
+
+              // Debug Log (So we can see it in Vercel logs)
+              if (IS_DEV_MODE) {
+                console.log(`[Veo Polling] Requesting Google API: ${pollUrl}`);
+              }
+
+              // ---------------------------------------------------------
+              // 2. Fetch with explicit await
+              // ---------------------------------------------------------
+              const statusRes = await fetch(pollUrl, {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                  "Content-Type": "application/json",
+                },
               });
 
-              if (!pollResponse.ok) {
-                const errText = await pollResponse.text();
+              if (!statusRes.ok) {
+                const errText = await statusRes.text();
                 throw new Error(
-                  `Veo Poll Error (${pollResponse.status}): ${errText.slice(0, 100)}`,
+                  `Veo Poll Error (${statusRes.status}): ${errText.slice(0, 100)}`,
                 );
               }
 
-              const pollData = await pollResponse.json();
+              const pollData = await statusRes.json();
 
               if (pollData.done) {
                 if (pollData.error) {
@@ -192,9 +216,9 @@ export const POST: RequestHandler = async ({ request }) => {
               expires: Date.now() + 60 * 60 * 1000, // 1 hour
             });
 
-          if (import.meta.env.DEV) {
-            console.log("Director Category:", category);
-            console.log("Signed Video URL:", signedUrl);
+          if (IS_DEV_MODE) {
+            console.log("[Director] Category:", category);
+            console.log("[Storage] Signed Video URL:", signedUrl);
           }
 
           // 5. COMPLETE
@@ -221,7 +245,7 @@ export const POST: RequestHandler = async ({ request }) => {
       },
     });
   } catch (err: any) {
-    if (import.meta.env.DEV) {
+    if (IS_DEV_MODE) {
       console.error("Video Generation Error:", err);
     }
     if (err.status) throw err;

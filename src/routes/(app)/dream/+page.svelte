@@ -150,11 +150,13 @@
           }
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       if (import.meta.env.DEV) {
         console.error("Video Generation Error:", e);
       }
-      alert("Failed to construct the dream reality. Please try again.");
+      alert(
+        e.message || "Failed to construct the dream reality. Please try again.",
+      );
     } finally {
       isGenerating = false;
     }

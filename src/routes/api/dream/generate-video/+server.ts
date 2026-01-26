@@ -72,7 +72,7 @@ export const POST: RequestHandler = async ({ request }) => {
           const client = await auth.getClient();
           const accessToken = await client.getAccessToken();
 
-          const veoEndpoint = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1/projects/${GCP_PROJECT_ID}/locations/${GCP_LOCATION}/publishers/google/models/veo-2.0-generate-001:predict`;
+          const veoEndpoint = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1beta1/projects/${GCP_PROJECT_ID}/locations/${GCP_LOCATION}/publishers/google/models/veo-2.0-generate-001:predictLongRunning`;
 
           const veoResponse = await fetch(veoEndpoint, {
             method: "POST",
@@ -90,19 +90,36 @@ export const POST: RequestHandler = async ({ request }) => {
           });
 
           if (!veoResponse.ok) {
-            const errData = await veoResponse.json();
-            throw new Error(
-              `Veo API Error: ${errData.error?.message || veoResponse.statusText}`,
-            );
+            const contentType = veoResponse.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+              const errData = await veoResponse.json();
+              throw new Error(
+                `Veo API Error: ${errData.error?.message || veoResponse.statusText}`,
+              );
+            } else {
+              const errText = await veoResponse.text();
+              throw new Error(
+                `Veo API HTML Error (${veoResponse.status}): ${errText.slice(0, 100)}...`,
+              );
+            }
           }
 
           const veoData = await veoResponse.json();
+          if (import.meta.env.DEV) {
+            console.log(
+              "Veo Initial Response:",
+              JSON.stringify(veoData, null, 2),
+            );
+          }
           let gcsUri = "";
 
           // Handle LRO or Immediate Response
           if (veoData.name && veoData.name.startsWith("projects/")) {
             const operationName = veoData.name;
-            const pollEndpoint = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1/${operationName}`;
+            // Extract location from operation name if present, otherwise fallback to GCP_LOCATION
+            const locationMatch = operationName.match(/locations\/([^/]+)/);
+            const opLocation = locationMatch ? locationMatch[1] : GCP_LOCATION;
+            const pollEndpoint = `https://${opLocation}-aiplatform.googleapis.com/v1beta1/${operationName}`;
 
             let isDone = false;
             while (!isDone) {
@@ -116,15 +133,33 @@ export const POST: RequestHandler = async ({ request }) => {
               const pollResponse = await fetch(pollEndpoint, {
                 headers: { Authorization: `Bearer ${accessToken.token}` },
               });
+
+              if (!pollResponse.ok) {
+                const errText = await pollResponse.text();
+                throw new Error(
+                  `Veo Poll Error (${pollResponse.status}): ${errText.slice(0, 100)}...`,
+                );
+              }
+
               const pollData = await pollResponse.json();
+
+              if (import.meta.env.DEV) {
+                console.log(
+                  "Veo Poll Response:",
+                  JSON.stringify(pollData, null, 2),
+                );
+              }
 
               if (pollData.done) {
                 if (pollData.error) {
                   throw new Error(`Veo LRO Error: ${pollData.error.message}`);
                 }
                 // Extract GCS URI from response
-                // Note: Structure might vary, typically in pollData.response.outputs[0].uri
-                gcsUri = pollData.response?.outputs?.[0]?.uri || "";
+                // Try multiple common paths for Veo 2.0
+                gcsUri =
+                  pollData.response?.predictions?.[0]?.video?.uri ||
+                  pollData.response?.outputs?.[0]?.uri ||
+                  "";
                 isDone = true;
               } else {
                 send("PROGRESS", { message: "Generating video..." });
@@ -133,11 +168,16 @@ export const POST: RequestHandler = async ({ request }) => {
             }
           } else {
             // Immediate response handling
-            gcsUri = veoData.predictions?.[0]?.uri || "";
+            gcsUri =
+              veoData.predictions?.[0]?.video?.uri ||
+              veoData.predictions?.[0]?.uri ||
+              "";
           }
 
           if (!gcsUri) {
-            throw new Error("Failed to retrieve video URI from Veo");
+            throw new Error(
+              "Failed to retrieve video URI from Veo. Check server logs for response structure.",
+            );
           }
 
           // 4. Generate Signed URL

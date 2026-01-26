@@ -11,6 +11,10 @@ import {
 } from "$env/static/private";
 import type { RequestHandler } from "./$types";
 
+export const config = {
+  maxDuration: 60,
+};
+
 const genAI = new GoogleGenerativeAI(GOOGLE_GENERATIVE_AI_API_KEY);
 
 const SYSTEM_INSTRUCTION = `You are a Cinematic Director. Analyze the provided dream prompt or lucid action. 
@@ -113,7 +117,8 @@ export const POST: RequestHandler = async ({ request }) => {
           }
           let gcsUri = "";
 
-          // Handle LRO or Immediate Response
+          // 3. Polling Loop (BLOCKING)
+          let isVideoDone = false;
           if (veoData.name && veoData.name.startsWith("projects/")) {
             const apiHost = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1beta1`;
             const pollUrl = `${apiHost}/${veoData.name}`;
@@ -122,15 +127,15 @@ export const POST: RequestHandler = async ({ request }) => {
               console.log("Fixed Polling URL:", pollUrl);
             }
 
-            let isDone = false;
-            while (!isDone) {
-              // Safety Timeout Check (55s)
+            while (!isVideoDone) {
+              // Check timeout (55s rule)
               if (Date.now() - startTime > 55000) {
                 throw new Error(
                   "Generation timed out (limit 55s). Please try again.",
                 );
               }
 
+              // Fetch Status (await is CRITICAL here)
               const pollResponse = await fetch(pollUrl, {
                 headers: { Authorization: `Bearer ${accessToken.token}` },
               });
@@ -138,33 +143,26 @@ export const POST: RequestHandler = async ({ request }) => {
               if (!pollResponse.ok) {
                 const errText = await pollResponse.text();
                 throw new Error(
-                  `Veo Poll Error (${pollResponse.status}): ${errText.slice(0, 100)}...`,
+                  `Veo Poll Error (${pollResponse.status}): ${errText.slice(0, 100)}`,
                 );
               }
 
               const pollData = await pollResponse.json();
-
-              if (import.meta.env.DEV) {
-                console.log(
-                  "Veo Poll Response:",
-                  JSON.stringify(pollData, null, 2),
-                );
-              }
 
               if (pollData.done) {
                 if (pollData.error) {
                   throw new Error(`Veo LRO Error: ${pollData.error.message}`);
                 }
                 // Extract GCS URI from response
-                // Try multiple common paths for Veo 2.0
                 gcsUri =
                   pollData.response?.predictions?.[0]?.video?.uri ||
                   pollData.response?.outputs?.[0]?.uri ||
                   "";
-                isDone = true;
+                isVideoDone = true;
               } else {
                 send("PROGRESS", { message: "Generating video..." });
-                await new Promise((r) => setTimeout(r, 4000)); // Poll every 4s
+                // Wait 3 seconds (Blocking wait)
+                await new Promise((r) => setTimeout(r, 3000));
               }
             }
           } else {

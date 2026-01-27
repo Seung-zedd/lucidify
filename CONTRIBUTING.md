@@ -125,7 +125,7 @@ To maintain a high-quality codebase, we adhere to the following principles. For 
 ### 2. Frontend (Svelte 5)
 
 - **Runes**: Use Svelte 5 Runes (`$state`, `$props`, `$derived`, `$effect`) exclusively.
-- **Logging**: Wrap all `console.log` in `if (import.meta.env.DEV)` checks.
+- **Logging**: Wrap all `console.log` in `if (IS_DEV_MODE)` checks.
 - **Icons**: Use `@lucide/svelte` with individual sub-path imports.
 
 ---

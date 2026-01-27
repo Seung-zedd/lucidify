@@ -99,10 +99,13 @@ We prioritize automated testing to ensure high quality and reliability.
 ### 8. Frontend Logging & Environment Checks
 
 - **Logging:** All `console.log`, `console.error`, and other debug logs MUST be wrapped in an environment check to prevent leaking information in production.
-- **Environment Check:** Use `import.meta.env.DEV` (Vite standard) to check if the app is running in development mode.
+- **Environment Check:** Use `IS_DEV_MODE` from `$lib/utils/env` to check if the app is running in development mode (Local OR Staging).
 - **Example:**
-  ```javascript
-  if (import.meta.env.DEV) {
+
+  ```typescript
+  import { IS_DEV_MODE } from "$lib/utils/env";
+
+  if (IS_DEV_MODE) {
     console.log("Debug info:", data);
   }
   ```

@@ -11,6 +11,7 @@ import {
 } from "$env/static/private";
 import type { RequestHandler } from "./$types";
 import { IS_DEV_MODE } from "$lib/utils/env";
+import process from "node:process";
 
 export const config = {
   maxDuration: 60,
@@ -134,29 +135,25 @@ export const POST: RequestHandler = async ({ request }) => {
                 );
               }
 
-              // ---------------------------------------------------------
-              // 1. Force Construct the Absolute URL (No Relative Paths!)
-              // ---------------------------------------------------------
-              const apiHost = `https://${GCP_LOCATION}-aiplatform.googleapis.com`;
+              // 1. Construct the Absolute URL (Hardcoded Structure)
+              // We use the Regional API Host + Version + Full Resource Name
+              const apiHost = `https://${process.env.GCP_LOCATION}-aiplatform.googleapis.com`;
               const apiVersion = "v1beta1";
 
-              // Ensure we have a clean resource name (remove leading slash)
+              // Ensure resourceName does not have a leading slash to avoid double slashes
               let resourceName = veoData.name;
               if (resourceName.startsWith("/")) {
                 resourceName = resourceName.substring(1);
               }
 
-              // Combine: https://{host}/{version}/{resource}
+              // FINAL URL: https://us-central1-aiplatform.googleapis.com/v1beta1/projects/...
               const pollUrl = `${apiHost}/${apiVersion}/${resourceName}`;
 
-              // Debug Log (So we can see it in Vercel logs)
               if (IS_DEV_MODE) {
-                console.log(`[Veo Polling] Requesting Google API: ${pollUrl}`);
+                console.log(`🚀 [Polling] Requesting Google API: ${pollUrl}`);
               }
 
-              // ---------------------------------------------------------
-              // 2. Fetch with explicit await
-              // ---------------------------------------------------------
+              // 2. Fetch with Explicit Await (Crucial for Vercel Timeout)
               const statusRes = await fetch(pollUrl, {
                 headers: {
                   Authorization: `Bearer ${accessToken}`,
@@ -164,11 +161,16 @@ export const POST: RequestHandler = async ({ request }) => {
                 },
               });
 
+              // 3. Handle Errors Explicitly
               if (!statusRes.ok) {
                 const errText = await statusRes.text();
-                throw new Error(
-                  `Veo Poll Error (${statusRes.status}): ${errText.slice(0, 100)}`,
-                );
+                if (IS_DEV_MODE) {
+                  console.error(
+                    `❌ Polling Failed: ${statusRes.status} ${statusRes.statusText}`,
+                    errText,
+                  );
+                }
+                throw new Error(`Veo Polling Failed: ${errText}`);
               }
 
               const pollData = await statusRes.json();

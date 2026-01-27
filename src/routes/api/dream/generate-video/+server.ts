@@ -126,22 +126,20 @@ export const POST: RequestHandler = async ({ request }) => {
 
           // 3. Polling Loop (BLOCKING)
           if (veoData.name && veoData.name.startsWith("projects/")) {
-            // 1. FREEZE the operation name from the initial response
+            // 1. FREEZE the operation name
             const opName = veoData.name;
 
-            // 2. FORCE Absolute URL with 'v1beta1'
+            // 2. EXTRACT the UUID (The last part of the string)
+            // opName format: "projects/.../operations/b56e..."
+            const operationId = opName.split("/").pop();
+
+            // 3. CONSTRUCT the Standard Vertex AI Endpoint
+            // Logic: https://{Region}-aiplatform.googleapis.com/v1beta1/projects/{Project}/locations/{Region}/operations/{UUID}
             const apiHost = `https://${process.env.GCP_LOCATION}-aiplatform.googleapis.com`;
-            const apiVersion = "v1beta1"; // <--- CRITICAL: Must be explicitly included
+            const pollUrl = `${apiHost}/v1beta1/projects/${process.env.GCP_PROJECT_ID}/locations/${process.env.GCP_LOCATION}/operations/${operationId}`;
 
-            // Clean resource path (remove leading slash)
-            const resourcePath = opName.startsWith("/")
-              ? opName.substring(1)
-              : opName;
-
-            // FINAL URL CONSTRUCTION
-            const pollUrl = `${apiHost}/${apiVersion}/${resourcePath}`;
-
-            console.log(`🚀 [Fixed URL] Polling Veo: ${pollUrl}`);
+            console.log(`🚀 [Standard URL] Polling ID: ${operationId}`);
+            console.log(`🔗 [Target URL] ${pollUrl}`);
 
             let isVideoDone = false;
             while (!isVideoDone) {

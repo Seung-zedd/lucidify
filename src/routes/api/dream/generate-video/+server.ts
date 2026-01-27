@@ -83,7 +83,7 @@ export const POST: RequestHandler = async ({ request }) => {
             throw new Error("Failed to retrieve access token");
           }
 
-          const veoEndpoint = `https://${process.env.GCP_LOCATION}-aiplatform.googleapis.com/v1beta1/projects/${process.env.GCP_PROJECT_ID}/locations/${process.env.GCP_LOCATION}/publishers/google/models/veo-3.0-generate-001:predictLongRunning`;
+          const veoEndpoint = `https://${process.env.GCP_LOCATION}-aiplatform.googleapis.com/v1beta1/projects/${process.env.GCP_PROJECT_ID}/locations/${process.env.GCP_LOCATION}/publishers/google/models/veo-3.1-generate-001:predictLongRunning`;
 
           const veoResponse = await fetch(veoEndpoint, {
             method: "POST",

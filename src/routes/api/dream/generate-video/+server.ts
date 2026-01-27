@@ -83,7 +83,7 @@ export const POST: RequestHandler = async ({ request }) => {
             throw new Error("Failed to retrieve access token");
           }
 
-          const veoEndpoint = `https://${GCP_LOCATION}-aiplatform.googleapis.com/v1beta1/projects/${GCP_PROJECT_ID}/locations/${GCP_LOCATION}/publishers/google/models/veo-2.0-generate-001:predictLongRunning`;
+          const veoEndpoint = `https://${process.env.GCP_LOCATION}-aiplatform.googleapis.com/v1beta1/projects/${process.env.GCP_PROJECT_ID}/locations/${process.env.GCP_LOCATION}/publishers/google/models/veo-3.0-generate-001:predictLongRunning`;
 
           const veoResponse = await fetch(veoEndpoint, {
             method: "POST",
@@ -126,28 +126,22 @@ export const POST: RequestHandler = async ({ request }) => {
 
           // 3. Polling Loop (BLOCKING)
           if (veoData.name && veoData.name.startsWith("projects/")) {
-            // 1. FREEZE the initial operation name. DO NOT modify this variable inside the loop.
-            const initialOpName = veoData.name;
-            if (IS_DEV_MODE) {
-              console.log(
-                `🔒 [Server] Initial Operation Name Locked: ${initialOpName}`,
-              );
-            }
+            // 1. FREEZE the operation name from the initial response
+            const opName = veoData.name;
 
-            // Define the static host
+            // 2. FORCE Absolute URL with 'v1beta1'
             const apiHost = `https://${process.env.GCP_LOCATION}-aiplatform.googleapis.com`;
-            const apiVersion = "v1beta1";
+            const apiVersion = "v1beta1"; // <--- CRITICAL: Must be explicitly included
 
-            // Ensure clean resource path (Remove leading slash if present)
-            const resourcePath = initialOpName.startsWith("/")
-              ? initialOpName.substring(1)
-              : initialOpName;
+            // Clean resource path (remove leading slash)
+            const resourcePath = opName.startsWith("/")
+              ? opName.substring(1)
+              : opName;
 
-            // Construct the FIXED polling URL (This never changes)
+            // FINAL URL CONSTRUCTION
             const pollUrl = `${apiHost}/${apiVersion}/${resourcePath}`;
-            if (IS_DEV_MODE) {
-              console.log(`� [Server] Polling URL Configured: ${pollUrl}`);
-            }
+
+            console.log(`🚀 [Fixed URL] Polling Veo: ${pollUrl}`);
 
             let isVideoDone = false;
             while (!isVideoDone) {

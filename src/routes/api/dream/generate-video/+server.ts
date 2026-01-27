@@ -125,68 +125,80 @@ export const POST: RequestHandler = async ({ request }) => {
           let gcsUri = "";
 
           // 3. Polling Loop (BLOCKING)
-          let isVideoDone = false;
           if (veoData.name && veoData.name.startsWith("projects/")) {
+            // 1. FREEZE the initial operation name. DO NOT modify this variable inside the loop.
+            const initialOpName = veoData.name;
+            if (IS_DEV_MODE) {
+              console.log(
+                `🔒 [Server] Initial Operation Name Locked: ${initialOpName}`,
+              );
+            }
+
+            // Define the static host
+            const apiHost = `https://${process.env.GCP_LOCATION}-aiplatform.googleapis.com`;
+            const apiVersion = "v1beta1";
+
+            // Ensure clean resource path (Remove leading slash if present)
+            const resourcePath = initialOpName.startsWith("/")
+              ? initialOpName.substring(1)
+              : initialOpName;
+
+            // Construct the FIXED polling URL (This never changes)
+            const pollUrl = `${apiHost}/${apiVersion}/${resourcePath}`;
+            if (IS_DEV_MODE) {
+              console.log(`� [Server] Polling URL Configured: ${pollUrl}`);
+            }
+
+            let isVideoDone = false;
             while (!isVideoDone) {
-              // Check timeout (55s rule)
+              // Safety Timeout (55s)
               if (Date.now() - startTime > 55000) {
+                if (IS_DEV_MODE) {
+                  console.error("⏰ [Server] Timeout Reached (55s)");
+                }
                 throw new Error(
                   "Generation timed out (limit 55s). Please try again.",
                 );
               }
 
-              // 1. Construct the Absolute URL (Hardcoded Structure)
-              // We use the Regional API Host + Version + Full Resource Name
-              const apiHost = `https://${process.env.GCP_LOCATION}-aiplatform.googleapis.com`;
-              const apiVersion = "v1beta1";
-
-              // Ensure resourceName does not have a leading slash to avoid double slashes
-              let resourceName = veoData.name;
-              if (resourceName.startsWith("/")) {
-                resourceName = resourceName.substring(1);
-              }
-
-              // FINAL URL: https://us-central1-aiplatform.googleapis.com/v1beta1/projects/...
-              const pollUrl = `${apiHost}/${apiVersion}/${resourceName}`;
-
+              // 2. FETCH using the FIXED 'pollUrl' (Do NOT rebuild it dynamically)
               if (IS_DEV_MODE) {
-                console.log(`🚀 [Polling] Requesting Google API: ${pollUrl}`);
+                console.log(`🔄 [Server] Polling Veo Status...`);
               }
-
-              // 2. Fetch with Explicit Await (Crucial for Vercel Timeout)
-              const statusRes = await fetch(pollUrl, {
+              const pollRes = await fetch(pollUrl, {
                 headers: {
                   Authorization: `Bearer ${accessToken}`,
                   "Content-Type": "application/json",
                 },
               });
 
-              // 3. Handle Errors Explicitly
-              if (!statusRes.ok) {
-                const errText = await statusRes.text();
+              if (!pollRes.ok) {
+                const errText = await pollRes.text();
                 if (IS_DEV_MODE) {
                   console.error(
-                    `❌ Polling Failed: ${statusRes.status} ${statusRes.statusText}`,
-                    errText,
+                    `❌ [Server] Poll Failed: ${pollRes.status} ${errText}`,
                   );
                 }
                 throw new Error(`Veo Polling Failed: ${errText}`);
               }
 
-              const pollData = await statusRes.json();
+              const pollData = await pollRes.json();
 
+              // 3. Check Status (Standardize 'done' check)
               if (pollData.done) {
+                isVideoDone = true;
                 if (pollData.error) {
-                  throw new Error(`Veo LRO Error: ${pollData.error.message}`);
+                  throw new Error(
+                    pollData.error.message || "Video generation failed.",
+                  );
                 }
                 // Extract GCS URI from response
                 gcsUri =
                   pollData.response?.predictions?.[0]?.video?.uri ||
                   pollData.response?.outputs?.[0]?.uri ||
                   "";
-                isVideoDone = true;
               } else {
-                send("PROGRESS", { message: "Generating video..." });
+                send("PROGRESS", { message: "Generating video frames..." });
                 // Wait 3 seconds (Blocking wait)
                 await new Promise((r) => setTimeout(r, 3000));
               }

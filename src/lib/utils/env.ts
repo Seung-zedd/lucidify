@@ -7,7 +7,7 @@ import { browser, dev } from "$app/environment";
 export const IS_DEV_SITE =
   browser &&
   window.location.hostname ===
-    "https://lucidify-git-dev-seungzedds-projects.vercel.app/"; // your domain name
+    "lucidify-git-dev-seungzedds-projects.vercel.app"; // your domain name
 
 /**
  * Combined flag for any development environment (Local OR Staging).

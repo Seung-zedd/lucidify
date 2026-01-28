@@ -123,27 +123,57 @@ export const POST: RequestHandler = async ({ request }) => {
             const pollData = await pollRes.json();
 
             if (pollData.done) {
-              isVideoDone = true;
+              // 1. Log the full structure for debugging (Vercel Logs)
+              if (IS_DEV_MODE) {
+                console.log(
+                  "🔥 [Debug] AI Studio Response:",
+                  JSON.stringify(pollData, null, 2),
+                );
+              }
+
               if (pollData.error) {
                 throw new Error(
                   pollData.error.message || "Video generation failed.",
                 );
               }
 
-              // Extract Video URL
+              // 2. Aggressive Search for Video URI
               videoUrl =
+                pollData.result?.videoUri ||
                 pollData.response?.videoUri ||
-                pollData.response?.outputUri ||
-                pollData.response?.result?.videoUri ||
                 pollData.metadata?.outputUri ||
+                pollData.response?.result?.videoUri ||
+                pollData.response?.outputUri ||
                 "";
 
-              if (IS_DEV_MODE) {
-                console.log(
-                  "✅ Generation Complete:",
-                  JSON.stringify(pollData, null, 2),
+              // 3. Fallback: If returned as a raw string in 'response'
+              if (!videoUrl && typeof pollData.response === "string") {
+                try {
+                  const nested = JSON.parse(pollData.response);
+                  videoUrl = nested.videoUri || nested.result?.videoUri || "";
+                } catch (e) {
+                  /* ignore */
+                }
+              }
+
+              // 4. Final Check
+              if (!videoUrl) {
+                if (IS_DEV_MODE) {
+                  console.error(
+                    "❌ Could not find 'videoUri' in keys:",
+                    Object.keys(pollData),
+                  );
+                }
+                throw new Error(
+                  "Failed to retrieve video URL from AI Studio (Check Vercel Logs for '🔥 [Debug]').",
                 );
               }
+
+              if (IS_DEV_MODE) {
+                console.log("✅ Video URL Found:", videoUrl);
+              }
+
+              isVideoDone = true;
             } else {
               send("PROGRESS", { message: "Generating video frames..." });
               // Wait 5 seconds

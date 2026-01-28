@@ -133,13 +133,12 @@ export const POST: RequestHandler = async ({ request }) => {
             // opName format: "projects/.../operations/b56e..."
             const operationId = opName.split("/").pop();
 
-            // 3. CONSTRUCT the Polling URL with 'v1' (Stable)
-            // Logic: https://{Region}-aiplatform.googleapis.com/v1/projects/{Project}/locations/{Region}/operations/{UUID}
-            // Note: We deliberately use 'v1' here to bypass the 'Long ID' restriction of v1beta1.
-            const apiHost = `https://${process.env.GCP_LOCATION}-aiplatform.googleapis.com`;
-            const pollUrl = `${apiHost}/v1/projects/${process.env.GCP_PROJECT_ID}/locations/${process.env.GCP_LOCATION}/operations/${operationId}`;
+            // 3. CONSTRUCT the Polling URL using GLOBAL HOST
+            // NOTE: We use the Global Host, BUT we keep the Regional Location in the path.
+            const globalHost = "https://aiplatform.googleapis.com";
+            const pollUrl = `${globalHost}/v1beta1/projects/${process.env.GCP_PROJECT_ID}/locations/${process.env.GCP_LOCATION}/operations/${operationId}`;
 
-            console.log(`🚀 [v1 Stable] Polling ID: ${operationId}`);
+            console.log(`🌍 [Global Host] Polling ID: ${operationId}`);
             console.log(`🔗 [Target URL] ${pollUrl}`);
 
             let isVideoDone = false;

@@ -6,7 +6,7 @@ import { IS_DEV_MODE } from "$lib/utils/env";
 import process from "node:process";
 
 export const config = {
-  maxDuration: 60,
+  maxDuration: 300,
 };
 
 const genAI = new GoogleGenerativeAI(GOOGLE_GENERATIVE_AI_API_KEY);
@@ -100,10 +100,10 @@ export const POST: RequestHandler = async ({ request }) => {
           let videoUrl = "";
 
           while (!isVideoDone) {
-            // Safety Timeout (55s)
-            if (Date.now() - startTime > 55000) {
+            // Safety Timeout (295s)
+            if (Date.now() - startTime > 295000) {
               throw new Error(
-                "Generation timed out (limit 55s). Please try again.",
+                "Generation timed out (limit 300s). Please try again.",
               );
             }
 

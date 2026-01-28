@@ -58,135 +58,143 @@ export const POST: RequestHandler = async ({ request }) => {
 
           send("PROGRESS", { message: "Director refined the prompt..." });
 
-          // 3. Veo Generation Phase (AI Studio)
-          const apiKey =
-            process.env.GOOGLE_AI_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY;
-          if (!apiKey) throw new Error("Missing GOOGLE_AI_API_KEY");
-
-          const apiUrl =
-            "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning";
-
-          const startRes = await fetch(apiUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-goog-api-key": apiKey,
-            },
-            body: JSON.stringify({
-              instances: [{ prompt: refined_prompt }],
-              parameters: { sampleCount: 1, aspectRatio: "16:9" },
-            }),
-          });
-
-          if (!startRes.ok) {
-            const errData = await startRes.json();
-            throw new Error(
-              `AI Studio Kickoff Error: ${errData.error?.message || startRes.statusText}`,
-            );
-          }
-
-          const startData = await startRes.json();
-          if (IS_DEV_MODE) {
-            console.log(
-              "🚀 [AI Studio] Kickoff Response:",
-              JSON.stringify(startData, null, 2),
-            );
-          }
-          const operationName = startData.name;
-
-          // 4. Polling Phase
-          const pollUrl = `https://generativelanguage.googleapis.com/v1beta/${operationName}`;
-          let isVideoDone = false;
+          // 3. Swan Strategy: Veo 3.1 with Smart Mocking Fallback
           let videoUrl = "";
+          const isLucid = !!action;
 
-          while (!isVideoDone) {
-            // Safety Timeout (295s)
-            if (Date.now() - startTime > 295000) {
-              throw new Error(
-                "Generation timed out (limit 300s). Please try again.",
-              );
+          const getMockVideoUrl = () => {
+            let mockUrl = "/videos/demo_dream.mp4";
+            const lowerInput = input.toLowerCase();
+            if (
+              category === "FLY" ||
+              lowerInput.includes("sky") ||
+              lowerInput.includes("wings") ||
+              lowerInput.includes("float")
+            ) {
+              mockUrl = "/videos/demo_fly.mp4";
+            } else if (category === "TRANSFORM" || isLucid) {
+              mockUrl = "/videos/demo_lucid.mp4";
             }
+            return mockUrl;
+          };
 
-            if (IS_DEV_MODE) {
-              console.log(`🚀 [AI Studio] Polling: ${pollUrl}`);
-            }
+          try {
+            const apiKey =
+              process.env.GOOGLE_AI_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY;
+            if (!apiKey) throw new Error("Missing GOOGLE_AI_API_KEY");
 
-            const pollRes = await fetch(pollUrl, {
-              headers: { "x-goog-api-key": apiKey },
+            const apiUrl =
+              "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning";
+
+            const startRes = await fetch(apiUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-goog-api-key": apiKey,
+              },
+              body: JSON.stringify({
+                instances: [{ prompt: refined_prompt }],
+                parameters: { sampleCount: 1, aspectRatio: "16:9" },
+              }),
             });
 
-            if (!pollRes.ok) {
-              const errText = await pollRes.text();
-              throw new Error(`AI Studio Polling Failed: ${errText}`);
+            if (!startRes.ok) {
+              const errData = await startRes.json();
+              if (IS_DEV_MODE) {
+                console.error("🚀 [AI Studio] Kickoff Failed:", errData);
+              }
+              throw new Error("Veo Kickoff Failed");
             }
 
-            const pollData = await pollRes.json();
+            const startData = await startRes.json();
+            const operationName = startData.name;
+            const pollUrl = `https://generativelanguage.googleapis.com/v1beta/${operationName}`;
 
-            if (pollData.done) {
-              // 1. CRITICAL: Check for API Error FIRST
-              if (pollData.error) {
+            let isVideoDone = false;
+            while (!isVideoDone) {
+              // Safety Timeout (90s for Swan Strategy)
+              if (Date.now() - startTime > 90000) {
                 if (IS_DEV_MODE) {
-                  console.error("❌ AI Studio API Error:", pollData.error);
+                  console.log(
+                    "⚠️ [Swan Strategy] Veo Timeout (90s) - Falling back to Smart Mocking",
+                  );
                 }
-                throw new Error(
-                  `AI Studio Error: ${pollData.error.message || JSON.stringify(pollData.error)}`,
-                );
-              }
-
-              // 2. Debug Log (Server-side)
-              if (IS_DEV_MODE) {
-                console.log(
-                  "🔥 [Debug] Full Response:",
-                  JSON.stringify(pollData, null, 2),
-                );
-              }
-
-              // 3. Search for Video URI (Robust Check)
-              videoUrl =
-                pollData.result?.videoUri ||
-                pollData.response?.videoUri ||
-                pollData.metadata?.outputUri ||
-                pollData.response?.result?.videoUri ||
-                pollData.response?.outputUri ||
-                "";
-
-              // 4. Fallback: Parse stringified response
-              if (!videoUrl && typeof pollData.response === "string") {
-                try {
-                  const nested = JSON.parse(pollData.response);
-                  videoUrl = nested.videoUri || nested.result?.videoUri || "";
-                } catch (e) {
-                  /* ignore */
-                }
-              }
-
-              // 5. Final Check with Frontend-Visible Debugging
-              if (!videoUrl) {
-                const foundKeys = Object.keys(pollData).join(", ");
-                const debugMsg = `Keys found: [${foundKeys}]. Full Data: ${JSON.stringify(pollData).substring(0, 100)}...`;
-
-                if (IS_DEV_MODE) {
-                  console.error("❌ Could not find 'videoUri'.", debugMsg);
-                }
-                throw new Error(
-                  `Failed to find 'videoUri'. Debug: ${debugMsg}`,
-                );
+                videoUrl = getMockVideoUrl();
+                isVideoDone = true;
+                break;
               }
 
               if (IS_DEV_MODE) {
-                console.log("✅ Video URL Found:", videoUrl);
+                console.log(`🚀 [AI Studio] Polling: ${pollUrl}`);
               }
 
-              isVideoDone = true;
-            } else {
-              send("PROGRESS", { message: "Generating video frames..." });
-              // Wait 5 seconds
-              await new Promise((r) => setTimeout(r, 5000));
+              const pollRes = await fetch(pollUrl, {
+                headers: { "x-goog-api-key": apiKey },
+              });
+
+              if (!pollRes.ok) {
+                throw new Error("Polling failed");
+              }
+
+              const pollData = await pollRes.json();
+
+              if (pollData.done) {
+                if (pollData.error) {
+                  if (IS_DEV_MODE) {
+                    console.error("❌ AI Studio API Error:", pollData.error);
+                  }
+                  throw new Error("Veo API Error");
+                }
+
+                // Search for Video URI
+                videoUrl =
+                  pollData.result?.videoUri ||
+                  pollData.response?.videoUri ||
+                  pollData.metadata?.outputUri ||
+                  pollData.response?.result?.videoUri ||
+                  pollData.response?.outputUri ||
+                  "";
+
+                // Fallback: Parse stringified response
+                if (!videoUrl && typeof pollData.response === "string") {
+                  try {
+                    const nested = JSON.parse(pollData.response);
+                    videoUrl = nested.videoUri || nested.result?.videoUri || "";
+                  } catch (e) {
+                    /* ignore */
+                  }
+                }
+
+                if (videoUrl) {
+                  if (IS_DEV_MODE) {
+                    console.log("✅ Video URL Found:", videoUrl);
+                  }
+                  isVideoDone = true;
+                } else {
+                  throw new Error("Video URL not found in response");
+                }
+              } else {
+                send("PROGRESS", { message: "Generating video frames..." });
+                await new Promise((r) => setTimeout(r, 5000));
+              }
             }
+          } catch (veoErr) {
+            if (IS_DEV_MODE) {
+              console.warn(
+                "⚠️ [Swan Strategy] Veo Phase Failed, using mock fallback:",
+                veoErr,
+              );
+            }
+            videoUrl = getMockVideoUrl();
           }
 
           if (!videoUrl) {
-            throw new Error("Failed to retrieve video URL from AI Studio.");
+            videoUrl = getMockVideoUrl();
+          }
+
+          if (IS_DEV_MODE) {
+            console.log("Director Category:", category);
+            console.log("Selected Video:", videoUrl);
           }
 
           // 5. COMPLETE

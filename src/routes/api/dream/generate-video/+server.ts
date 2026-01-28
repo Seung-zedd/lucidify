@@ -1,14 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { GoogleAuth } from "google-auth-library";
-import { Storage } from "@google-cloud/storage";
-import {
-  GOOGLE_GENERATIVE_AI_API_KEY,
-  GCP_PROJECT_ID,
-  GCP_LOCATION,
-  GCP_GCS_BUCKET_NAME,
-  GCP_CREDENTIALS_JSON,
-} from "$env/static/private";
+import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
 import type { RequestHandler } from "./$types";
 import { IS_DEV_MODE } from "$lib/utils/env";
 import process from "node:process";
@@ -22,14 +14,6 @@ const genAI = new GoogleGenerativeAI(GOOGLE_GENERATIVE_AI_API_KEY);
 const SYSTEM_INSTRUCTION = `You are a Cinematic Director. Analyze the provided dream prompt or lucid action. 
 Determine the visual category: 'FLY', 'EXPLORE', 'TRANSFORM', or 'NIGHTMARE'. 
 Output MUST be a valid JSON object: { "category": string, "refined_prompt": string }.`;
-
-// Initialize GCP Auth and Storage
-const credentials = JSON.parse(GCP_CREDENTIALS_JSON);
-const auth = new GoogleAuth({
-  credentials,
-  scopes: "https://www.googleapis.com/auth/cloud-platform",
-});
-const storage = new Storage({ credentials });
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
@@ -74,165 +58,99 @@ export const POST: RequestHandler = async ({ request }) => {
 
           send("PROGRESS", { message: "Director refined the prompt..." });
 
-          // 3. Veo Generation Phase
-          const client = await auth.getClient();
-          const accessTokenResponse = await client.getAccessToken();
-          const accessToken = accessTokenResponse.token;
+          // 3. Veo Generation Phase (AI Studio)
+          const apiKey =
+            process.env.GOOGLE_AI_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY;
+          if (!apiKey) throw new Error("Missing GOOGLE_AI_API_KEY");
 
-          if (!accessToken) {
-            throw new Error("Failed to retrieve access token");
-          }
+          const apiUrl =
+            "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning";
 
-          const veoEndpoint = `https://${process.env.GCP_LOCATION}-aiplatform.googleapis.com/v1beta1/projects/${process.env.GCP_PROJECT_ID}/locations/${process.env.GCP_LOCATION}/publishers/google/models/veo-3.1-generate-001:predictLongRunning`;
-
-          const veoResponse = await fetch(veoEndpoint, {
+          const startRes = await fetch(apiUrl, {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
+              "x-goog-api-key": apiKey,
             },
             body: JSON.stringify({
               instances: [{ prompt: refined_prompt }],
-              parameters: {
-                aspectRatio: "16:9",
-                storageUri: `gs://${GCP_GCS_BUCKET_NAME}/videos`,
-              },
+              parameters: { sampleCount: 1, aspectRatio: "16:9" },
             }),
           });
 
-          if (!veoResponse.ok) {
-            const contentType = veoResponse.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-              const errData = await veoResponse.json();
-              throw new Error(
-                `Veo API Error: ${errData.error?.message || veoResponse.statusText}`,
-              );
-            } else {
-              const errText = await veoResponse.text();
-              throw new Error(
-                `Veo API HTML Error (${veoResponse.status}): ${errText.slice(0, 100)}...`,
-              );
-            }
-          }
-
-          const veoData = await veoResponse.json();
-          if (IS_DEV_MODE) {
-            console.log(
-              "[Veo API] Initial Response:",
-              JSON.stringify(veoData, null, 2),
+          if (!startRes.ok) {
+            const errData = await startRes.json();
+            throw new Error(
+              `AI Studio Kickoff Error: ${errData.error?.message || startRes.statusText}`,
             );
           }
-          let gcsUri = "";
 
-          // 3. Polling Loop (BLOCKING)
-          if (veoData.name && veoData.name.startsWith("projects/")) {
-            // 1. FREEZE the operation name
-            const opName = veoData.name;
+          const startData = await startRes.json();
+          const operationName = startData.name;
 
-            // 2. EXTRACT the UUID (The last part)
-            const operationId = opName.split("/").pop();
+          // 4. Polling Phase
+          const pollUrl = `https://generativelanguage.googleapis.com/v1beta/${operationName}`;
+          let isVideoDone = false;
+          let videoUrl = "";
 
-            // 3. CONSTRUCT the Winning URL
-            // Host: Global (https://aiplatform.googleapis.com)
-            // Version: v1 (Stable)
-            // Path: Generic (/projects/.../locations/.../operations/UUID)
-            const globalHost = "https://aiplatform.googleapis.com";
-            const apiVersion = "v1";
+          while (!isVideoDone) {
+            // Safety Timeout (55s)
+            if (Date.now() - startTime > 55000) {
+              throw new Error(
+                "Generation timed out (limit 55s). Please try again.",
+              );
+            }
 
-            const pollUrl = `${globalHost}/${apiVersion}/projects/${process.env.GCP_PROJECT_ID}/locations/${process.env.GCP_LOCATION}/operations/${operationId}`;
+            if (IS_DEV_MODE) {
+              console.log(`🚀 [AI Studio] Polling: ${pollUrl}`);
+            }
 
-            console.log(`🚀 [The Final Combo] Polling ID: ${operationId}`);
-            console.log(`🔗 [Target URL] ${pollUrl}`);
+            const pollRes = await fetch(pollUrl, {
+              headers: { "x-goog-api-key": apiKey },
+            });
 
-            let isVideoDone = false;
-            while (!isVideoDone) {
-              // Safety Timeout (55s)
-              if (Date.now() - startTime > 55000) {
-                if (IS_DEV_MODE) {
-                  console.error("⏰ [Server] Timeout Reached (55s)");
-                }
+            if (!pollRes.ok) {
+              const errText = await pollRes.text();
+              throw new Error(`AI Studio Polling Failed: ${errText}`);
+            }
+
+            const pollData = await pollRes.json();
+
+            if (pollData.done) {
+              isVideoDone = true;
+              if (pollData.error) {
                 throw new Error(
-                  "Generation timed out (limit 55s). Please try again.",
+                  pollData.error.message || "Video generation failed.",
                 );
               }
 
-              // 2. FETCH using the FIXED 'pollUrl' (Do NOT rebuild it dynamically)
+              // Extract Video URL
+              videoUrl =
+                pollData.response?.videoUri ||
+                pollData.response?.outputUri ||
+                pollData.metadata?.outputUri ||
+                "";
+
               if (IS_DEV_MODE) {
-                console.log(`🔄 [Server] Polling Veo Status...`);
+                console.log(
+                  "✅ Generation Complete:",
+                  JSON.stringify(pollData, null, 2),
+                );
               }
-              const pollRes = await fetch(pollUrl, {
-                headers: {
-                  Authorization: `Bearer ${accessToken}`,
-                  "Content-Type": "application/json",
-                },
-              });
-
-              if (!pollRes.ok) {
-                const errText = await pollRes.text();
-                if (IS_DEV_MODE) {
-                  console.error(
-                    `❌ [Server] Poll Failed: ${pollRes.status} ${errText}`,
-                  );
-                }
-                throw new Error(`Veo Polling Failed: ${errText}`);
-              }
-
-              const pollData = await pollRes.json();
-
-              // 3. Check Status (Standardize 'done' check)
-              if (pollData.done) {
-                isVideoDone = true;
-                if (pollData.error) {
-                  throw new Error(
-                    pollData.error.message || "Video generation failed.",
-                  );
-                }
-                // Extract GCS URI from response
-                gcsUri =
-                  pollData.response?.predictions?.[0]?.video?.uri ||
-                  pollData.response?.outputs?.[0]?.uri ||
-                  "";
-              } else {
-                send("PROGRESS", { message: "Generating video frames..." });
-                // Wait 3 seconds (Blocking wait)
-                await new Promise((r) => setTimeout(r, 3000));
-              }
+            } else {
+              send("PROGRESS", { message: "Generating video frames..." });
+              // Wait 5 seconds
+              await new Promise((r) => setTimeout(r, 5000));
             }
-          } else {
-            // Immediate response handling
-            gcsUri =
-              veoData.predictions?.[0]?.video?.uri ||
-              veoData.predictions?.[0]?.uri ||
-              "";
           }
 
-          if (!gcsUri) {
-            throw new Error(
-              "Failed to retrieve video URI from Veo. Check server logs for response structure.",
-            );
-          }
-
-          // 4. Generate Signed URL
-          const bucketName = gcsUri.replace("gs://", "").split("/")[0];
-          const fileName = gcsUri.replace(`gs://${bucketName}/`, "");
-
-          const [signedUrl] = await storage
-            .bucket(bucketName)
-            .file(fileName)
-            .getSignedUrl({
-              version: "v4",
-              action: "read",
-              expires: Date.now() + 60 * 60 * 1000, // 1 hour
-            });
-
-          if (IS_DEV_MODE) {
-            console.log("[Director] Category:", category);
-            console.log("[Storage] Signed Video URL:", signedUrl);
+          if (!videoUrl) {
+            throw new Error("Failed to retrieve video URL from AI Studio.");
           }
 
           // 5. COMPLETE
           send("COMPLETE", {
-            videoUrl: signedUrl,
+            videoUrl: videoUrl,
             enhancedPrompt: refined_prompt,
           });
           controller.close();

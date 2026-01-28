@@ -123,21 +123,25 @@ export const POST: RequestHandler = async ({ request }) => {
             const pollData = await pollRes.json();
 
             if (pollData.done) {
-              // 1. Log the full structure for debugging (Vercel Logs)
+              // 1. CRITICAL: Check for API Error FIRST
+              if (pollData.error) {
+                if (IS_DEV_MODE) {
+                  console.error("❌ AI Studio API Error:", pollData.error);
+                }
+                throw new Error(
+                  `AI Studio Error: ${pollData.error.message || JSON.stringify(pollData.error)}`,
+                );
+              }
+
+              // 2. Debug Log (Server-side)
               if (IS_DEV_MODE) {
                 console.log(
-                  "🔥 [Debug] AI Studio Response:",
+                  "🔥 [Debug] Full Response:",
                   JSON.stringify(pollData, null, 2),
                 );
               }
 
-              if (pollData.error) {
-                throw new Error(
-                  pollData.error.message || "Video generation failed.",
-                );
-              }
-
-              // 2. Aggressive Search for Video URI
+              // 3. Search for Video URI (Robust Check)
               videoUrl =
                 pollData.result?.videoUri ||
                 pollData.response?.videoUri ||
@@ -146,7 +150,7 @@ export const POST: RequestHandler = async ({ request }) => {
                 pollData.response?.outputUri ||
                 "";
 
-              // 3. Fallback: If returned as a raw string in 'response'
+              // 4. Fallback: Parse stringified response
               if (!videoUrl && typeof pollData.response === "string") {
                 try {
                   const nested = JSON.parse(pollData.response);
@@ -156,16 +160,16 @@ export const POST: RequestHandler = async ({ request }) => {
                 }
               }
 
-              // 4. Final Check
+              // 5. Final Check with Frontend-Visible Debugging
               if (!videoUrl) {
+                const foundKeys = Object.keys(pollData).join(", ");
+                const debugMsg = `Keys found: [${foundKeys}]. Full Data: ${JSON.stringify(pollData).substring(0, 100)}...`;
+
                 if (IS_DEV_MODE) {
-                  console.error(
-                    "❌ Could not find 'videoUri' in keys:",
-                    Object.keys(pollData),
-                  );
+                  console.error("❌ Could not find 'videoUri'.", debugMsg);
                 }
                 throw new Error(
-                  "Failed to retrieve video URL from AI Studio (Check Vercel Logs for '🔥 [Debug]').",
+                  `Failed to find 'videoUri'. Debug: ${debugMsg}`,
                 );
               }
 

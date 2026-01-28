@@ -127,21 +127,22 @@ export const POST: RequestHandler = async ({ request }) => {
           // 3. Polling Loop (BLOCKING)
           if (veoData.name && veoData.name.startsWith("projects/")) {
             // 1. FREEZE the operation name
-            // Format: projects/.../locations/us-central1/publishers/google/models/veo-3.1.../operations/{uuid}
-            let resourcePath = veoData.name;
+            const opName = veoData.name;
 
-            // Clean leading slash if present
-            if (resourcePath.startsWith("/")) {
-              resourcePath = resourcePath.substring(1);
-            }
+            // 2. EXTRACT the UUID (The last part)
+            const operationId = opName.split("/").pop();
 
-            // 2. CONSTRUCT the Polling URL
-            // Host: Global (aiplatform.googleapis.com) - Critical for routing!
-            // Path: v1beta1 + Full Resource Name (Critical for UUID support!)
+            // 3. CONSTRUCT the Winning URL
+            // Host: Global (https://aiplatform.googleapis.com)
+            // Version: v1 (Stable)
+            // Path: Generic (/projects/.../locations/.../operations/UUID)
             const globalHost = "https://aiplatform.googleapis.com";
-            const pollUrl = `${globalHost}/v1beta1/${resourcePath}`;
+            const apiVersion = "v1";
 
-            console.log(`🌍 [Global + Full Path] Polling URL: ${pollUrl}`);
+            const pollUrl = `${globalHost}/${apiVersion}/projects/${process.env.GCP_PROJECT_ID}/locations/${process.env.GCP_LOCATION}/operations/${operationId}`;
+
+            console.log(`🚀 [The Final Combo] Polling ID: ${operationId}`);
+            console.log(`🔗 [Target URL] ${pollUrl}`);
 
             let isVideoDone = false;
             while (!isVideoDone) {

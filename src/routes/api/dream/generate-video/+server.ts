@@ -127,19 +127,21 @@ export const POST: RequestHandler = async ({ request }) => {
           // 3. Polling Loop (BLOCKING)
           if (veoData.name && veoData.name.startsWith("projects/")) {
             // 1. FREEZE the operation name
-            const opName = veoData.name;
+            // Format: projects/.../locations/us-central1/publishers/google/models/veo-3.1.../operations/{uuid}
+            let resourcePath = veoData.name;
 
-            // 2. EXTRACT the UUID (The last part of the string)
-            // opName format: "projects/.../operations/b56e..."
-            const operationId = opName.split("/").pop();
+            // Clean leading slash if present
+            if (resourcePath.startsWith("/")) {
+              resourcePath = resourcePath.substring(1);
+            }
 
-            // 3. CONSTRUCT the Polling URL using GLOBAL HOST
-            // NOTE: We use the Global Host, BUT we keep the Regional Location in the path.
+            // 2. CONSTRUCT the Polling URL
+            // Host: Global (aiplatform.googleapis.com) - Critical for routing!
+            // Path: v1beta1 + Full Resource Name (Critical for UUID support!)
             const globalHost = "https://aiplatform.googleapis.com";
-            const pollUrl = `${globalHost}/v1beta1/projects/${process.env.GCP_PROJECT_ID}/locations/${process.env.GCP_LOCATION}/operations/${operationId}`;
+            const pollUrl = `${globalHost}/v1beta1/${resourcePath}`;
 
-            console.log(`🌍 [Global Host] Polling ID: ${operationId}`);
-            console.log(`🔗 [Target URL] ${pollUrl}`);
+            console.log(`🌍 [Global + Full Path] Polling URL: ${pollUrl}`);
 
             let isVideoDone = false;
             while (!isVideoDone) {

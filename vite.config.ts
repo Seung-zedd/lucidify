@@ -30,6 +30,10 @@ export default defineConfig({
           },
         ],
       },
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
+        globIgnores: ["**/node_modules/**/*", "sw.js", "workbox-*.js"],
+      },
     }),
   ] as any,
 });

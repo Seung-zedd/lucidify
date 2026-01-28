@@ -52,7 +52,7 @@ export const POST: RequestHandler = async ({
     }
 
     const model = genAI.getGenerativeModel({
-      model: "models/gemini-2.0-flash",
+      model: "models/gemini-2.5-flash",
       systemInstruction: SYSTEM_INSTRUCTION,
     });
 

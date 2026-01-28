@@ -43,7 +43,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
           // 2. Director Phase (Gemini)
           const model = genAI.getGenerativeModel({
-            model: "models/gemini-2.0-flash",
+            model: "models/gemini-2.5-flash",
             systemInstruction: SYSTEM_INSTRUCTION,
           });
 

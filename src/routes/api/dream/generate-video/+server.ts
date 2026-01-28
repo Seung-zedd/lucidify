@@ -64,7 +64,7 @@ export const POST: RequestHandler = async ({ request }) => {
           if (!apiKey) throw new Error("Missing GOOGLE_AI_API_KEY");
 
           const apiUrl =
-            "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning";
+            "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning";
 
           const startRes = await fetch(apiUrl, {
             method: "POST",
@@ -86,6 +86,12 @@ export const POST: RequestHandler = async ({ request }) => {
           }
 
           const startData = await startRes.json();
+          if (IS_DEV_MODE) {
+            console.log(
+              "🚀 [AI Studio] Kickoff Response:",
+              JSON.stringify(startData, null, 2),
+            );
+          }
           const operationName = startData.name;
 
           // 4. Polling Phase
@@ -128,6 +134,7 @@ export const POST: RequestHandler = async ({ request }) => {
               videoUrl =
                 pollData.response?.videoUri ||
                 pollData.response?.outputUri ||
+                pollData.response?.result?.videoUri ||
                 pollData.metadata?.outputUri ||
                 "";
 

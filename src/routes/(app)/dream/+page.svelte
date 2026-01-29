@@ -618,7 +618,7 @@
                       muted
                       playsinline
                       class="w-full h-full object-cover opacity-50"
-                      style="filter: grayscale(50%) sepia(20%) blur(4px);"
+                      style="filter: grayscale(100%) blur(4px);"
                     >
                       <track kind="captions" />
                     </video>
@@ -627,7 +627,7 @@
                       src={previousMediaSource}
                       alt="Previous dream"
                       class="w-full h-full object-cover opacity-50"
-                      style="filter: grayscale(50%) sepia(20%) blur(4px);"
+                      style="filter: grayscale(100%) blur(4px);"
                     />
                   {/if}
                 </div>
@@ -637,7 +637,7 @@
               <div
                 class={cn(
                   "absolute inset-0 z-10",
-                  isTransitioning && "animate-expand-reality",
+                  isTransitioning && "animate-fluid-expand",
                 )}
                 onanimationend={() => {
                   if (isTransitioning) {
@@ -657,6 +657,7 @@
                     class={cn(
                       "w-full h-full object-cover transition-all duration-2500 ease-in",
                       isClearing && "animate-pulse-impact",
+                      isTransitioning && "animate-settle-in",
                     )}
                     style="filter: {isLucidMode
                       ? isFocused
@@ -678,6 +679,7 @@
                     class={cn(
                       "w-full h-full object-cover transition-all duration-2500 ease-in animate-ken-burns",
                       isClearing && "animate-pulse-impact",
+                      isTransitioning && "animate-settle-in",
                     )}
                     style="filter: {isLucidMode
                       ? isFocused
@@ -1032,17 +1034,45 @@
     animation: ken-burns 20s ease-in-out infinite alternate;
   }
 
-  @keyframes expand-reality {
+  @keyframes fluid-expand {
     0% {
-      clip-path: circle(0% at center);
+      mask-size: 0% 0%;
+      -webkit-mask-size: 0% 0%;
+      filter: brightness(2);
+    }
+    20% {
+      mask-size: 50% 50%;
+      -webkit-mask-size: 50% 50%;
+      filter: brightness(1.5);
     }
     100% {
-      clip-path: circle(150% at center);
+      mask-size: 300% 300%;
+      -webkit-mask-size: 300% 300%;
+      filter: brightness(1);
     }
   }
 
-  .animate-expand-reality {
-    animation: expand-reality 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  .animate-fluid-expand {
+    mask-image: radial-gradient(circle, black 0%, transparent 70%);
+    -webkit-mask-image: radial-gradient(circle, black 0%, transparent 70%);
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-position: center;
+    animation: fluid-expand 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  }
+
+  @keyframes settle-in {
+    0% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .animate-settle-in {
+    animation: settle-in 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   }
 
   @keyframes mild-shake {

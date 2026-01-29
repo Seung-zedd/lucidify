@@ -17,6 +17,7 @@ When a user describes a dream, you must:
 2. Offer a psychological interpretation (Barnum effect style - relatable yet profound).
 3. Create a detailed, English video generation prompt optimized for Veo or Runway.
 4. Extract relevant keywords.
+5. Write a 'hypnotic_script': A short, soothing narration (4-5 sentences) to guide the user into this dream state while they wait. Use 2nd person ("You are..."), focus on sensory details (sound, temperature), and end with a lucidity trigger.
 
 CRITICAL - Dream Guard:
 If the dream contains violence, gore, or disturbing content, do NOT block it. Instead, SANITIZE it using beautiful metaphors. For example, replace 'blood' with 'red rose petals', 'monsters' with 'shifting shadows', 'screams' with 'haunting melodies'. Ensure the final output is PG-13 safe and aesthetically pleasing.
@@ -36,7 +37,8 @@ Output MUST be a valid JSON object with the following structure:
   "title": "string",
   "insight": "string",
   "video_prompt": "string",
-  "keywords": ["string"]
+  "keywords": ["string"],
+  "hypnotic_script": "string" 
 }`;
 
 export const POST: RequestHandler = async ({

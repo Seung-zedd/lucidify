@@ -112,11 +112,11 @@ export const POST: RequestHandler = async ({ request }) => {
 
             let isVideoDone = false;
             while (!isVideoDone) {
-              // Safety Timeout (150s for Swan Strategy)
-              if (Date.now() - startTime > 150000) {
+              // Safety Timeout (180s for Swan Strategy)
+              if (Date.now() - startTime > 180000) {
                 if (IS_DEV_MODE) {
                   console.log(
-                    "⚠️ [Swan Strategy] Veo Timeout (150s) - Falling back to Smart Mocking",
+                    "⚠️ [Swan Strategy] Veo Timeout (180s) - Falling back to Smart Mocking",
                   );
                 }
                 videoUrl = getMockVideoUrl();

@@ -31,6 +31,7 @@
     insight: string;
     video_prompt: string;
     keywords: string[];
+    hypnotic_script?: string;
   } | null>(null);
   let showResult = $state(false);
 
@@ -105,7 +106,8 @@
 
     isGenerating = true;
     isReadyToEnter = false;
-    loadingText = "CONSTRUCTING YOUR SUBCONSCIOUS...";
+    loadingText =
+      analysisResult.hypnotic_script || "CONSTRUCTING YOUR SUBCONSCIOUS...";
 
     try {
       const res = await fetch("/api/dream/generate-video", {
@@ -368,7 +370,7 @@
       class="absolute inset-0 flex items-center justify-center pointer-events-none"
     >
       <p
-        class="text-purple-100/80 font-serif text-4xl md:text-6xl font-black animate-pulse tracking-[0.3em] uppercase text-center drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]"
+        class="text-purple-100/80 font-serif text-2xl md:text-3xl font-medium animate-pulse tracking-wide text-center px-12 leading-relaxed drop-shadow-[0_0_20px_rgba(168,85,247,0.5)] max-w-4xl"
       >
         {loadingText}
       </p>

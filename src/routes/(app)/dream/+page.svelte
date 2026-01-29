@@ -149,8 +149,12 @@
             if (event === "INIT" || event === "PROGRESS") {
               // Keep the initial loadingText to avoid shuffling
             } else if (event === "COMPLETE") {
-              mediaSource = data.mediaUrl;
-              mediaType = data.mediaType;
+              mediaSource = Array.isArray(data.mediaUrl)
+                ? data.mediaUrl[0]
+                : data.mediaUrl;
+              mediaType = Array.isArray(data.mediaType)
+                ? data.mediaType[0]
+                : data.mediaType;
               isReadyToEnter = true;
             } else if (event === "ERROR") {
               throw new Error(data.message);
@@ -278,8 +282,12 @@
                 isAwakening = false;
 
                 // Update to new media
-                mediaSource = data.mediaUrl;
-                mediaType = data.mediaType;
+                mediaSource = Array.isArray(data.mediaUrl)
+                  ? data.mediaUrl[0]
+                  : data.mediaUrl;
+                mediaType = Array.isArray(data.mediaType)
+                  ? data.mediaType[0]
+                  : data.mediaType;
 
                 // Start video playback
                 if (videoElement) {
@@ -382,13 +390,17 @@
     ></video>
 
     <div
-      class="absolute inset-0 flex items-center justify-center pointer-events-none"
+      class="absolute inset-0 flex items-center justify-center pointer-events-none z-50"
     >
-      <p
-        class="text-purple-100/80 font-serif text-2xl md:text-3xl font-medium animate-pulse tracking-wide text-center px-12 leading-relaxed drop-shadow-[0_0_20px_rgba(168,85,247,0.5)] max-w-4xl"
+      <div
+        class="bg-black/60 backdrop-blur-sm px-8 py-4 rounded-full shadow-2xl border border-white/10"
       >
-        {loadingText}
-      </p>
+        <p
+          class="text-white font-serif text-xl md:text-2xl font-medium animate-pulse tracking-[0.2em] uppercase text-center"
+        >
+          {loadingText}
+        </p>
+      </div>
     </div>
   </div>
 {/if}
@@ -865,14 +877,18 @@
 
               {#if isAwakening && !isClearing}
                 <div
-                  class="absolute inset-0 flex items-center justify-center"
+                  class="absolute inset-0 flex items-center justify-center z-50"
                   transition:fade={{ duration: 500 }}
                 >
-                  <p
-                    class="text-purple-100/80 font-serif text-3xl md:text-5xl font-black animate-pulse tracking-[0.3em] uppercase text-center px-6 drop-shadow-[0_0_25px_rgba(168,85,247,0.6)]"
+                  <div
+                    class="bg-black/60 backdrop-blur-sm px-8 py-4 rounded-full shadow-2xl border border-white/10"
                   >
-                    {loadingText}
-                  </p>
+                    <p
+                      class="text-white font-serif text-xl md:text-2xl font-medium animate-pulse tracking-[0.2em] uppercase text-center"
+                    >
+                      {loadingText}
+                    </p>
+                  </div>
                 </div>
               {/if}
             </div>

@@ -39,7 +39,7 @@
   let isVideoPlaying = $state(false);
   let isLucidMode = $state(false);
   let showLucidButton = $state(false);
-  let mediaSource = $state("/videos/demo_dream.mp4");
+  let mediaSource = $state("");
   let mediaType = $state<"video" | "image">("video");
   let showAchievement = $state(false);
   let isMuted = $state(false);

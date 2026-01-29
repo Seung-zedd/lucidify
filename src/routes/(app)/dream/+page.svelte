@@ -39,7 +39,8 @@
   let isVideoPlaying = $state(false);
   let isLucidMode = $state(false);
   let showLucidButton = $state(false);
-  let videoSource = $state("/videos/demo_dream.mp4");
+  let mediaSource = $state("/videos/demo_dream.mp4");
+  let mediaType = $state<"video" | "image">("video");
   let showAchievement = $state(false);
   let isMuted = $state(false);
   let isLooping = $state(true);
@@ -145,7 +146,8 @@
             if (event === "INIT" || event === "PROGRESS") {
               // Keep the initial loadingText to avoid shuffling
             } else if (event === "COMPLETE") {
-              generatedVideoUrl = data.videoUrl;
+              mediaSource = data.mediaUrl;
+              mediaType = data.mediaType;
               isReadyToEnter = true;
             } else if (event === "ERROR") {
               throw new Error(data.message);
@@ -166,7 +168,6 @@
   }
 
   function handleEnterDream() {
-    videoSource = generatedVideoUrl;
     isVideoPlaying = true;
     showMist = true;
     isClearing = false;
@@ -263,7 +264,8 @@
               // Keep the random flavor text, don't let the server shuffle it
             } else if (event === "COMPLETE") {
               // 3. Response arrived! (Ready to Explode)
-              videoSource = data.videoUrl;
+              mediaSource = data.mediaUrl;
+              mediaType = data.mediaType;
 
               // Give a small tick to ensure video loading time
               setTimeout(() => {
@@ -350,7 +352,7 @@
     analysisResult = null;
     isReadyToEnter = false;
     isGenerating = false;
-    generatedVideoUrl = "";
+    mediaSource = "";
     handleExitVideo();
   }
 </script>
@@ -585,31 +587,68 @@
             out:fade={{ duration: 400 }}
             class="relative w-full h-full"
           >
-            <!-- Video Element -->
-            <video
-              bind:this={videoElement}
-              src={videoSource}
-              autoplay
-              loop={isLooping}
-              muted={isMuted}
-              playsinline
-              class={cn(
-                "w-full h-full object-cover transition-all duration-2500 ease-in",
-                isClearing && "animate-pulse-impact",
-              )}
-              style="filter: {isLucidMode
-                ? isFocused
-                  ? 'blur(0px) brightness(1.0)'
-                  : 'blur(16px) brightness(1.25)'
-                : showMist
-                  ? 'blur(1px) brightness(1.05)'
-                  : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
-              showLucidInput
-                ? 'blur(4px) brightness(0.5)'
-                : ''};"
+            <!-- Base Layer: Result Media -->
+            {#if mediaType === "video"}
+              <video
+                bind:this={videoElement}
+                src={mediaSource}
+                autoplay
+                loop={isLooping}
+                muted={isMuted}
+                playsinline
+                class={cn(
+                  "w-full h-full object-cover transition-all duration-2500 ease-in",
+                  isClearing && "animate-pulse-impact",
+                )}
+                style="filter: {isLucidMode
+                  ? isFocused
+                    ? 'blur(0px) brightness(1.0)'
+                    : 'blur(16px) brightness(1.25)'
+                  : showMist
+                    ? 'blur(1px) brightness(1.05)'
+                    : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
+                showLucidInput
+                  ? 'blur(4px) brightness(0.5)'
+                  : ''};"
+              >
+                <track kind="captions" />
+              </video>
+            {:else}
+              <img
+                src={mediaSource}
+                alt="Dream visualization"
+                class={cn(
+                  "w-full h-full object-cover transition-all duration-2500 ease-in animate-ken-burns",
+                  isClearing && "animate-pulse-impact",
+                )}
+                style="filter: {isLucidMode
+                  ? isFocused
+                    ? 'blur(0px) brightness(1.0)'
+                    : 'blur(16px) brightness(1.25)'
+                  : showMist
+                    ? 'blur(1px) brightness(1.05)'
+                    : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
+                showLucidInput
+                  ? 'blur(4px) brightness(0.5)'
+                  : ''};"
+              />
+            {/if}
+
+            <!-- Atmosphere Layer: Mist Overlay -->
+            <div
+              class="absolute inset-0 z-10 pointer-events-none mix-blend-screen opacity-60"
             >
-              <track kind="captions" />
-            </video>
+              <video
+                src="/images/mist.mp4"
+                autoplay
+                loop
+                muted
+                playsinline
+                class="w-full h-full object-cover"
+              >
+                <track kind="captions" />
+              </video>
+            </div>
             {#if isLucidMode}
               <div
                 class="absolute inset-0 pointer-events-none z-10 shadow-[inset_0_0_100px_rgba(250,204,21,0.3),inset_0_0_200px_rgba(168,85,247,0.2)] animate-pulse-slow"
@@ -914,6 +953,21 @@
 </div>
 
 <style>
+  @keyframes ken-burns {
+    0% {
+      transform: scale(1);
+      translate: 0 0;
+    }
+    100% {
+      transform: scale(1.15);
+      translate: -1% -1%;
+    }
+  }
+
+  .animate-ken-burns {
+    animation: ken-burns 20s ease-in-out infinite alternate;
+  }
+
   @keyframes pulse-slow {
     0%,
     100% {

@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
 import type { RequestHandler } from "./$types";
 import { IS_DEV_MODE } from "$lib/utils/env";
+import { dev } from "$app/environment";
 import process from "node:process";
 
 export const config = {
@@ -26,6 +27,8 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const encoder = new TextEncoder();
     const startTime = Date.now();
+    // Dev: 20s, Prod: 180s
+    const SAFETY_TIMEOUT = dev ? 20000 : 180000;
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -43,7 +46,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
           // 2. Director Phase (Gemini)
           const model = genAI.getGenerativeModel({
-            model: "models/gemini-2.5-flash",
+            model: "models/gemini-2.0-flash",
             systemInstruction: SYSTEM_INSTRUCTION,
           });
 
@@ -58,31 +61,16 @@ export const POST: RequestHandler = async ({ request }) => {
 
           send("PROGRESS", { message: "Director refined the prompt..." });
 
-          // 3. Swan Strategy: Veo 3.1 with Smart Mocking Fallback
-          let videoUrl = "";
-          const isLucid = !!action;
+          // 3. Swan Strategy: Veo 3.1 with Imagen 4.0 Fallback
+          let mediaUrl = "";
+          let mediaType: "video" | "image" = "video";
 
-          const getMockVideoUrl = () => {
-            let mockUrl = "/videos/demo_dream.mp4";
-            const lowerInput = input.toLowerCase();
-            if (
-              category === "FLY" ||
-              lowerInput.includes("sky") ||
-              lowerInput.includes("wings") ||
-              lowerInput.includes("float")
-            ) {
-              mockUrl = "/videos/demo_fly.mp4";
-            } else if (category === "TRANSFORM" || isLucid) {
-              mockUrl = "/videos/demo_lucid.mp4";
-            }
-            return mockUrl;
-          };
+          const apiKey =
+            process.env.GOOGLE_AI_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY;
+          if (!apiKey) throw new Error("Missing GOOGLE_AI_API_KEY");
 
           try {
-            const apiKey =
-              process.env.GOOGLE_AI_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY;
-            if (!apiKey) throw new Error("Missing GOOGLE_AI_API_KEY");
-
+            // --- VEO VIDEO GENERATION ---
             const apiUrl =
               "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning";
 
@@ -101,7 +89,7 @@ export const POST: RequestHandler = async ({ request }) => {
             if (!startRes.ok) {
               const errData = await startRes.json();
               if (IS_DEV_MODE) {
-                console.error("🚀 [AI Studio] Kickoff Failed:", errData);
+                console.error("🚀 [Veo] Kickoff Failed:", errData);
               }
               throw new Error("Veo Kickoff Failed");
             }
@@ -112,42 +100,37 @@ export const POST: RequestHandler = async ({ request }) => {
 
             let isVideoDone = false;
             while (!isVideoDone) {
-              // Safety Timeout (180s for Swan Strategy)
-              if (Date.now() - startTime > 180000) {
+              // Safety Timeout
+              if (Date.now() - startTime > SAFETY_TIMEOUT) {
                 if (IS_DEV_MODE) {
                   console.log(
-                    "⚠️ [Swan Strategy] Veo Timeout (180s) - Falling back to Smart Mocking",
+                    `⚠️ [Veo] Timeout (${SAFETY_TIMEOUT / 1000}s) - Falling back to Imagen 4.0`,
                   );
                 }
-                videoUrl = getMockVideoUrl();
-                isVideoDone = true;
-                break;
+                throw new Error("Veo Timeout");
               }
 
               if (IS_DEV_MODE) {
-                console.log(`🚀 [AI Studio] Polling: ${pollUrl}`);
+                console.log(`🚀 [Veo] Polling: ${pollUrl}`);
               }
 
               const pollRes = await fetch(pollUrl, {
                 headers: { "x-goog-api-key": apiKey },
               });
 
-              if (!pollRes.ok) {
-                throw new Error("Polling failed");
-              }
+              if (!pollRes.ok) throw new Error("Polling failed");
 
               const pollData = await pollRes.json();
 
               if (pollData.done) {
                 if (pollData.error) {
                   if (IS_DEV_MODE) {
-                    console.error("❌ AI Studio API Error:", pollData.error);
+                    console.error("❌ Veo API Error:", pollData.error);
                   }
                   throw new Error("Veo API Error");
                 }
 
-                // Search for Video URI
-                videoUrl =
+                mediaUrl =
                   pollData.result?.videoUri ||
                   pollData.response?.videoUri ||
                   pollData.metadata?.outputUri ||
@@ -155,57 +138,72 @@ export const POST: RequestHandler = async ({ request }) => {
                   pollData.response?.outputUri ||
                   "";
 
-                // Fallback: Parse stringified response
-                if (!videoUrl && typeof pollData.response === "string") {
-                  try {
-                    const nested = JSON.parse(pollData.response);
-                    videoUrl = nested.videoUri || nested.result?.videoUri || "";
-                  } catch (e) {
-                    /* ignore */
-                  }
-                }
-
-                if (videoUrl) {
-                  if (IS_DEV_MODE) {
-                    console.log("✅ Video URL Found:", videoUrl);
-                  }
+                if (mediaUrl) {
+                  mediaType = "video";
                   isVideoDone = true;
                 } else {
-                  throw new Error("Video URL not found in response");
+                  throw new Error("Video URL not found");
                 }
               } else {
-                send("PROGRESS", { message: "Generating video frames..." });
+                send("PROGRESS", { message: "Generating dream frames..." });
                 await new Promise((r) => setTimeout(r, 5000));
               }
             }
-          } catch (veoErr) {
+          } catch (veoErr: any) {
+            // --- IMAGEN 4.0 ULTRA FALLBACK ---
             if (IS_DEV_MODE) {
               console.warn(
-                "⚠️ [Swan Strategy] Veo Phase Failed, using mock fallback:",
-                veoErr,
+                "⚠️ [Swan Strategy] Veo Failed, switching to Imagen 4.0:",
+                veoErr?.message || veoErr,
               );
             }
-            videoUrl = getMockVideoUrl();
-          }
+            send("PROGRESS", {
+              message: "Switching to high-fidelity visualization...",
+            });
 
-          if (!videoUrl) {
-            videoUrl = getMockVideoUrl();
-          }
+            const imagenUrl =
+              "https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-ultra:predict";
+            const imagenRes = await fetch(imagenUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-goog-api-key": apiKey,
+              },
+              body: JSON.stringify({
+                instances: [{ prompt: refined_prompt }],
+                parameters: { sampleCount: 1, aspectRatio: "16:9" },
+              }),
+            });
 
-          if (IS_DEV_MODE) {
-            console.log("Director Category:", category);
-            console.log("Selected Video:", videoUrl);
+            if (!imagenRes.ok) {
+              const errData = await imagenRes.json();
+              if (IS_DEV_MODE) {
+                console.error("❌ [Imagen] Failed:", errData);
+              }
+              throw new Error("Visualization failed completely");
+            }
+
+            const imagenData = await imagenRes.json();
+            const base64Image = imagenData.predictions?.[0]?.bytesBase64Encoded;
+
+            if (base64Image) {
+              mediaUrl = `data:image/png;base64,${base64Image}`;
+              mediaType = "image";
+            } else {
+              throw new Error("Image data not found in response");
+            }
           }
 
           // 5. COMPLETE
           send("COMPLETE", {
-            videoUrl: videoUrl,
+            mediaUrl: mediaUrl,
+            mediaType: mediaType,
             enhancedPrompt: refined_prompt,
           });
           controller.close();
         } catch (err: any) {
           send("ERROR", {
-            message: err.message || "Video generation failed",
+            message: err.message || "Dream manifestation failed",
           });
           controller.close();
         }
@@ -222,7 +220,7 @@ export const POST: RequestHandler = async ({ request }) => {
     });
   } catch (err: any) {
     if (IS_DEV_MODE) {
-      console.error("Video Generation Error:", err);
+      console.error("Dream Generation Error:", err);
     }
     if (err.status) throw err;
     throw error(500, err.message || "Internal Server Error");

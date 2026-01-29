@@ -40,7 +40,10 @@
   let isLucidMode = $state(false);
   let showLucidButton = $state(false);
   let mediaSource = $state("");
+  let previousMediaSource = $state("");
   let mediaType = $state<"video" | "image">("video");
+  let previousMediaType = $state<"video" | "image">("video");
+  let isTransitioning = $state(false);
   let showAchievement = $state(false);
   let isMuted = $state(false);
   let isLooping = $state(true);
@@ -264,12 +267,19 @@
               // Keep the random flavor text, don't let the server shuffle it
             } else if (event === "COMPLETE") {
               // 3. Response arrived! (Ready to Explode)
-              mediaSource = data.mediaUrl;
-              mediaType = data.mediaType;
+              // Store current as previous for transition
+              if (mediaSource) {
+                previousMediaSource = mediaSource;
+                previousMediaType = mediaType;
+              }
 
               // Give a small tick to ensure video loading time
               setTimeout(() => {
                 isAwakening = false;
+
+                // Update to new media
+                mediaSource = data.mediaUrl;
+                mediaType = data.mediaType;
 
                 // Start video playback
                 if (videoElement) {
@@ -287,6 +297,7 @@
 
                 // 💥 Explode now! (Explosion Animation Trigger)
                 isClearing = true;
+                isTransitioning = true;
 
                 // Play sound
                 const audio = new Audio("/audios/awakening.mp3");
@@ -353,6 +364,8 @@
     isReadyToEnter = false;
     isGenerating = false;
     mediaSource = "";
+    previousMediaSource = "";
+    isTransitioning = false;
     handleExitVideo();
   }
 </script>
@@ -587,52 +600,99 @@
             out:fade={{ duration: 400 }}
             class="relative w-full h-full"
           >
-            <!-- Base Layer: Result Media -->
-            {#if mediaType === "video"}
-              <video
-                bind:this={videoElement}
-                src={mediaSource}
-                autoplay
-                loop={isLooping}
-                muted={isMuted}
-                playsinline
+            <!-- Reality Layering Container -->
+            <div
+              class={cn(
+                "relative w-full h-full overflow-hidden",
+                isClearing && "animate-mild-shake",
+              )}
+            >
+              <!-- Previous Reality (Background) -->
+              {#if previousMediaSource}
+                <div class="absolute inset-0 z-0">
+                  {#if previousMediaType === "video"}
+                    <video
+                      src={previousMediaSource}
+                      autoplay
+                      loop
+                      muted
+                      playsinline
+                      class="w-full h-full object-cover opacity-50"
+                      style="filter: grayscale(50%) sepia(20%) blur(4px);"
+                    >
+                      <track kind="captions" />
+                    </video>
+                  {:else}
+                    <img
+                      src={previousMediaSource}
+                      alt="Previous dream"
+                      class="w-full h-full object-cover opacity-50"
+                      style="filter: grayscale(50%) sepia(20%) blur(4px);"
+                    />
+                  {/if}
+                </div>
+              {/if}
+
+              <!-- New Reality (Foreground with Expansion) -->
+              <div
                 class={cn(
-                  "w-full h-full object-cover transition-all duration-2500 ease-in",
-                  isClearing && "animate-pulse-impact",
+                  "absolute inset-0 z-10",
+                  isTransitioning && "animate-expand-reality",
                 )}
-                style="filter: {isLucidMode
-                  ? isFocused
-                    ? 'blur(0px) brightness(1.0)'
-                    : 'blur(16px) brightness(1.25)'
-                  : showMist
-                    ? 'blur(1px) brightness(1.05)'
-                    : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
-                showLucidInput
-                  ? 'blur(4px) brightness(0.5)'
-                  : ''};"
+                onanimationend={() => {
+                  if (isTransitioning) {
+                    isTransitioning = false;
+                    previousMediaSource = "";
+                  }
+                }}
               >
-                <track kind="captions" />
-              </video>
-            {:else}
-              <img
-                src={mediaSource}
-                alt="Dream visualization"
-                class={cn(
-                  "w-full h-full object-cover transition-all duration-2500 ease-in animate-ken-burns",
-                  isClearing && "animate-pulse-impact",
-                )}
-                style="filter: {isLucidMode
-                  ? isFocused
-                    ? 'blur(0px) brightness(1.0)'
-                    : 'blur(16px) brightness(1.25)'
-                  : showMist
-                    ? 'blur(1px) brightness(1.05)'
-                    : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
-                showLucidInput
-                  ? 'blur(4px) brightness(0.5)'
-                  : ''};"
-              />
-            {/if}
+                {#if mediaType === "video"}
+                  <video
+                    bind:this={videoElement}
+                    src={mediaSource}
+                    autoplay
+                    loop={isLooping}
+                    muted={isMuted}
+                    playsinline
+                    class={cn(
+                      "w-full h-full object-cover transition-all duration-2500 ease-in",
+                      isClearing && "animate-pulse-impact",
+                    )}
+                    style="filter: {isLucidMode
+                      ? isFocused
+                        ? 'blur(0px) brightness(1.0)'
+                        : 'blur(16px) brightness(1.25)'
+                      : showMist
+                        ? 'blur(1px) brightness(1.05)'
+                        : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
+                    showLucidInput
+                      ? 'blur(4px) brightness(0.5)'
+                      : ''};"
+                  >
+                    <track kind="captions" />
+                  </video>
+                {:else}
+                  <img
+                    src={mediaSource}
+                    alt="Dream visualization"
+                    class={cn(
+                      "w-full h-full object-cover transition-all duration-2500 ease-in animate-ken-burns",
+                      isClearing && "animate-pulse-impact",
+                    )}
+                    style="filter: {isLucidMode
+                      ? isFocused
+                        ? 'blur(0px) brightness(1.0)'
+                        : 'blur(16px) brightness(1.25)'
+                      : showMist
+                        ? 'blur(1px) brightness(1.05)'
+                        : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
+                    showLucidInput
+                      ? 'blur(4px) brightness(0.5)'
+                      : ''};"
+                  />
+                {/if}
+              </div>
+            </div>
 
             <!-- Atmosphere Layer: Mist Overlay -->
             {#if !isLucidMode}
@@ -970,6 +1030,36 @@
 
   .animate-ken-burns {
     animation: ken-burns 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes expand-reality {
+    0% {
+      clip-path: circle(0% at center);
+    }
+    100% {
+      clip-path: circle(150% at center);
+    }
+  }
+
+  .animate-expand-reality {
+    animation: expand-reality 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  }
+
+  @keyframes mild-shake {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(-5px, 5px);
+    }
+    75% {
+      transform: translate(5px, -5px);
+    }
+  }
+
+  .animate-mild-shake {
+    animation: mild-shake 0.4s ease-in-out;
   }
 
   @keyframes pulse-slow {

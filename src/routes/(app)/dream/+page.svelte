@@ -635,20 +635,24 @@
             {/if}
 
             <!-- Atmosphere Layer: Mist Overlay -->
-            <div
-              class="absolute inset-0 z-10 pointer-events-none mix-blend-screen opacity-60"
-            >
-              <video
-                src="/images/mist.mp4"
-                autoplay
-                loop
-                muted
-                playsinline
-                class="w-full h-full object-cover"
+            {#if !isLucidMode}
+              <div
+                class="absolute inset-0 z-10 pointer-events-none mix-blend-screen opacity-60"
+                transition:fade={{ duration: 1500 }}
               >
-                <track kind="captions" />
-              </video>
-            </div>
+                <video
+                  src="/images/mist.mp4"
+                  autoplay
+                  loop
+                  muted
+                  playsinline
+                  class="w-full h-full object-cover"
+                  onplay={(e) => (e.currentTarget.playbackRate = 0.5)}
+                >
+                  <track kind="captions" />
+                </video>
+              </div>
+            {/if}
             {#if isLucidMode}
               <div
                 class="absolute inset-0 pointer-events-none z-10 shadow-[inset_0_0_100px_rgba(250,204,21,0.3),inset_0_0_200px_rgba(168,85,247,0.2)] animate-pulse-slow"

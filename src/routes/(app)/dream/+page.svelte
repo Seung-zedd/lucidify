@@ -392,15 +392,11 @@
     <div
       class="absolute inset-0 flex items-center justify-center pointer-events-none z-50"
     >
-      <div
-        class="bg-black/60 backdrop-blur-sm px-8 py-4 rounded-full shadow-2xl border border-white/10"
+      <p
+        class="text-white font-serif text-xl md:text-2xl font-medium animate-pulse tracking-[0.2em] uppercase text-center px-12 max-w-5xl leading-relaxed drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]"
       >
-        <p
-          class="text-white font-serif text-xl md:text-2xl font-medium animate-pulse tracking-[0.2em] uppercase text-center"
-        >
-          {loadingText}
-        </p>
-      </div>
+        {loadingText}
+      </p>
     </div>
   </div>
 {/if}
@@ -854,7 +850,7 @@
           {#if showMist}
             <div
               class={cn(
-                "fixed inset-0 z-40 pointer-events-none mix-blend-screen mist-layer",
+                "absolute inset-0 z-[60] pointer-events-none mix-blend-screen mist-layer",
                 isClearing
                   ? "animate-engulf-breakthrough"
                   : "opacity-70 scale-100",

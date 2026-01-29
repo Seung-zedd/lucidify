@@ -6,7 +6,8 @@ import {
 } from "@google/generative-ai";
 import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
 import type { RequestHandler } from "./$types";
-import { IS_DEV_MODE } from "$lib/utils/env";
+import { IS_DEV_MODE, isDevHostname } from "$lib/utils/env";
+import { dev } from "$app/environment";
 
 const genAI = new GoogleGenerativeAI(GOOGLE_GENERATIVE_AI_API_KEY);
 
@@ -46,6 +47,9 @@ export const POST: RequestHandler = async ({
 }: {
   request: Request;
 }) => {
+  const url = new URL(request.url);
+  const isDevEnv = dev || isDevHostname(url.hostname);
+
   try {
     const { dream } = await request.json();
 
@@ -94,13 +98,13 @@ export const POST: RequestHandler = async ({
     const response = result.response;
     const text = response.text();
 
-    if (IS_DEV_MODE) {
+    if (isDevEnv) {
       console.log("[Gemini] Response:", text);
     }
 
     return json(JSON.parse(text));
   } catch (err: any) {
-    if (IS_DEV_MODE) {
+    if (isDevEnv) {
       console.error("[Gemini] Analysis Error:", err);
     }
 

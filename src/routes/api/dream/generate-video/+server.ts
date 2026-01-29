@@ -150,10 +150,10 @@ export const POST: RequestHandler = async ({ request }) => {
               }
             }
           } catch (veoErr: any) {
-            // --- IMAGEN 4.0 ULTRA FALLBACK ---
+            // --- MULTI-STAGE FALLBACK ---
             if (IS_DEV_MODE) {
               console.warn(
-                "⚠️ [Swan Strategy] Veo Failed, switching to Imagen 4.0:",
+                "⚠️ [Swan Strategy] Veo Failed, switching to Imagen Fallback:",
                 veoErr?.message || veoErr,
               );
             }
@@ -161,36 +161,59 @@ export const POST: RequestHandler = async ({ request }) => {
               message: "Switching to high-fidelity visualization...",
             });
 
-            const imagenUrl =
-              "https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-ultra:predict";
-            const imagenRes = await fetch(imagenUrl, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "x-goog-api-key": apiKey,
-              },
-              body: JSON.stringify({
-                instances: [{ prompt: refined_prompt }],
-                parameters: { sampleCount: 1, aspectRatio: "16:9" },
-              }),
-            });
+            const tryImagen = async (modelName: string) => {
+              const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:predict`;
+              const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-goog-api-key": apiKey,
+                },
+                body: JSON.stringify({
+                  instances: [{ prompt: refined_prompt }],
+                  parameters: { sampleCount: 1, aspectRatio: "16:9" },
+                }),
+              });
 
-            if (!imagenRes.ok) {
-              const errData = await imagenRes.json();
-              if (IS_DEV_MODE) {
-                console.error("❌ [Imagen] Failed:", errData);
+              if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(`Imagen (${modelName}) failed: ${errText}`);
               }
-              throw new Error("Visualization failed completely");
-            }
 
-            const imagenData = await imagenRes.json();
-            const base64Image = imagenData.predictions?.[0]?.bytesBase64Encoded;
+              const data = await res.json();
+              return data.predictions?.[0]?.bytesBase64Encoded;
+            };
 
-            if (base64Image) {
-              mediaUrl = `data:image/png;base64,${base64Image}`;
+            try {
+              // Stage 1: Try Imagen 4.0 Ultra
+              const base64 = await tryImagen("imagen-4.0-ultra-generate-001");
+              mediaUrl = `data:image/png;base64,${base64}`;
               mediaType = "image";
-            } else {
-              throw new Error("Image data not found in response");
+            } catch (img4Err: any) {
+              if (IS_DEV_MODE) {
+                console.warn(
+                  "⚠️ Imagen 4.0 Failed, trying 3.0...",
+                  img4Err.message,
+                );
+              }
+
+              try {
+                // Stage 2: Try Imagen 3.0
+                const base64 = await tryImagen("imagen-3.0-generate-001");
+                mediaUrl = `data:image/png;base64,${base64}`;
+                mediaType = "image";
+              } catch (img3Err: any) {
+                if (IS_DEV_MODE) {
+                  console.error(
+                    "❌ All AI Visualizations failed:",
+                    img3Err.message,
+                  );
+                }
+
+                // Stage 3: Final Safety Fallback (Default Dream Asset)
+                mediaUrl = "/images/purple-dream.mp4";
+                mediaType = "video";
+              }
             }
           }
 

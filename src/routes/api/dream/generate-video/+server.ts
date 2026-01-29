@@ -32,8 +32,19 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const encoder = new TextEncoder();
     const startTime = Date.now();
-    // Dev: 20s, Prod: 180s
-    const SAFETY_TIMEOUT = dev ? 20000 : 180000;
+    const url = new URL(request.url);
+    const isPreview = url.hostname.includes("lucidify-git-dev"); // Detect Vercel Preview URL
+    const isLocal = dev; // Detect Localhost
+    const isDevEnv = isLocal || isPreview;
+
+    if (isDevEnv) {
+      console.log(
+        `[Server] Environment Detect: Local=${isLocal}, Preview=${isPreview} -> DevMode=${isDevEnv}`,
+      );
+    }
+
+    // Set Timeout: 20s for Dev/Preview, 180s for Production
+    const SAFETY_TIMEOUT = isDevEnv ? 20000 : 180000;
 
     const stream = new ReadableStream({
       async start(controller) {

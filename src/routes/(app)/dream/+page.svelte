@@ -850,7 +850,7 @@
           {#if showMist}
             <div
               class={cn(
-                "absolute inset-0 z-[60] pointer-events-none mix-blend-screen mist-layer",
+                "absolute inset-0 z-60 pointer-events-none mix-blend-screen mist-layer",
                 isClearing
                   ? "animate-engulf-breakthrough"
                   : "opacity-70 scale-100",
@@ -877,10 +877,10 @@
                   transition:fade={{ duration: 500 }}
                 >
                   <div
-                    class="bg-black/60 backdrop-blur-sm px-8 py-4 rounded-full shadow-2xl border border-white/10"
+                    class="bg-black/60 backdrop-blur-md px-8 py-4 rounded-full shadow-2xl border border-white/10"
                   >
                     <p
-                      class="text-white font-serif text-xl md:text-2xl font-medium animate-pulse tracking-[0.2em] uppercase text-center"
+                      class="text-white font-medium text-lg animate-pulse tracking-[0.2em] uppercase text-center leading-relaxed"
                     >
                       {loadingText}
                     </p>

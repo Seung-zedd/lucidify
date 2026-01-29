@@ -2,7 +2,7 @@ import { error } from "@sveltejs/kit";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
 import type { RequestHandler } from "./$types";
-import { IS_DEV_MODE } from "$lib/utils/env";
+import { IS_DEV_MODE, isDevHostname } from "$lib/utils/env";
 import { dev } from "$app/environment";
 import process from "node:process";
 
@@ -33,7 +33,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const encoder = new TextEncoder();
     const startTime = Date.now();
     const url = new URL(request.url);
-    const isPreview = url.hostname.includes("lucidify-git-dev"); // Detect Vercel Preview URL
+    const isPreview = isDevHostname(url.hostname); // Detect Vercel Preview URL
     const isLocal = dev; // Detect Localhost
     const isDevEnv = isLocal || isPreview;
 

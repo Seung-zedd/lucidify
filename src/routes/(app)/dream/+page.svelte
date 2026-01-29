@@ -11,7 +11,7 @@
   import Mountain from "@lucide/svelte/icons/mountain";
   import Zap from "@lucide/svelte/icons/zap";
   import ZapOff from "@lucide/svelte/icons/zap-off";
-  import { IS_DEV_MODE } from "$lib/utils/env";
+  import { IS_DEV_MODE, isDevHostname } from "$lib/utils/env";
 
   const [send, receive] = crossfade({
     duration: 800,
@@ -850,10 +850,11 @@
           {#if showMist}
             <div
               class={cn(
-                "absolute inset-0 z-60 pointer-events-none mix-blend-screen mist-layer",
+                "absolute inset-0 z-60 pointer-events-none mix-blend-screen mist-layer transition-opacity duration-1000",
                 isClearing
                   ? "animate-engulf-breakthrough"
                   : "opacity-70 scale-100",
+                isAwakening && "opacity-0",
               )}
             >
               <video
@@ -870,23 +871,24 @@
               >
                 <track kind="captions" />
               </video>
+            </div>
+          {/if}
 
-              {#if isAwakening && !isClearing}
-                <div
-                  class="absolute inset-0 flex items-center justify-center z-50"
-                  transition:fade={{ duration: 500 }}
+          <!-- Loading Overlay (Moved out of blended mist container for visibility) -->
+          {#if isAwakening && !isClearing}
+            <div
+              class="absolute inset-0 flex items-center justify-center z-70 pointer-events-none"
+              transition:fade={{ duration: 500 }}
+            >
+              <div
+                class="bg-black/60 backdrop-blur-md px-8 py-4 rounded-full shadow-2xl border border-white/10"
+              >
+                <p
+                  class="text-white font-medium text-lg animate-pulse tracking-[0.2em] uppercase text-center leading-relaxed"
                 >
-                  <div
-                    class="bg-black/60 backdrop-blur-md px-8 py-4 rounded-full shadow-2xl border border-white/10"
-                  >
-                    <p
-                      class="text-white font-medium text-lg animate-pulse tracking-[0.2em] uppercase text-center leading-relaxed"
-                    >
-                      {loadingText}
-                    </p>
-                  </div>
-                </div>
-              {/if}
+                  {loadingText}
+                </p>
+              </div>
             </div>
           {/if}
 

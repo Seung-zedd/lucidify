@@ -14,12 +14,17 @@ const genAI = new GoogleGenerativeAI(GOOGLE_GENERATIVE_AI_API_KEY);
 
 const SYSTEM_INSTRUCTION = `You are a Cinematic Director. Analyze the provided dream prompt or lucid action. 
 Determine the visual category: 'FLY', 'EXPLORE', 'TRANSFORM', or 'NIGHTMARE'. 
+If the input contains "Original Dream Context", you MUST modify the existing scene rather than creating a new one. Maintain the original character, style, and setting exactly as described in the context.
 Output MUST be a valid JSON object: { "category": string, "refined_prompt": string }.`;
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const { prompt, action } = await request.json();
-    const input = action || prompt;
+    // Combine context if action exists
+    let input = prompt;
+    if (action) {
+      input = `Original Dream Context: "${prompt}". \nLucid Action to Perform: "${action}". \nVisual Task: Modify the scene to show the action. Maintain the original character, style, and setting exactly.`;
+    }
 
     if (!input) {
       throw error(400, "Prompt or action is required");

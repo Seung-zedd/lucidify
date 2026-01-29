@@ -236,7 +236,7 @@
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify({ prompt: message, action }),
       });
 
       if (!res.ok) throw new Error("Failed to manifest reality");
@@ -842,7 +842,7 @@
           {#if showMist}
             <div
               class={cn(
-                "fixed inset-0 z-40 pointer-events-none mix-blend-screen",
+                "fixed inset-0 z-40 pointer-events-none mix-blend-screen mist-layer",
                 isClearing
                   ? "animate-engulf-breakthrough"
                   : "opacity-70 scale-100",
@@ -1090,6 +1090,17 @@
 
   .animate-mild-shake {
     animation: mild-shake 0.4s ease-in-out;
+  }
+
+  .mist-layer {
+    mask-image: radial-gradient(circle at center, transparent 30%, black 100%);
+    -webkit-mask-image: radial-gradient(
+      circle at center,
+      transparent 30%,
+      black 100%
+    );
+    opacity: 0.8;
+    pointer-events: none;
   }
 
   @keyframes pulse-slow {

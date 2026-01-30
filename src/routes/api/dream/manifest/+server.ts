@@ -43,6 +43,12 @@ export const POST: RequestHandler = async ({
     const isDevEnv = dev || isDevHostname(url.hostname);
     const SAFETY_TIMEOUT = isDevEnv ? 30000 : 180000;
 
+    if (isDevEnv) {
+      console.log("🚀 [Manifest] Request Started", {
+        promptLength: prompt.length,
+      });
+    }
+
     const stream = new ReadableStream({
       async start(controller) {
         const send = (event: string, data: any) => {
@@ -78,6 +84,7 @@ export const POST: RequestHandler = async ({
               const audio = await generateAudioGuide(
                 hypnotic_script,
                 GOOGLE_CLOUD_TTS_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY,
+                isDevEnv,
               );
               if (audio) {
                 send("AUDIO_GUIDE", { audio });

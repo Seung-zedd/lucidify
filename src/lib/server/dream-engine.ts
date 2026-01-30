@@ -139,24 +139,27 @@ export async function generateDreamMedia(
 export async function generateAudioGuide(
   script: string,
   apiKey: string,
+  isDevEnv: boolean = false,
 ): Promise<string | null> {
-  const isDevEnv =
-    dev ||
-    (typeof window === "undefined"
-      ? false
-      : isDevHostname(window.location.hostname));
-
   try {
     const ttsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+
+    // Abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
     const res = await fetch(ttsUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
       body: JSON.stringify({
         input: { text: script },
         voice: { languageCode: "en-US", name: "en-US-Journey-F" },
         audioConfig: { audioEncoding: "MP3", speakingRate: 0.85, pitch: -2.0 },
       }),
     });
+
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       if (isDevEnv) {
@@ -178,7 +181,10 @@ export async function generateAudioGuide(
     return data.audioContent;
   } catch (err: any) {
     if (isDevEnv) {
-      console.error("❌ [TTS] Request Error:", err);
+      console.error(
+        "❌ [TTS] Request Error:",
+        err.name === "AbortError" ? "Timeout" : err,
+      );
     }
     return null;
   }

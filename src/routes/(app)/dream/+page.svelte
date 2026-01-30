@@ -13,6 +13,15 @@
   import ZapOff from "@lucide/svelte/icons/zap-off";
   import { IS_DEV_MODE, isDevHostname } from "$lib/utils/env";
 
+  const LOADING_PHRASES = [
+    "Manifesting Your Will...",
+    "Warping Reality...",
+    "Reconstructing Visuals...",
+    "Injecting Lucid Thought...",
+    "Bending Physics...",
+    "Altering Perception...",
+  ];
+
   const [send, receive] = crossfade({
     duration: 800,
     easing: cubicInOut,
@@ -65,6 +74,29 @@
   let lucidAction = $state("");
   let loadingText = $state("Manifesting Your Will...");
   let isAwakening = $state(false);
+
+  // Audio Guide State
+  let narrationAudio = $state<HTMLAudioElement | null>(null);
+
+  function fadeOutNarration(duration = 2000) {
+    if (!narrationAudio) return;
+    const audio = narrationAudio;
+    const startVolume = audio.volume;
+    const startTime = Date.now();
+
+    const fadeInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      audio.volume = startVolume * (1 - progress);
+
+      if (progress >= 1) {
+        audio.pause();
+        clearInterval(fadeInterval);
+        if (narrationAudio === audio) narrationAudio = null;
+      }
+    }, 50);
+  }
 
   async function handleSubmit() {
     if (!message.trim() || isAnalyzing) return;
@@ -119,7 +151,10 @@
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: analysisResult.video_prompt }),
+        body: JSON.stringify({
+          prompt: analysisResult.video_prompt,
+          hypnotic_script: analysisResult.hypnotic_script,
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to generate video");
@@ -148,7 +183,19 @@
 
             if (event === "INIT" || event === "PROGRESS") {
               // Keep the initial loadingText to avoid shuffling
+            } else if (event === "AUDIO_GUIDE") {
+              if (narrationAudio) {
+                narrationAudio.pause();
+              }
+              narrationAudio = new Audio(
+                `data:audio/mp3;base64,${data.audioContent}`,
+              );
+              narrationAudio.volume = 0.6;
+              narrationAudio.play().catch((err) => {
+                if (IS_DEV_MODE) console.error("[Audio] Play failed:", err);
+              });
             } else if (event === "COMPLETE") {
+              fadeOutNarration(2000);
               mediaSource = Array.isArray(data.mediaUrl)
                 ? data.mediaUrl[0]
                 : data.mediaUrl;
@@ -157,6 +204,7 @@
                 : data.mediaType;
               isReadyToEnter = true;
             } else if (event === "ERROR") {
+              fadeOutNarration(500);
               throw new Error(data.message);
             }
           }
@@ -218,15 +266,8 @@
     isFocused = false; // Blur background
 
     // Select a single random phrase for this action
-    const phrases = [
-      "Manifesting Your Will...",
-      "Warping Reality...",
-      "Reconstructing Visuals...",
-      "Injecting Lucid Thought...",
-      "Bending Physics...",
-      "Altering Perception...",
-    ];
-    loadingText = phrases[Math.floor(Math.random() * phrases.length)];
+    loadingText =
+      LOADING_PHRASES[Math.floor(Math.random() * LOADING_PHRASES.length)];
 
     // Slow mist speed (Dreaming)
     if (mistVideo) {
@@ -269,6 +310,13 @@
 
             if (event === "INIT" || event === "PROGRESS") {
               // Keep the random flavor text, don't let the server shuffle it
+            } else if (event === "AUDIO_GUIDE") {
+              if (narrationAudio) narrationAudio.pause();
+              narrationAudio = new Audio(
+                `data:audio/mp3;base64,${data.audioContent}`,
+              );
+              narrationAudio.volume = 0.6;
+              narrationAudio.play().catch(() => {});
             } else if (event === "COMPLETE") {
               // 3. Response arrived! (Ready to Explode)
               // Store current as previous for transition
@@ -307,7 +355,8 @@
                 isClearing = true;
                 isTransitioning = true;
 
-                // Play sound
+                // Fade out narration and play sound
+                fadeOutNarration(2000);
                 const audio = new Audio("/audios/awakening.mp3");
                 audio.volume = 0.5;
                 audio.play().catch(() => {});
@@ -318,6 +367,7 @@
                 }, 600);
               }, 100); // 0.1s delay (Safety buffer)
             } else if (event === "ERROR") {
+              fadeOutNarration(500);
               throw new Error(data.message);
             }
           }

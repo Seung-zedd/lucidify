@@ -19,7 +19,7 @@ Output MUST be a valid JSON object: { "category": string, "refined_prompt": stri
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
-    const { prompt, action } = await request.json();
+    const { prompt, action, hypnotic_script } = await request.json();
     // Combine context if action exists
     let input = prompt;
     if (action) {
@@ -56,9 +56,49 @@ export const POST: RequestHandler = async ({ request }) => {
           );
         };
 
+        const synthesizeSpeech = async (text: string) => {
+          try {
+            const apiKey =
+              process.env.GOOGLE_AI_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY;
+            const ttsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+
+            const res = await fetch(ttsUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                input: { text },
+                voice: { languageCode: "en-US", name: "en-US-Journey-F" },
+                audioConfig: { audioEncoding: "MP3", speakingRate: 0.85 },
+              }),
+            });
+
+            if (!res.ok) {
+              const err = await res.json();
+              if (IS_DEV_MODE) console.error("[TTS] Failed:", err);
+              return null;
+            }
+
+            const data = await res.json();
+            return data.audioContent;
+          } catch (e) {
+            if (IS_DEV_MODE) console.error("[TTS] Error:", e);
+            return null;
+          }
+        };
+
         try {
           // 1. INIT
           send("INIT", {});
+
+          // Start TTS in parallel (non-blocking)
+          const ttsPromise = (async () => {
+            if (hypnotic_script) {
+              const audioContent = await synthesizeSpeech(hypnotic_script);
+              if (audioContent) {
+                send("AUDIO_GUIDE", { audioContent });
+              }
+            }
+          })();
 
           // 2. Director Phase (Gemini)
           const model = genAI.getGenerativeModel({
@@ -239,6 +279,8 @@ export const POST: RequestHandler = async ({ request }) => {
             mediaType: mediaType,
             enhancedPrompt: refined_prompt,
           });
+          // Wait for TTS to finish if it hasn't already (optional, but good for cleanup)
+          await ttsPromise;
           controller.close();
         } catch (err: any) {
           send("ERROR", {

@@ -96,11 +96,12 @@ We prioritize automated testing to ensure high quality and reliability.
 - **Error Handling:** Use `error()` from `@sveltejs/kit` to return proper HTTP status codes.
 - **Security:** Ensure sensitive operations are protected by authentication checks (e.g., Supabase session).
 
-### 8. Frontend Logging & Environment Checks
+### 8. Frontend & Backend Logging & Environment Checks
 
 - **Logging:** All `console.log`, `console.error`, and other debug logs MUST be wrapped in an environment check to prevent leaking information in production.
-- **Environment Check:** Use `IS_DEV_MODE` from `$lib/utils/env` to check if the app is running in development mode (Local OR Staging).
-- **Example:**
+- **Frontend Environment Check:** Use `IS_DEV_MODE` from `$lib/utils/env` to check if the app is running in development mode (Local OR Staging/Preview).
+- **Backend Environment Check:** Use `dev || isDevHostname(url.hostname)` since `IS_DEV_MODE` (which relies on `window`) is not available on the server.
+- **Example (Frontend):**
 
   ```typescript
   import { IS_DEV_MODE } from "$lib/utils/env";
@@ -108,6 +109,19 @@ We prioritize automated testing to ensure high quality and reliability.
   if (IS_DEV_MODE) {
     console.log("Debug info:", data);
   }
+  ```
+
+- **Example (Backend):**
+
+  ```typescript
+  import { dev } from "$app/environment";
+  import { isDevHostname } from "$lib/utils/env";
+
+  export const POST: RequestHandler = async ({ request }) => {
+    const isDevEnv = dev || isDevHostname(new URL(request.url).hostname);
+    if (isDevEnv) console.log("Backend debug log");
+    // ...
+  };
   ```
 
 ## 9. Localization Rule
@@ -141,10 +155,14 @@ We prioritize automated testing to ensure high quality and reliability.
 ## 14. 📊 Vercel Insights & Analytics
 
 - **Rule: Wrap Injection in Environment Checks.**
-- Always wrap `injectSpeedInsights()` and `injectAnalytics()` in a check for `browser && !dev` from `$app/environment`.
+- Always wrap `injectSpeedInsights()` and `injectAnalytics()` in a check for `browser && !IS_DEV_MODE`. This ensures analytics are only running on the production site, not in local development or Vercel preview/staging deployments.
 - **Example:**
+
   ```javascript
-  if (browser && !dev) {
+  import { browser } from "$app/environment";
+  import { IS_DEV_MODE } from "$lib/utils/env";
+
+  if (browser && !IS_DEV_MODE) {
     injectSpeedInsights();
     injectAnalytics();
   }

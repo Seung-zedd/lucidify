@@ -1,6 +1,9 @@
 import { error } from "@sveltejs/kit";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
+import {
+  GOOGLE_GENERATIVE_AI_API_KEY,
+  GOOGLE_CLOUD_TTS_API_KEY,
+} from "$env/static/private";
 import type { RequestHandler } from "./$types";
 import { IS_DEV_MODE, isDevHostname } from "$lib/utils/env";
 import { dev } from "$app/environment";
@@ -69,14 +72,20 @@ export const POST: RequestHandler = async ({
           );
           send("PROGRESS", { message: "Director refined the dream..." });
 
-          // 2. TTS Audio Guide (Fire-and-forget)
+          // 2. TTS Audio Guide (Wait for it)
           if (hypnotic_script) {
-            generateAudioGuide(
-              hypnotic_script,
-              GOOGLE_GENERATIVE_AI_API_KEY,
-            ).then((audio) => {
-              if (audio) send("AUDIO_GUIDE", { audio });
-            });
+            try {
+              const audio = await generateAudioGuide(
+                hypnotic_script,
+                GOOGLE_CLOUD_TTS_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY,
+              );
+              if (audio) {
+                send("AUDIO_GUIDE", { audio });
+                send("PROGRESS", { message: "Voice synthesis complete." });
+              }
+            } catch (ttsErr) {
+              if (isDevEnv) console.error("❌ [TTS] Failed:", ttsErr);
+            }
           }
 
           // 3. Visual Generation

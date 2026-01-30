@@ -1,5 +1,6 @@
 import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
-import { IS_DEV_MODE } from "$lib/utils/env";
+import { IS_DEV_MODE, isDevHostname } from "$lib/utils/env";
+import { dev } from "$app/environment";
 import process from "node:process";
 
 export interface GenerationResult {
@@ -139,6 +140,12 @@ export async function generateAudioGuide(
   script: string,
   apiKey: string,
 ): Promise<string | null> {
+  const isDevEnv =
+    dev ||
+    (typeof window === "undefined"
+      ? false
+      : isDevHostname(window.location.hostname));
+
   try {
     const ttsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
     const res = await fetch(ttsUrl, {
@@ -151,10 +158,28 @@ export async function generateAudioGuide(
       }),
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      if (isDevEnv) {
+        const errData = await res.json();
+        console.error(
+          "❌ [TTS] Synthesis Failed:",
+          JSON.stringify(errData, null, 2),
+        );
+
+        if (errData.error?.status === "PERMISSION_DENIED") {
+          console.warn(
+            "💡 Hint: Your API key might be an AI Studio key. Cloud TTS needs a GCP API key with 'Cloud Text-to-Speech API' enabled and unrestricted.",
+          );
+        }
+      }
+      return null;
+    }
     const data = await res.json();
     return data.audioContent;
-  } catch {
+  } catch (err: any) {
+    if (isDevEnv) {
+      console.error("❌ [TTS] Request Error:", err);
+    }
     return null;
   }
 }

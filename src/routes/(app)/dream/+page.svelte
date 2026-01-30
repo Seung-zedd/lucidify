@@ -191,6 +191,8 @@
 
             if (event === "INIT" || event === "PROGRESS") {
               // Keep the initial loadingText to avoid shuffling
+            } else if (event === "NEW_SCRIPT") {
+              loadingText = data.script;
             } else if (event === "AUDIO_GUIDE") {
               if (currentAudio) currentAudio.pause();
               currentAudio = new Audio(`data:audio/mp3;base64,${data.audio}`);

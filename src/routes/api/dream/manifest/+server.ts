@@ -77,6 +77,9 @@ export const POST: RequestHandler = async ({
             result.response.text(),
           );
           send("PROGRESS", { message: "Director refined the dream..." });
+          if (hypnotic_script) {
+            send("NEW_SCRIPT", { script: hypnotic_script });
+          }
 
           // 2. TTS Audio Guide (Wait for it)
           if (hypnotic_script) {

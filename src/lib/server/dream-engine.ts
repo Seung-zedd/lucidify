@@ -154,8 +154,12 @@ export async function generateAudioGuide(
       signal: controller.signal,
       body: JSON.stringify({
         input: { text: script },
-        voice: { languageCode: "en-US", name: "en-US-Journey-F" },
-        audioConfig: { audioEncoding: "MP3" },
+        voice: { languageCode: "en-US", name: "en-US-Neural2-F" },
+        audioConfig: {
+          audioEncoding: "MP3",
+          speakingRate: 0.85,
+          pitch: -4.0,
+        },
       }),
     });
 

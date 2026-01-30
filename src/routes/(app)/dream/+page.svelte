@@ -64,6 +64,7 @@
 
   // Real Dream Engine: Relay Sequence State
   let isGenerating = $state(false);
+  let isShowingOverlay = $state(false);
   let isReadyToEnter = $state(false);
   let isAudioFinished = $state(false);
   let generatedVideoUrl = $state("");
@@ -151,6 +152,7 @@
     if (!analysisResult) return;
 
     isGenerating = true;
+    isShowingOverlay = true;
     isReadyToEnter = false;
     isAudioFinished = false;
     loadingText =
@@ -203,6 +205,7 @@
               currentAudio.volume = 1.0;
               currentAudio.onended = () => {
                 isAudioFinished = true;
+                isShowingOverlay = false;
               };
               currentAudio.play().catch(() => {});
             } else if (event === "COMPLETE") {
@@ -229,11 +232,13 @@
         e.message || "Failed to construct the dream reality. Please try again.",
       );
       isGenerating = false;
+      isShowingOverlay = false;
     }
   }
 
   function handleEnterDream() {
     isGenerating = false;
+    isShowingOverlay = false;
     isVideoPlaying = true;
     showMist = true;
     isClearing = false;
@@ -428,6 +433,7 @@
     analysisResult = null;
     isReadyToEnter = false;
     isAudioFinished = false;
+    isShowingOverlay = false;
     isGenerating = false;
     mediaSource = "";
     previousMediaSource = "";
@@ -436,7 +442,7 @@
   }
 </script>
 
-{#if isGenerating}
+{#if isShowingOverlay}
   <div transition:fade={{ duration: 1500 }} class="fixed inset-0 z-50 bg-black">
     <video
       src="/images/purple-dream.mp4"

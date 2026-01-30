@@ -144,6 +144,12 @@ export async function generateAudioGuide(
   try {
     const ttsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
 
+    // "Punctuation Padding" - Adding extra breaks manually since Journey-F doesn't support rate settings.
+    const relaxedScript = script
+      .replace(/\. /g, "... ")
+      .replace(/, /g, ",,, ")
+      .replace(/! /g, "!... ");
+
     // Abort controller for timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -153,7 +159,7 @@ export async function generateAudioGuide(
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
       body: JSON.stringify({
-        input: { text: script },
+        input: { text: relaxedScript },
         voice: { languageCode: "en-US", name: "en-US-Journey-F" },
         audioConfig: { audioEncoding: "MP3" },
       }),

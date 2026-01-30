@@ -1,6 +1,5 @@
 import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
-import { IS_DEV_MODE, isDevHostname } from "$lib/utils/env";
-import { dev } from "$app/environment";
+import { IS_DEV_MODE } from "$lib/utils/env";
 import process from "node:process";
 
 export interface GenerationResult {
@@ -142,25 +141,24 @@ export async function generateAudioGuide(
   isDevEnv: boolean = false,
 ): Promise<string | null> {
   try {
-    const ttsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+    // Construct aggressive SSML for hypnotic pacing
+    const ssmlScript = `<speak><prosody rate="0.85" pitch="-2.0st">${script
+      .replace(/\./g, '.<break time="1000ms"/>')
+      .replace(/,/g, ',<break time="500ms"/>')}</prosody></speak>`;
 
-    // "Punctuation Padding" - Adding extra breaks manually since Journey-F doesn't support rate settings.
-    const relaxedScript = script
-      .replace(/\. /g, "... ")
-      .replace(/, /g, ",,, ")
-      .replace(/! /g, "!... ");
+    const ttsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
 
     // Abort controller for timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s for complex SSML
 
     const res = await fetch(ttsUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
       body: JSON.stringify({
-        input: { text: relaxedScript },
-        voice: { languageCode: "en-US", name: "en-US-Journey-F" },
+        input: { ssml: ssmlScript },
+        voice: { languageCode: "en-US", name: "en-US-Neural2-F" },
         audioConfig: { audioEncoding: "MP3" },
       }),
     });

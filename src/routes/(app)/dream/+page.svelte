@@ -65,6 +65,7 @@
   // Real Dream Engine: Relay Sequence State
   let isGenerating = $state(false);
   let isReadyToEnter = $state(false);
+  let isAudioFinished = $state(false);
   let generatedVideoUrl = $state("");
 
   // Gamified Lucid Flow State
@@ -151,6 +152,7 @@
 
     isGenerating = true;
     isReadyToEnter = false;
+    isAudioFinished = false;
     loadingText =
       analysisResult.hypnotic_script || "CONSTRUCTING YOUR SUBCONSCIOUS...";
 
@@ -196,11 +198,15 @@
               loadingText = data.script;
             } else if (event === "AUDIO_GUIDE") {
               if (currentAudio) currentAudio.pause();
+              isAudioFinished = false;
               currentAudio = new Audio(`data:audio/mp3;base64,${data.audio}`);
               currentAudio.volume = 1.0;
+              currentAudio.onended = () => {
+                isAudioFinished = true;
+              };
               currentAudio.play().catch(() => {});
             } else if (event === "COMPLETE") {
-              fadeOutAudio(2000);
+              // No fadeOutAudio here, let it finish naturally
               mediaSource = Array.isArray(data.mediaUrl)
                 ? data.mediaUrl[0]
                 : data.mediaUrl;
@@ -222,12 +228,12 @@
       alert(
         e.message || "Failed to construct the dream reality. Please try again.",
       );
-    } finally {
       isGenerating = false;
     }
   }
 
   function handleEnterDream() {
+    isGenerating = false;
     isVideoPlaying = true;
     showMist = true;
     isClearing = false;
@@ -421,6 +427,7 @@
     showResult = false;
     analysisResult = null;
     isReadyToEnter = false;
+    isAudioFinished = false;
     isGenerating = false;
     mediaSource = "";
     previousMediaSource = "";
@@ -441,13 +448,30 @@
     ></video>
 
     <div
-      class="absolute inset-0 flex items-center justify-center pointer-events-none z-50"
+      class="absolute inset-0 flex flex-col items-center justify-center z-50 p-12"
     >
       <p
-        class="text-white font-serif text-xl md:text-2xl font-medium animate-pulse tracking-[0.2em] uppercase text-center px-12 max-w-5xl leading-relaxed drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]"
+        class="text-white font-serif text-xl md:text-2xl font-medium animate-pulse tracking-[0.2em] uppercase text-center max-w-5xl leading-relaxed drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]"
       >
         {loadingText}
       </p>
+
+      {#if isReadyToEnter && isAudioFinished}
+        <div in:fade={{ delay: 500, duration: 1000 }} class="mt-12">
+          <button
+            onclick={handleEnterDream}
+            class="group relative px-12 py-4 rounded-full overflow-hidden transition-all duration-500 hover:scale-110 active:scale-95 bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/40 shadow-[0_0_30px_rgba(168,85,247,0.3)] hover:shadow-[0_0_50px_rgba(168,85,247,0.5)]"
+          >
+            <div
+              class="absolute inset-0 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-20 group-hover:opacity-40 transition-opacity"
+            ></div>
+            <span
+              class="relative text-white font-serif text-2xl font-bold tracking-[0.3em] uppercase"
+              >Enter Dream</span
+            >
+          </button>
+        </div>
+      {/if}
     </div>
   </div>
 {/if}
@@ -608,7 +632,7 @@
                   </div>
 
                   <div class="pt-4 flex gap-4">
-                    {#if isReadyToEnter}
+                    {#if isReadyToEnter && isAudioFinished}
                       <button
                         onclick={handleEnterDream}
                         class="px-8 py-3 rounded-xl bg-linear-to-r from-emerald-500 to-teal-500 text-white font-bold hover:scale-105 transition-all shadow-lg shadow-emerald-500/20 animate-pulse"

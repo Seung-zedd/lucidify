@@ -97,7 +97,6 @@ export const POST: RequestHandler = async ({
           send("PROGRESS", { message: "Director refined the dream..." });
 
           // If we used a client script, we stay in sync. If not, we use the director's.
-          const finalScript = clientScript || directorScript;
 
           if (directorScript && !clientScript) {
             send("NEW_SCRIPT", { script: directorScript });

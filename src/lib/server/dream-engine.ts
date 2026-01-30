@@ -142,24 +142,23 @@ export async function generateAudioGuide(
   isDevEnv: boolean = false,
 ): Promise<string | null> {
   try {
+    // Prepare SSML with poetic breaks
+    const ssmlScript = `<speak><prosody rate="0.9" pitch="-2st">${script.replace(/\./g, '.<break time="600ms"/>')}</prosody></speak>`;
+
     const ttsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
 
     // Abort controller for timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s for longer SSML
 
     const res = await fetch(ttsUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
       body: JSON.stringify({
-        input: { text: script },
-        voice: { languageCode: "en-US", name: "en-US-Neural2-F" },
-        audioConfig: {
-          audioEncoding: "MP3",
-          speakingRate: 0.85,
-          pitch: -4.0,
-        },
+        input: { ssml: ssmlScript },
+        voice: { languageCode: "en-US", name: "en-US-Journey-F" },
+        audioConfig: { audioEncoding: "MP3" },
       }),
     });
 

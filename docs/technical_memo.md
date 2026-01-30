@@ -69,7 +69,27 @@ I implemented a **Decoupling Strategy** based on the **"Swan Analogy."** Just as
 
 #### How: How was it implemented?
 
-1.  **Swan Analogy (Visual vs. Logic)**: The frontend displays a static "Warping Reality..." message (the swan above water), while the backend performs the heavy lifting of polling Google Veo (the feet paddling below).
+1.  **Swan Analogy (Visual vs. Logic)**: The frontend displays a static "Warping Reality..." message (the swan above water), while the backend handles the heavy lifting of polling Google Veo (the feet paddling below).
 2.  **Heartbeat SSE**: The backend sends `PROGRESS` events (`send("PROGRESS", {})`) solely to keep the connection alive. The frontend listens for these events to maintain the stream but does not trigger any UI changes, ensuring zero "flicker."
 3.  **Zero-Touch Frontend Migration**: Because the UX is decoupled from the specific polling logic, we were able to migrate the backend from a "Mock" to a "Real Veo Polling" system without changing a single line of frontend code.
 4.  **Architectural Integrity**: This separation ensures that future backend optimizations (like switching models or changing polling intervals) will never impact the visual stability of the application.
+
+---
+
+### Problem 4: High-Fidelity Cloud TTS Integration & Key Scoping
+
+#### Why: What was the challenge?
+
+The application needed a soothing, hypnotic audio guide to accompany the dream visualization. Initially, the system attempted to use an **AI Studio API Key** (standard for Gemini) to access the **Google Cloud Text-to-Speech (TTS) API**. However, AI Studio keys are scoped restrictedly to the "Generative Language API" and do not have permissions for GCP services like TTS. Furthermore, using the experimental **`en-US-Journey-F`** voice with standard `pitch` and `speakingRate` parameters resulted in `400 Bad Request` errors, as these newer models do not yet support fine-grained tuning parameters.
+
+#### What: What was the solution?
+
+I implemented a **Dedicated Multi-Key Architecture** and a **Safe Parameter Protocol** for TTS. The system was refactored to prioritize a dedicated GCP API Key for TTS while maintaining compatibility with the experimental Journey voice by stripping unsupported parameters.
+
+#### How: How was it implemented?
+
+1.  **GCP API Key Provisioning**: Directed the transition from an AI Studio key to a standard GCP API Key (issued via Google Cloud Console) with the `Cloud Text-to-Speech API` explicitly enabled and unrestricted.
+2.  **Safe Parameter Striping**: Identified that `en-US-Journey-F` does not support `pitch` or `speakingRate`. Modified the `audioConfig` in `dream-engine.ts` to only specify `audioEncoding: "MP3"` when using Journey voices, preventing `INVALID_ARGUMENT` errors.
+3.  **Synchronous SSE Sequencing**: Refactored the `+server.ts` manifest route to `await` the TTS generation before initializing the heavy video generation. This ensures the `AUDIO_GUIDE` event is reliably sent through the SSE stream before any potential timeouts.
+4.  **Robust Preview Logging**: Implemented a server-side environment check using `request.url` visibility to enable detailed `console.error` logging in **Vercel Preview** environments. This allowed us to capture and solve the "Pitch parameter not supported" error directly from the production logs.
+5.  **Environment Variable Sync**: Added `GOOGLE_CLOUD_TTS_API_KEY` to the shared `.env` and SvelteKit static environment, ensuring type safety and easy deployment via Vercel's environment variable dashboard.

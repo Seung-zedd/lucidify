@@ -25,7 +25,11 @@ Output MUST be a valid JSON object:
 }
 The 'hypnotic_script' should be a short, 2-sentence hypnotic induction script strictly in English. Deep, calming, and abstract. Focus on relaxation. Do not describe specific sounds.`;
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({
+  request,
+}: {
+  request: Request;
+}) => {
   try {
     const { prompt } = await request.json();
     if (!prompt) throw error(400, "Prompt is required");

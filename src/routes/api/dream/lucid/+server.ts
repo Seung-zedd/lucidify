@@ -16,7 +16,11 @@ const SYSTEM_INSTRUCTION = `You are a Cinematic Director. Analyze the provided d
 Maintain the original character, style, and setting exactly as described in the context.
 Output MUST be a valid JSON object: { "category": "string", "refined_prompt": "string" }.`;
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({
+  request,
+}: {
+  request: Request;
+}) => {
   try {
     const { prompt, action } = await request.json();
     if (!prompt || !action) throw error(400, "Prompt and action are required");

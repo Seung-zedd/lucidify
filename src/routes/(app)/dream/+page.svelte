@@ -75,12 +75,12 @@
   let loadingText = $state("Manifesting Your Will...");
   let isAwakening = $state(false);
 
-  // Audio Guide State
-  let narrationAudio = $state<HTMLAudioElement | null>(null);
+  // Audio Guide & SFX State
+  let currentAudio = $state<HTMLAudioElement | null>(null);
 
-  function fadeOutNarration(duration = 2000) {
-    if (!narrationAudio) return;
-    const audio = narrationAudio;
+  function fadeOutAudio(duration = 2000) {
+    if (!currentAudio) return;
+    const audio = currentAudio;
     const startVolume = audio.volume;
     const startTime = Date.now();
 
@@ -93,9 +93,18 @@
       if (progress >= 1) {
         audio.pause();
         clearInterval(fadeInterval);
-        if (narrationAudio === audio) narrationAudio = null;
+        if (currentAudio === audio) currentAudio = null;
       }
     }, 50);
+  }
+
+  function playRandomWarpSfx() {
+    const n = Math.floor(Math.random() * 5) + 1;
+    const audio = new Audio(`/audios/transitions/warp_${n}.mp3`);
+    audio.volume = 0.6;
+    audio.loop = true;
+    audio.play().catch(() => {});
+    currentAudio = audio;
   }
 
   async function handleSubmit() {
@@ -146,14 +155,13 @@
       analysisResult.hypnotic_script || "CONSTRUCTING YOUR SUBCONSCIOUS...";
 
     try {
-      const res = await fetch("/api/dream/generate-video", {
+      const res = await fetch("/api/dream/manifest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           prompt: analysisResult.video_prompt,
-          hypnotic_script: analysisResult.hypnotic_script,
         }),
       });
 
@@ -184,18 +192,12 @@
             if (event === "INIT" || event === "PROGRESS") {
               // Keep the initial loadingText to avoid shuffling
             } else if (event === "AUDIO_GUIDE") {
-              if (narrationAudio) {
-                narrationAudio.pause();
-              }
-              narrationAudio = new Audio(
-                `data:audio/mp3;base64,${data.audioContent}`,
-              );
-              narrationAudio.volume = 0.6;
-              narrationAudio.play().catch((err) => {
-                if (IS_DEV_MODE) console.error("[Audio] Play failed:", err);
-              });
+              if (currentAudio) currentAudio.pause();
+              currentAudio = new Audio(`data:audio/mp3;base64,${data.audio}`);
+              currentAudio.volume = 1.0;
+              currentAudio.play().catch(() => {});
             } else if (event === "COMPLETE") {
-              fadeOutNarration(2000);
+              fadeOutAudio(2000);
               mediaSource = Array.isArray(data.mediaUrl)
                 ? data.mediaUrl[0]
                 : data.mediaUrl;
@@ -204,7 +206,7 @@
                 : data.mediaType;
               isReadyToEnter = true;
             } else if (event === "ERROR") {
-              fadeOutNarration(500);
+              fadeOutAudio(500);
               throw new Error(data.message);
             }
           }
@@ -274,9 +276,12 @@
       mistVideo.playbackRate = 0.5;
     }
 
+    // Play random transition SFX
+    playRandomWarpSfx();
+
     try {
       // 2. Request from Director (SSE Stream)
-      const res = await fetch("/api/dream/generate-video", {
+      const res = await fetch("/api/dream/lucid", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -310,13 +315,6 @@
 
             if (event === "INIT" || event === "PROGRESS") {
               // Keep the random flavor text, don't let the server shuffle it
-            } else if (event === "AUDIO_GUIDE") {
-              if (narrationAudio) narrationAudio.pause();
-              narrationAudio = new Audio(
-                `data:audio/mp3;base64,${data.audioContent}`,
-              );
-              narrationAudio.volume = 0.6;
-              narrationAudio.play().catch(() => {});
             } else if (event === "COMPLETE") {
               // 3. Response arrived! (Ready to Explode)
               // Store current as previous for transition
@@ -355,8 +353,8 @@
                 isClearing = true;
                 isTransitioning = true;
 
-                // Fade out narration and play sound
-                fadeOutNarration(2000);
+                // Fade out current audio (SFX) and play awakening sound
+                fadeOutAudio(2000);
                 const audio = new Audio("/audios/awakening.mp3");
                 audio.volume = 0.5;
                 audio.play().catch(() => {});
@@ -367,7 +365,7 @@
                 }, 600);
               }, 100); // 0.1s delay (Safety buffer)
             } else if (event === "ERROR") {
-              fadeOutNarration(500);
+              fadeOutAudio(500);
               throw new Error(data.message);
             }
           }

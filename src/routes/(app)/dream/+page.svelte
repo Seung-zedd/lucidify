@@ -162,6 +162,7 @@
         },
         body: JSON.stringify({
           prompt: analysisResult.video_prompt,
+          hypnotic_script: analysisResult.hypnotic_script,
         }),
       });
 

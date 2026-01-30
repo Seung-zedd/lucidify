@@ -5,7 +5,7 @@ import {
   GOOGLE_CLOUD_TTS_API_KEY,
 } from "$env/static/private";
 import type { RequestHandler } from "./$types";
-import { IS_DEV_MODE, isDevHostname } from "$lib/utils/env";
+import { isDevHostname } from "$lib/utils/env";
 import { dev } from "$app/environment";
 import {
   generateDreamMedia,
@@ -34,7 +34,7 @@ export const POST: RequestHandler = async ({
   request: Request;
 }) => {
   try {
-    const { prompt } = await request.json();
+    const { prompt, hypnotic_script: clientScript } = await request.json();
     if (!prompt) throw error(400, "Prompt is required");
 
     const encoder = new TextEncoder();
@@ -62,40 +62,58 @@ export const POST: RequestHandler = async ({
         try {
           send("INIT", {});
 
-          // 1. Director Phase
+          // 2. TTS Audio Guide (Start synthesis immediately if we have a script)
+          let ttsPromise: Promise<string | null> = Promise.resolve(null);
+          if (clientScript) {
+            ttsPromise = generateAudioGuide(
+              clientScript,
+              GOOGLE_CLOUD_TTS_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY,
+              isDevEnv,
+            );
+          }
+
+          // 1. Director Phase (In parallel)
           const model = genAI.getGenerativeModel({
             model: "models/gemini-2.5-flash",
             systemInstruction: SYSTEM_INSTRUCTION,
           });
 
-          const result = await model.generateContent({
+          const resultPromise = model.generateContent({
             contents: [{ role: "user", parts: [{ text: prompt }] }],
             generationConfig: { responseMimeType: "application/json" },
           });
 
-          const { category, refined_prompt, hypnotic_script } = JSON.parse(
-            result.response.text(),
-          );
+          const [result, audio] = await Promise.all([
+            resultPromise,
+            ttsPromise,
+          ]);
+
+          const {
+            category,
+            refined_prompt,
+            hypnotic_script: directorScript,
+          } = JSON.parse(result.response.text());
+
           send("PROGRESS", { message: "Director refined the dream..." });
-          if (hypnotic_script) {
-            send("NEW_SCRIPT", { script: hypnotic_script });
+
+          // If we used a client script, we stay in sync. If not, we use the director's.
+          const finalScript = clientScript || directorScript;
+
+          if (directorScript && !clientScript) {
+            send("NEW_SCRIPT", { script: directorScript });
           }
 
-          // 2. TTS Audio Guide (Wait for it)
-          if (hypnotic_script) {
-            try {
-              const audio = await generateAudioGuide(
-                hypnotic_script,
-                GOOGLE_CLOUD_TTS_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY,
-                isDevEnv,
-              );
-              if (audio) {
-                send("AUDIO_GUIDE", { audio });
-                send("PROGRESS", { message: "Voice synthesis complete." });
-              }
-            } catch (ttsErr) {
-              if (isDevEnv) console.error("❌ [TTS] Failed:", ttsErr);
-            }
+          if (audio) {
+            send("AUDIO_GUIDE", { audio });
+            send("PROGRESS", { message: "Voice synthesis complete." });
+          } else if (directorScript && !clientScript) {
+            // If we didn't have a client script and we need to narrate the director's script
+            const secondAudio = await generateAudioGuide(
+              directorScript,
+              GOOGLE_CLOUD_TTS_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY,
+              isDevEnv,
+            );
+            if (secondAudio) send("AUDIO_GUIDE", { audio: secondAudio });
           }
 
           // 3. Visual Generation

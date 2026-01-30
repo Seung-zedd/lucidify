@@ -57,9 +57,7 @@ export const POST: RequestHandler = async ({
             generationConfig: { responseMimeType: "application/json" },
           });
 
-          const { category, refined_prompt } = JSON.parse(
-            result.response.text(),
-          );
+          const { refined_prompt } = JSON.parse(result.response.text());
           send("PROGRESS", { message: "Director adapting your dream..." });
 
           // 2. Visual Generation (No TTS for Lucid)

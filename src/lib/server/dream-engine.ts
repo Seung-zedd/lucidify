@@ -155,7 +155,7 @@ export async function generateAudioGuide(
       body: JSON.stringify({
         input: { text: script },
         voice: { languageCode: "en-US", name: "en-US-Journey-F" },
-        audioConfig: { audioEncoding: "MP3", speakingRate: 0.85, pitch: -2.0 },
+        audioConfig: { audioEncoding: "MP3" },
       }),
     });
 

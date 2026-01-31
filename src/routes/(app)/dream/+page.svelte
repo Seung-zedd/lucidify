@@ -68,6 +68,7 @@
   let isReadyToEnter = $state(false);
   let isAudioFinished = $state(false);
   let generatedVideoUrl = $state("");
+  let pendingAmbientUrl = $state("");
 
   // Gamified Lucid Flow State
   let showLucidChoice = $state(false);
@@ -231,14 +232,9 @@
                 ? data.mediaType[0]
                 : data.mediaType;
 
-              // Smart Ambient Audio Support
+              // Store ambient audio URL but don't play yet (avoid clash with TTS)
               if (data.audioUrl) {
-                if (ambientAudio) {
-                  ambientAudio.pause();
-                }
-                ambientAudio = new Audio(data.audioUrl);
-                ambientAudio.loop = true;
-                fadeInAudio(ambientAudio);
+                pendingAmbientUrl = data.audioUrl;
               }
 
               isReadyToEnter = true;
@@ -272,6 +268,15 @@
     showLucidButton = false;
     isMuted = false;
     isReadyToEnter = false;
+
+    // Trigger Ambient Audio playback if it came from the manifestation
+    if (pendingAmbientUrl) {
+      if (ambientAudio) ambientAudio.pause();
+      ambientAudio = new Audio(pendingAmbientUrl);
+      ambientAudio.loop = true;
+      fadeInAudio(ambientAudio);
+      pendingAmbientUrl = ""; // Clear after use
+    }
 
     // Show Lucid Button after 3 seconds
     setTimeout(() => {
@@ -467,6 +472,7 @@
     mediaSource = "";
     previousMediaSource = "";
     isTransitioning = false;
+    pendingAmbientUrl = "";
     if (ambientAudio) {
       ambientAudio.pause();
       ambientAudio = null;

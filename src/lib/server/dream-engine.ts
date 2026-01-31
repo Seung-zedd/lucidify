@@ -53,6 +53,7 @@ export async function generateDreamMedia(
   if (!apiKey) throw new Error("Missing AI API Key");
 
   try {
+    throw new Error("Force Imagen Fallback for Testing");
     // --- VEO VIDEO GENERATION ---
     const apiUrl =
       "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning";

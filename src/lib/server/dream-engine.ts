@@ -155,7 +155,16 @@ export async function generateDreamMedia(
         if (mediaUrl) {
           mediaType = "video";
           isVideoDone = true;
+          if (IS_DEV_MODE) {
+            console.log("✅ [Veo] Generation Complete! URL:", mediaUrl);
+          }
         } else {
+          if (IS_DEV_MODE) {
+            console.error(
+              "🚨 [Veo CRASH] Video URL missing in pollData response. Full dump:",
+              JSON.stringify(pollData, null, 2),
+            );
+          }
           throw new Error("Video URL not found");
         }
       } else {

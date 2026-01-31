@@ -52,10 +52,21 @@ export async function generateDreamMedia(
   const apiKey = process.env.GOOGLE_AI_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY;
   if (!apiKey) throw new Error("Missing AI API Key");
 
+  if (IS_DEV_MODE) {
+    console.log(
+      "🌌 [DreamEngine] generateDreamMedia started for prompt:",
+      refinedPrompt.substring(0, 50) + "...",
+    );
+  }
+
   try {
     // --- VEO VIDEO GENERATION ---
     const apiUrl =
       "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning";
+
+    if (IS_DEV_MODE) {
+      console.log("🎬 [Veo] Attempting Video Generation...");
+    }
 
     const startRes = await fetch(apiUrl, {
       method: "POST",
@@ -100,7 +111,12 @@ export async function generateDreamMedia(
 
       if (pollData.done) {
         if (pollData.error) {
-          if (IS_DEV_MODE) console.error("❌ Veo API Error:", pollData.error);
+          if (IS_DEV_MODE) {
+            console.error(
+              "❌ Veo API Error [DONE=true]:",
+              JSON.stringify(pollData.error, null, 2),
+            );
+          }
           throw new Error("Veo API Error");
         }
 

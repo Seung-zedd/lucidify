@@ -12,6 +12,10 @@ export const isDevHostname = (hostname: string) =>
 export const IS_DEV_SITE = browser && isDevHostname(window.location.hostname);
 
 /**
- * Combined flag for any development environment (Local OR Staging).
+ * Flag to check if we are on the development/staging environment.
+ * Combined flag for Local OR Preview deployments.
  */
-export const IS_DEV_MODE = dev || IS_DEV_SITE;
+export const IS_DEV_MODE =
+  dev ||
+  (typeof process !== "undefined" && process.env.VERCEL_ENV === "preview") ||
+  (browser && isDevHostname(window.location.hostname));

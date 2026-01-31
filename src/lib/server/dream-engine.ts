@@ -71,7 +71,10 @@ export async function generateDreamMedia(
 
     if (!startRes.ok) {
       const errData = await startRes.json();
-      if (IS_DEV_MODE) console.error("🚀 [Veo] Kickoff Failed:", errData);
+      if (IS_DEV_MODE) {
+        console.error("🚨 [Veo CRASH] Status:", startRes.status);
+        console.error("🚨 [Veo CRASH] Body:", JSON.stringify(errData, null, 2));
+      }
       throw new Error("Veo Kickoff Failed");
     }
 
@@ -122,11 +125,17 @@ export async function generateDreamMedia(
     }
   } catch (veoErr: any) {
     // --- FALLBACK TO IMAGEN ---
-    if (IS_DEV_MODE)
+    if (IS_DEV_MODE) {
+      console.error("🔥 [Veo Exception] Message:", veoErr.message);
+      console.error("🔥 [Veo Exception] Stack:", veoErr.stack);
+      if (veoErr.cause)
+        console.error("🔥 [Veo Cause]:", JSON.stringify(veoErr.cause, null, 2));
+
       console.warn(
         "⚠️ [Swan] Veo Failed, switching to Imagen:",
         veoErr.message,
       );
+    }
     sendProgress("Switching to high-fidelity visualization...");
 
     const tryImagen = async (modelName: string) => {

@@ -25,7 +25,19 @@ async function matchAmbientSound(
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const instruction = `Analyze this dream description: '${prompt}'. Which of these audio files best matches the mood? [${AMBIENT_FILES.join(", ")}]. Return ONLY the filename. Default to 'fantasy.mp3' if unsure.`;
+    const instruction = `
+      Analyze this dream description: '${prompt}'.
+      Select the most appropriate ambient audio file from this list: [${AMBIENT_FILES.join(", ")}].
+      
+      Apply these strict matching rules for your selection:
+      - Use 'space.mp3' if the dream involves: outer space, stars, void, OR flying, sky, aircraft, machines, sci-fi (to match drone/wind textures).
+      - Use 'nature.mp3' if: forest, animals, water, grass, calm nature, or temple.
+      - Use 'city.mp3' if: urban, cyberpunk, rain, street, or neon.
+      - Use 'horror.mp3' if: nightmare, scary, dark, tension, or monster.
+      - Use 'fantasy.mp3' if: magic, gods, ethereal, or mystical.
+
+      Return ONLY the filename (e.g., 'space.mp3'). Default to 'fantasy.mp3' if unsure.
+    `;
 
     const result = await model.generateContent(instruction);
     const response = await result.response;

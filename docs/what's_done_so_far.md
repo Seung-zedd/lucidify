@@ -21,16 +21,20 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **Parallel Synthesis (Sync Fix)**:
   - **Performance**: The backend now starts the **Voice Synthesis** and the **Director (Prompt Refinement)** phases in parallel.
   - **Perfect Sync**: The audio guide narrations the _exact_ script generated during the analysis phase, ensuring the user's visual text matches the spoken words.
-- **Optimized Hypnotic Voice (TTS)**:
-  - Switched to **`en-US-Neural2-F`** (Google Cloud TTS).
-  - **Tuned for Hypnagogia**: Audio is set to a deep pitch (-4.0) and a slow, calming rate (0.85).
-- **Swan Architecture**: Uses Server-Sent Events (SSE) to maintain a "graceful" frontend experience while the backend paddles "frantically" to poll long-running operations.
+- **Aggressive SSML Pacing (Sync Fix)**:
+  - **Model**: Switched to `en-US-Neural2-F` for precise control.
+  - **Hypnotic Pacing**: Implemented SSML with `rate="0.85"`, `pitch="-2.0st"`, and forced pauses (1s after periods, 0.5s after commas).
+- **TTS-driven User Flow**:
+  - **Audio-Gated UI**: The user enters a fullscreen "Purple Dream" overlay while manifesting. The "Enter Dream" button only appears after BOTH the video is ready and the narrator has finished.
+  - **Auto-Fade Overlay**: The loading overlay now automatically fades out once the audio narration ends, returning the user to the results screen for a natural transition.
 
 ## 🛠️ Technical Fixes & Stability
 
 - **GCP Key Management**: Dedicated `GOOGLE_CLOUD_TTS_API_KEY` for GCP services like TTS to avoid scope conflicts with AI Studio.
+- **Swan Architecture**: Uses Server-Sent Events (SSE) to maintain a "graceful" frontend experience.
 - **Serverless Reliability**: Safety timers (55s/180s) to prevent hard timeouts on Vercel.
 - **Vercel Preview Debugging**: Enhanced server-side logging using `request.url` detection to debug issues directly in production-like environments.
+- **Agent Guidelines**: Established `AGENTS.md` to enforce cognitive protocols, documentation standards, and selective technical memo usage.
 
 ## 🎨 UI/UX (Svelte 5)
 

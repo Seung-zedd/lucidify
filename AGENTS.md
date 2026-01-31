@@ -187,7 +187,11 @@ When adapting external UI code:
 1.  **Color Mapping:** Strictly map primary colors to Lucidify theme (e.g., Zinc/Slate for dark mode, with vibrant accents).
 2.  **Dark Mode First:** Optimize all backgrounds and contrasts for a dark theme (Zinc-950/Black).
 3.  **Tailwind Conversion:** Prefer Tailwind CSS classes over raw `<style>` tags.
-4.  **Consistency:** Match existing design tokens:
-    - **Border Radius:** Use `rounded-2xl` for main cards/modals, `rounded-xl` for buttons.
-    - **Typography:** Use modern sans-serif fonts.
-    - **Transitions:** Use smooth, consistent transitions (e.g., `duration-200`).
+4.  **Consistency:** Match existing design tokens: - **Border Radius:** Use `rounded-2xl` for main cards/modals, `rounded-xl` for buttons. - **Typography:** Use modern sans-serif fonts. - **Transitions:** Use smooth, consistent transitions (e.g., `duration-200`).
+
+## 18. 📚 Documentation Protocol
+
+- **Rule: Continuous Status Updates.**
+- Whenever you finish a certain task, work, or feature implementation, you **MUST** update `docs/what's_done_so_far.md` to reflect the current state of the project. This ensures the project history and context remain accurate for future sessions.
+- **Rule: Selective Technical Memo Writing.**
+- You should only write to `docs/technical_memo.md` if the user is **actively struggling** with a specific problem or if a solution requires a deep dive into complex engineering trade-offs that need formal documentation. Do not use it for routine updates.

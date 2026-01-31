@@ -93,13 +93,25 @@ export async function generateDreamMedia(
     const operationName = startData.name;
     const pollUrl = `https://generativelanguage.googleapis.com/v1beta/${operationName}`;
 
+    if (IS_DEV_MODE) {
+      console.log("🚀 [Veo] Kickoff Success. Operation:", operationName);
+    }
+
     let isVideoDone = false;
+    let pollCount = 0;
     while (!isVideoDone) {
+      pollCount++;
       // Safety Timeout
       if (Date.now() - startTime > safetyTimeout) {
         if (IS_DEV_MODE)
-          console.log(`⚠️ [Veo] Timeout - Falling back to Imagen`);
+          console.log(
+            `⚠️ [Veo] Timeout after ${pollCount} polls - Falling back to Imagen`,
+          );
         throw new Error("Veo Timeout");
+      }
+
+      if (IS_DEV_MODE) {
+        console.log(`🔎 [Veo] Polling... (Attempt ${pollCount})`);
       }
 
       const pollRes = await fetch(pollUrl, {

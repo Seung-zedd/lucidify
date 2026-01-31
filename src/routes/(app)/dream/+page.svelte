@@ -79,6 +79,20 @@
 
   // Audio Guide & SFX State
   let currentAudio = $state<HTMLAudioElement | null>(null);
+  let ambientAudio = $state<HTMLAudioElement | null>(null);
+
+  function fadeInAudio(audio: HTMLAudioElement, duration = 3000) {
+    audio.volume = 0;
+    audio.play().catch(() => {});
+    const startTime = Date.now();
+
+    const fadeInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      audio.volume = isMuted ? 0 : progress;
+      if (progress >= 1) clearInterval(fadeInterval);
+    }, 50);
+  }
 
   function fadeOutAudio(duration = 2000) {
     if (!currentAudio) return;
@@ -216,6 +230,17 @@
               mediaType = Array.isArray(data.mediaType)
                 ? data.mediaType[0]
                 : data.mediaType;
+
+              // Smart Ambient Audio Support
+              if (data.audioUrl) {
+                if (ambientAudio) {
+                  ambientAudio.pause();
+                }
+                ambientAudio = new Audio(data.audioUrl);
+                ambientAudio.loop = true;
+                fadeInAudio(ambientAudio);
+              }
+
               isReadyToEnter = true;
             } else if (event === "ERROR") {
               fadeOutAudio(500);
@@ -409,6 +434,10 @@
     if (videoElement) {
       videoElement.pause();
     }
+    if (ambientAudio) {
+      ambientAudio.pause();
+      ambientAudio = null;
+    }
     isVideoPlaying = false;
     isLucidMode = false;
     isLooping = true;
@@ -438,6 +467,10 @@
     mediaSource = "";
     previousMediaSource = "";
     isTransitioning = false;
+    if (ambientAudio) {
+      ambientAudio.pause();
+      ambientAudio = null;
+    }
     handleExitVideo();
   }
 </script>
@@ -867,7 +900,12 @@
               >
                 <!-- Mute Toggle -->
                 <button
-                  onclick={() => (isMuted = !isMuted)}
+                  onclick={() => {
+                    isMuted = !isMuted;
+                    if (ambientAudio) {
+                      ambientAudio.volume = isMuted ? 0 : 1;
+                    }
+                  }}
                   class="p-1.5 rounded-full hover:bg-white/10 transition-colors group/control"
                   title={isMuted ? "Unmute" : "Mute"}
                 >

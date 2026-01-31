@@ -116,7 +116,7 @@ export const POST: RequestHandler = async ({
           }
 
           // 3. Visual Generation
-          const { mediaUrl, mediaType } = await generateDreamMedia(
+          const { mediaUrl, mediaType, audioUrl } = await generateDreamMedia(
             refined_prompt,
             (msg) => send("PROGRESS", { message: msg }),
             SAFETY_TIMEOUT,
@@ -126,6 +126,7 @@ export const POST: RequestHandler = async ({
           send("COMPLETE", {
             mediaUrl,
             mediaType,
+            audioUrl,
             enhancedPrompt: refined_prompt,
           });
           controller.close();

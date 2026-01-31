@@ -1,10 +1,43 @@
 import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
 import { IS_DEV_MODE } from "$lib/utils/env";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import process from "node:process";
 
 export interface GenerationResult {
   mediaUrl: string;
   mediaType: "video" | "image";
+  audioUrl?: string;
+}
+
+const AMBIENT_FILES = [
+  "nature.mp3",
+  "space.mp3",
+  "city.mp3",
+  "horror.mp3",
+  "fantasy.mp3",
+];
+
+async function matchAmbientSound(
+  prompt: string,
+  apiKey: string,
+): Promise<string> {
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    const instruction = `Analyze this dream description: '${prompt}'. Which of these audio files best matches the mood? [${AMBIENT_FILES.join(", ")}]. Return ONLY the filename. Default to 'fantasy.mp3' if unsure.`;
+
+    const result = await model.generateContent(instruction);
+    const response = await result.response;
+    const text = response.text().trim().toLowerCase();
+
+    // Cleanup: remove markdown or extra text
+    const matched = AMBIENT_FILES.find((f) => text.includes(f.toLowerCase()));
+    return matched || "fantasy.mp3";
+  } catch (err) {
+    if (IS_DEV_MODE) console.error("❌ [Audio Match] Failed:", err);
+    return "fantasy.mp3";
+  }
 }
 
 export async function generateDreamMedia(
@@ -116,14 +149,30 @@ export async function generateDreamMedia(
     };
 
     try {
-      const base64 = await tryImagen("imagen-4.0-ultra-generate-001");
+      const [base64, matchedFilename] = await Promise.all([
+        tryImagen("imagen-4.0-ultra-generate-001"),
+        matchAmbientSound(refinedPrompt, apiKey),
+      ]);
       mediaUrl = `data:image/png;base64,${base64}`;
       mediaType = "image";
+      return {
+        mediaUrl,
+        mediaType,
+        audioUrl: "/audios/ambient/" + matchedFilename,
+      };
     } catch {
       try {
-        const base64 = await tryImagen("imagen-3.0-generate-001");
+        const [base64, matchedFilename] = await Promise.all([
+          tryImagen("imagen-3.0-generate-001"),
+          matchAmbientSound(refinedPrompt, apiKey),
+        ]);
         mediaUrl = `data:image/png;base64,${base64}`;
         mediaType = "image";
+        return {
+          mediaUrl,
+          mediaType,
+          audioUrl: "/audios/ambient/" + matchedFilename,
+        };
       } catch {
         // Final Safety Fallback
         mediaUrl = "/images/purple-dream.mp4";

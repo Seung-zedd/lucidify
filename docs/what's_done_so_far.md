@@ -18,6 +18,9 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
   1. **Google Veo 3.1 Fast**: Primary video engine using `predictLongRunning`.
   2. **Imagen 4.0 Ultra**: High-fidelity image fallback for complex prompts.
   3. **Imagen 3.0**: Secondary fallback to ensure reliability.
+- **Smart Ambient Audio Matching (Smart Fallback)**:
+  - **Mood Detection**: Uses **Gemini 2.5 Flash** to intelligently select one of 5 high-quality ambient loops (`nature`, `space`, `city`, `horror`, `fantasy`) based on the dream's emotional profile.
+  - **Parallel Execution**: Analysis runs in parallel with Imagen generation to minimize latency during the fallback phase.
 - **Parallel Synthesis (Sync Fix)**:
   - **Performance**: The backend now starts the **Voice Synthesis** and the **Director (Prompt Refinement)** phases in parallel.
   - **Perfect Sync**: The audio guide narrations the _exact_ script generated during the analysis phase, ensuring the user's visual text matches the spoken words.

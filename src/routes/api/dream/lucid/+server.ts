@@ -61,7 +61,7 @@ export const POST: RequestHandler = async ({
           send("PROGRESS", { message: "Director adapting your dream..." });
 
           // 2. Visual Generation (No TTS for Lucid)
-          const { mediaUrl, mediaType } = await generateDreamMedia(
+          const { mediaUrl, mediaType, audioUrl } = await generateDreamMedia(
             refined_prompt,
             (msg) => send("PROGRESS", { message: msg }),
             SAFETY_TIMEOUT,
@@ -71,6 +71,7 @@ export const POST: RequestHandler = async ({
           send("COMPLETE", {
             mediaUrl,
             mediaType,
+            audioUrl,
             enhancedPrompt: refined_prompt,
           });
           controller.close();

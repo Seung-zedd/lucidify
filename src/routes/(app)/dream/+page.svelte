@@ -82,7 +82,7 @@
   let currentAudio = $state<HTMLAudioElement | null>(null);
   let ambientAudio = $state<HTMLAudioElement | null>(null);
 
-  function fadeInAudio(audio: HTMLAudioElement, duration = 3000) {
+  function fadeAudioIn(audio: HTMLAudioElement, duration = 3000) {
     audio.volume = 0;
     audio.play().catch(() => {});
     const startTime = Date.now();
@@ -95,9 +95,8 @@
     }, 50);
   }
 
-  function fadeOutAudio(duration = 2000) {
-    if (!currentAudio) return;
-    const audio = currentAudio;
+  function fadeAudioOut(audio: HTMLAudioElement | null, duration = 2000) {
+    if (!audio) return;
     const startVolume = audio.volume;
     const startTime = Date.now();
 
@@ -110,9 +109,15 @@
       if (progress >= 1) {
         audio.pause();
         clearInterval(fadeInterval);
-        if (currentAudio === audio) currentAudio = null;
       }
     }, 50);
+  }
+
+  function fadeOutAudio(duration = 2000) {
+    if (!currentAudio) return;
+    const audio = currentAudio;
+    fadeAudioOut(audio, duration);
+    currentAudio = null;
   }
 
   function playRandomWarpSfx() {
@@ -271,10 +276,12 @@
 
     // Trigger Ambient Audio playback if it came from the manifestation
     if (pendingAmbientUrl) {
-      if (ambientAudio) ambientAudio.pause();
+      if (ambientAudio) {
+        fadeAudioOut(ambientAudio, 500);
+      }
       ambientAudio = new Audio(pendingAmbientUrl);
       ambientAudio.loop = true;
-      fadeInAudio(ambientAudio);
+      fadeAudioIn(ambientAudio, 3000); // Cinematic 3s Fade-In
       pendingAmbientUrl = ""; // Clear after use
     }
 
@@ -320,7 +327,12 @@
       mistVideo.playbackRate = 0.5;
     }
 
-    // Play random transition SFX
+    // 1. Cinematic Transition Start: Fade out current music
+    if (ambientAudio) {
+      fadeAudioOut(ambientAudio, 500);
+    }
+
+    // 2. Play transition SFX (This will set currentAudio)
     playRandomWarpSfx();
 
     try {
@@ -402,6 +414,16 @@
                 const audio = new Audio("/audios/awakening.mp3");
                 audio.volume = 0.5;
                 audio.play().catch(() => {});
+
+                // 3. Cinematic Transition End: Fade in new ambient audio
+                if (data.audioUrl) {
+                  ambientAudio = new Audio(data.audioUrl);
+                  ambientAudio.loop = true;
+                  // Start fading in after the initial awakening burst
+                  setTimeout(() => {
+                    fadeAudioIn(ambientAudio!, 2000);
+                  }, 1000);
+                }
 
                 // Return background focus (with explosion)
                 setTimeout(() => {

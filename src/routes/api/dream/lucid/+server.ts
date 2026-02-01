@@ -1,6 +1,9 @@
 import { error } from "@sveltejs/kit";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
+import {
+  GOOGLE_GENERATIVE_AI_API_KEY,
+  DEV_GOOGLE_GENERATIVE_AI_API_KEY,
+} from "$env/static/private";
 import type { RequestHandler } from "./$types";
 import { IS_DEV_MODE, isDevHostname } from "$lib/utils/env";
 import { dev } from "$app/environment";
@@ -10,7 +13,8 @@ export const config = {
   maxDuration: 300,
 };
 
-const genAI = new GoogleGenerativeAI(GOOGLE_GENERATIVE_AI_API_KEY);
+// genAI will be initialized inside the request handler to use the correct environment key
+let genAI: GoogleGenerativeAI;
 
 const SYSTEM_INSTRUCTION = `You are a Cinematic Director. Analyze the provided dream context and lucid action.
 Maintain the original character, style, and setting exactly as described in the context.
@@ -32,6 +36,13 @@ export const POST: RequestHandler = async ({
     const url = new URL(request.url);
     const isDevEnv = dev || isDevHostname(url.hostname);
     const SAFETY_TIMEOUT = isDevEnv ? 30000 : 180000;
+
+    // Quota Splitting: Select the appropriate key strictly based on environment
+    const activeGenAIKey = isDevEnv
+      ? DEV_GOOGLE_GENERATIVE_AI_API_KEY
+      : GOOGLE_GENERATIVE_AI_API_KEY;
+
+    genAI = new GoogleGenerativeAI(activeGenAIKey);
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -66,6 +77,7 @@ export const POST: RequestHandler = async ({
             (msg) => send("PROGRESS", { message: msg }),
             SAFETY_TIMEOUT,
             startTime,
+            activeGenAIKey,
           );
 
           send("COMPLETE", {

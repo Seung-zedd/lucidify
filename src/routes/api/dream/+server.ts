@@ -4,12 +4,16 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
-import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
+import {
+  GOOGLE_GENERATIVE_AI_API_KEY,
+  DEV_GOOGLE_GENERATIVE_AI_API_KEY,
+} from "$env/static/private";
 import type { RequestHandler } from "./$types";
-import { IS_DEV_MODE, isDevHostname } from "$lib/utils/env";
+import { isDevHostname } from "$lib/utils/env";
 import { dev } from "$app/environment";
 
-const genAI = new GoogleGenerativeAI(GOOGLE_GENERATIVE_AI_API_KEY);
+// genAI will be initialized inside the request handler to use the correct environment key
+let genAI: GoogleGenerativeAI;
 
 const SYSTEM_INSTRUCTION = `You are the Dream Architect, a master of the subconscious. Your goal is to interpret vague dreams into vivid, cinematic video prompts. 
 
@@ -49,6 +53,13 @@ export const POST: RequestHandler = async ({
 }) => {
   const url = new URL(request.url);
   const isDevEnv = dev || isDevHostname(url.hostname);
+
+  // Quota Splitting: Select the appropriate key strictly based on environment
+  const activeGenAIKey = isDevEnv
+    ? DEV_GOOGLE_GENERATIVE_AI_API_KEY
+    : GOOGLE_GENERATIVE_AI_API_KEY;
+
+  genAI = new GoogleGenerativeAI(activeGenAIKey);
 
   try {
     const { dream } = await request.json();

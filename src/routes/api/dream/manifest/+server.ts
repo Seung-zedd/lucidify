@@ -77,7 +77,7 @@ export const POST: RequestHandler = async ({
           if (clientScript) {
             ttsPromise = generateAudioGuide(
               clientScript,
-              GOOGLE_CLOUD_TTS_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY,
+              GOOGLE_CLOUD_TTS_API_KEY || activeGenAIKey,
               isDevEnv,
             );
           }

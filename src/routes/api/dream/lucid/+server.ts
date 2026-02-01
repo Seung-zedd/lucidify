@@ -32,7 +32,7 @@ export const POST: RequestHandler = async ({
     const startTime = Date.now();
     const url = new URL(request.url);
     const isDevEnv = dev || isDevHostname(url.hostname);
-    const SAFETY_TIMEOUT = isDevEnv ? 30000 : 180000;
+    const SAFETY_TIMEOUT = isDevEnv ? 150000 : 180000;
 
     // Quota Splitting: Select the appropriate key strictly based on environment
     const activeGenAIKey = isDevEnv

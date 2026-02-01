@@ -228,7 +228,6 @@
               currentAudio.volume = 1.0;
               currentAudio.onended = () => {
                 isAudioFinished = true;
-                isShowingOverlay = false;
               };
               currentAudio.play().catch(() => {});
             } else if (event === "COMPLETE") {

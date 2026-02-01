@@ -43,6 +43,8 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **Veo Quota Resilience**: Implemented exponential backoff for the Dream Engine to handle transient `429 RESOURCE_EXHAUSTED` errors. Aligned model IDs to match dashboard standards.
 - **Veo API Schema Fix**: Updated polling logic to correctly parse the deeply nested `generatedSamples` response from Veo 3.1.
 - **Veo Manifestation Fix**: Implemented dual-fix for "Only Mist" bug: (1) Appending API keys to video URLs for browser authorization and (2) Adding the missing theatrical transition sequence to clear the entry mist.
+- **Lucid Timeout Fix**: Increased Lucid Mode safety timeout to 150s in dev to prevent premature Imagen fallbacks.
+- **Immersion Persistence**: Refined overlay logic to stay in the "Dreaming" state until both audio and video are fully synchronized and ready.
 - **API Quota Isolation**: Separated `DEV_` and `PROD` Google AI keys across all endpoints to ensure testing does not consume production limits.
 - **Vercel Build Stability**: Migrated all private environment variables to `$env/dynamic/private` to prevent build-time failures on Vercel when branch-specific keys are absent.
 - **Agent Guidelines**: Established `AGENTS.md` to enforce cognitive protocols, documentation standards, and selective technical memo usage.

@@ -41,6 +41,7 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **Serverless Reliability**: Safety timers (55s/180s) to prevent hard timeouts on Vercel.
 - **Vercel Preview Debugging**: Enhanced server-side logging using `request.url` detection to debug issues directly in production-like environments.
 - **Veo Quota Resilience**: Implemented exponential backoff for the Dream Engine to handle transient `429 RESOURCE_EXHAUSTED` errors. Aligned model IDs to match dashboard standards.
+- **Veo API Schema Fix**: Updated polling logic to correctly parse the deeply nested `generatedSamples` response from Veo 3.1.
 - **API Quota Isolation**: Separated `DEV_` and `PROD` Google AI keys across all endpoints to ensure testing does not consume production limits.
 - **Vercel Build Stability**: Migrated all private environment variables to `$env/dynamic/private` to prevent build-time failures on Vercel when branch-specific keys are absent.
 - **Agent Guidelines**: Established `AGENTS.md` to enforce cognitive protocols, documentation standards, and selective technical memo usage.

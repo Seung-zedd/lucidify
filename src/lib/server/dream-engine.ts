@@ -185,12 +185,17 @@ export async function generateDreamMedia(
           throw new Error("Veo API Error");
         }
 
+        const responseObj = pollData.response;
+        const generateVideoRes = responseObj?.generateVideoResponse;
+        const firstSample = generateVideoRes?.generatedSamples?.[0];
+
         mediaUrl =
+          firstSample?.video?.uri ||
           pollData.result?.videoUri ||
-          pollData.response?.videoUri ||
+          responseObj?.videoUri ||
           pollData.metadata?.outputUri ||
-          pollData.response?.result?.videoUri ||
-          pollData.response?.outputUri ||
+          responseObj?.result?.videoUri ||
+          responseObj?.outputUri ||
           "";
 
         if (mediaUrl) {

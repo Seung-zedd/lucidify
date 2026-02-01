@@ -46,6 +46,9 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **Lucid Timeout Fix**: Increased Lucid Mode safety timeout to 150s in dev to prevent premature Imagen fallbacks.
 - **Entry Flow Pivot**: Changed overlay button to "Ready to Enter dream?" to allow users to view insights before starting the video via the dashboard.
 - **Lucid SFX Purity**: Reserved the `awakening.mp3` sound effect strictly for Lucid Mode transitions to maintain theatrical impact.
+- **Lucid Time Freeze**: Implemented a smooth `grayscale(100%)` transition (1s) and `awakening.mp3` sound when entering Lucid Mode choice.
+- **Dream State Vibrancy**: Removed the muted grayscale filter from the non-lucid state to ensure Veo and Imagen content is displayed in full, vivid color.
+- **Robust SFX Randomization**: Fixed the `warp_n.mp3` selection logic and added cache-busting for varied transition sounds.
 - **Immersion Persistence**: Refined overlay logic to stay in the "Dreaming" state until both audio and video are fully synchronized and ready.
 - **API Quota Isolation**: Separated `DEV_` and `PROD` Google AI keys across all endpoints to ensure testing does not consume production limits.
 - **Vercel Build Stability**: Migrated all private environment variables to `$env/dynamic/private` to prevent build-time failures on Vercel when branch-specific keys are absent.

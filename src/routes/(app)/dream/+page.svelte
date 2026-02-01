@@ -124,8 +124,14 @@
   }
 
   function playRandomWarpSfx() {
+    // Generate random number 1-5 inside the function to ensure fresh selection on every call
     const n = Math.floor(Math.random() * 5) + 1;
-    const audio = new Audio(`/audios/transitions/warp_${n}.mp3`);
+    if (IS_DEV_MODE) console.log(`🎵 [SFX] Selected Warp Sound: ${n}`);
+
+    // Append timestamp to bypass potential browser audio caching
+    const audio = new Audio(
+      `/audios/transitions/warp_${n}.mp3?v=${Date.now()}`,
+    );
     audio.volume = 0.6;
     audio.loop = true;
     audio.play().catch(() => {});
@@ -311,6 +317,12 @@
     if (videoElement) {
       videoElement.pause();
     }
+
+    // Play awakening sound for Time Freeze effect
+    const audio = new Audio("/audios/awakening.mp3");
+    audio.volume = 0.5;
+    audio.play().catch(() => {});
+
     showLucidChoice = true;
     showLucidButton = false;
   }
@@ -864,20 +876,19 @@
                       }
                     }}
                     class={cn(
-                      "w-full h-full object-cover transition-all duration-2500 ease-in",
+                      "w-full h-full object-cover transition-all duration-1000 ease-out",
                       isClearing && "animate-pulse-impact",
                       isTransitioning && "animate-settle-in",
                     )}
-                    style="filter: {isLucidMode
-                      ? isFocused
-                        ? 'blur(0px) brightness(1.0)'
-                        : 'blur(16px) brightness(1.25)'
-                      : showMist
-                        ? 'blur(1px) brightness(1.05)'
-                        : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
-                    showLucidInput
-                      ? 'blur(4px) brightness(0.5)'
-                      : ''};"
+                    style="filter: {showLucidChoice || showLucidInput
+                      ? 'grayscale(100%) blur(4px) brightness(0.5)'
+                      : isLucidMode
+                        ? isFocused
+                          ? 'blur(0px) brightness(1.0)'
+                          : 'blur(16px) brightness(1.25)'
+                        : showMist
+                          ? 'blur(1px) brightness(1.05)'
+                          : 'saturate(1.1) brightness(1.05)'};"
                   >
                     <track kind="captions" />
                   </video>
@@ -886,20 +897,19 @@
                     src={mediaSource}
                     alt="Dream visualization"
                     class={cn(
-                      "w-full h-full object-cover transition-all duration-2500 ease-in animate-ken-burns",
+                      "w-full h-full object-cover transition-all duration-1000 ease-out animate-ken-burns",
                       isClearing && "animate-pulse-impact",
                       isTransitioning && "animate-settle-in",
                     )}
-                    style="filter: {isLucidMode
-                      ? isFocused
-                        ? 'blur(0px) brightness(1.0)'
-                        : 'blur(16px) brightness(1.25)'
-                      : showMist
-                        ? 'blur(1px) brightness(1.05)'
-                        : 'grayscale(50%) sepia(20%)'} {showLucidChoice ||
-                    showLucidInput
-                      ? 'blur(4px) brightness(0.5)'
-                      : ''};"
+                    style="filter: {showLucidChoice || showLucidInput
+                      ? 'grayscale(100%) blur(4px) brightness(0.5)'
+                      : isLucidMode
+                        ? isFocused
+                          ? 'blur(0px) brightness(1.0)'
+                          : 'blur(16px) brightness(1.25)'
+                        : showMist
+                          ? 'blur(1px) brightness(1.05)'
+                          : 'saturate(1.1) brightness(1.05)'};"
                   />
                 {/if}
               </div>

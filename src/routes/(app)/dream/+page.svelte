@@ -80,6 +80,7 @@
   // Audio Guide & SFX State
   let currentAudio = $state<HTMLAudioElement | null>(null);
   let ambientAudio = $state<HTMLAudioElement | null>(null);
+  let sfxQueue = $state<number[]>([]);
 
   // Ghost Typing Logic (Hackathon Demo Only)
   let isGhostTyping = $state(false);
@@ -123,12 +124,29 @@
     currentAudio = null;
   }
 
-  function playRandomWarpSfx() {
-    // Generate random number 1-5 inside the function to ensure fresh selection on every call
-    const n = Math.floor(Math.random() * 5) + 1;
-    if (IS_DEV_MODE) console.log(`🎵 [SFX] Selected Warp Sound: ${n}`);
+  function shuffleSFX() {
+    const indices = [1, 2, 3, 4, 5];
+    // Fisher-Yates Shuffle: The gold standard for unbiased deck randomization
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    sfxQueue = indices;
+    if (IS_DEV_MODE)
+      console.log("🎲 [SFX] New Randomized Warp Deck:", sfxQueue);
+  }
 
-    // Append timestamp to bypass potential browser audio caching
+  function playRandomWarpSfx() {
+    // If deck is empty, reshuffle to ensure non-repeating variety
+    if (sfxQueue.length === 0) {
+      shuffleSFX();
+    }
+
+    const n = sfxQueue.pop()!;
+    if (IS_DEV_MODE)
+      console.log(`🎵 [SFX] Popped from Deck - Warp Sound Index: ${n}`);
+
+    // Append timestamp query param to bypass potential browser audio caching
     const audio = new Audio(
       `/audios/transitions/warp_${n}.mp3?v=${Date.now()}`,
     );

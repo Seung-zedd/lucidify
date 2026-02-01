@@ -17,8 +17,10 @@
       <nav
         class="flex gap-8 text-sm font-bold uppercase tracking-widest text-slate-400"
       >
-        <a href="/dream" class="hover:text-white transition-colors">Explore</a>
         <a href="/" class="hover:text-white transition-colors">About</a>
+        <a href="/whats-new" class="hover:text-white transition-colors"
+          >What's New</a
+        >
       </nav>
     </div>
   </header>

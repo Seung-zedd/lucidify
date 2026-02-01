@@ -292,11 +292,6 @@
       isClearing = true;
       if (mistVideo) mistVideo.playbackRate = 4.0; // Warp speed!
 
-      // Awakening SFX
-      const audio = new Audio("/audios/awakening.mp3");
-      audio.volume = 0.5;
-      audio.play().catch(() => {});
-
       // Final cleanup to reveal the video
       setTimeout(() => {
         showMist = false;
@@ -579,7 +574,7 @@
       {#if isReadyToEnter && isAudioFinished}
         <div in:fade={{ delay: 500, duration: 1000 }} class="mt-12">
           <button
-            onclick={handleEnterDream}
+            onclick={() => (isShowingOverlay = false)}
             class="group relative px-12 py-4 rounded-full overflow-hidden transition-all duration-500 hover:scale-110 active:scale-95 bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/40 shadow-[0_0_30px_rgba(168,85,247,0.3)] hover:shadow-[0_0_50px_rgba(168,85,247,0.5)]"
           >
             <div
@@ -587,7 +582,7 @@
             ></div>
             <span
               class="relative text-white font-serif text-2xl font-bold tracking-[0.3em] uppercase"
-              >Enter Dream</span
+              >Ready to Enter dream?</span
             >
           </button>
         </div>

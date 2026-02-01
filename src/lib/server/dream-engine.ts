@@ -73,32 +73,60 @@ export async function generateDreamMedia(
 
   try {
     // --- VEO VIDEO GENERATION ---
-    const apiUrl =
-      "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning";
+    // Aligning model ID with dashboard 'Veo 3 Fast Generate' standard
+    const modelId = "veo-3-fast-generate-preview";
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:predictLongRunning`;
 
     if (IS_DEV_MODE) {
-      console.log("🎬 [Veo] Attempting Video Generation...");
+      console.log(
+        `🎬 [Veo] Attempting Video Generation with model: ${modelId}...`,
+      );
+      // Help user verify they are using the correct project's key (safe prefix only)
+      console.log(`🔑 [Auth] API Key Prefix: ${apiKey.substring(0, 8)}...`);
     }
 
-    const startRes = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey,
-      },
-      body: JSON.stringify({
-        instances: [{ prompt: refinedPrompt }],
-        parameters: { sampleCount: 1, aspectRatio: "16:9" },
-      }),
-    });
+    let startRes: Response;
+    let retries = 0;
+    const maxRetries = 2;
 
-    if (!startRes.ok) {
-      const errData = await startRes.json();
-      if (IS_DEV_MODE) {
-        console.error("🚨 [Veo CRASH] Status:", startRes.status);
-        console.error("🚨 [Veo CRASH] Body:", JSON.stringify(errData, null, 2));
+    while (true) {
+      startRes = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          instances: [{ prompt: refinedPrompt }],
+          parameters: { sampleCount: 1, aspectRatio: "16:9" },
+        }),
+      });
+
+      // Handle Quota Exhaustion with Exponential Backoff
+      if (startRes.status === 429 && retries < maxRetries) {
+        retries++;
+        const waitTime = Math.pow(2, retries) * 1000 + Math.random() * 1000;
+        if (IS_DEV_MODE) {
+          console.warn(
+            `⚠️ [Veo] 429 Quota Exhausted. Retrying in ${Math.round(waitTime)}ms... (Attempt ${retries}/${maxRetries})`,
+          );
+        }
+        await new Promise((r) => setTimeout(r, waitTime));
+        continue;
       }
-      throw new Error("Veo Kickoff Failed");
+
+      if (!startRes.ok) {
+        const errData = await startRes.json();
+        if (IS_DEV_MODE) {
+          console.error("🚨 [Veo CRASH] Status:", startRes.status);
+          console.error(
+            "🚨 [Veo CRASH] Body:",
+            JSON.stringify(errData, null, 2),
+          );
+        }
+        throw new Error(`Veo Kickoff Failed: ${startRes.status}`);
+      }
+      break;
     }
 
     const startData = await startRes.json();

@@ -40,6 +40,7 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **Swan Architecture**: Uses Server-Sent Events (SSE) to maintain a "graceful" frontend experience.
 - **Serverless Reliability**: Safety timers (55s/180s) to prevent hard timeouts on Vercel.
 - **Vercel Preview Debugging**: Enhanced server-side logging using `request.url` detection to debug issues directly in production-like environments.
+- **Veo Quota Resilience**: Implemented exponential backoff for the Dream Engine to handle transient `429 RESOURCE_EXHAUSTED` errors. Aligned model IDs to match dashboard standards.
 - **Agent Guidelines**: Established `AGENTS.md` to enforce cognitive protocols, documentation standards, and selective technical memo usage.
 
 ## 🎨 UI/UX (Svelte 5)

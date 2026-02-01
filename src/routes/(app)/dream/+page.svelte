@@ -82,6 +82,10 @@
   let currentAudio = $state<HTMLAudioElement | null>(null);
   let ambientAudio = $state<HTMLAudioElement | null>(null);
 
+  // Ghost Typing Logic (Hackathon Demo Only)
+  let isGhostTyping = $state(false);
+  const GHOST_TARGET_TEXT = "Soaring through pastel clouds at sunrise.";
+
   function fadeAudioIn(audio: HTMLAudioElement, duration = 3000) {
     audio.volume = 0;
     audio.play().catch(() => {});
@@ -501,7 +505,41 @@
     }
     handleExitVideo();
   }
+
+  /**
+   * Triggers the ghost typing effect for demo purposes.
+   * Simulates a human typing by adding characters one by one with random delays.
+   */
+  async function triggerGhostTyping() {
+    if (isGhostTyping) return;
+    isGhostTyping = true;
+    message = "";
+
+    for (let i = 0; i < GHOST_TARGET_TEXT.length; i++) {
+      message += GHOST_TARGET_TEXT[i];
+      // Random delay between 30ms and 80ms to simulate人 typing
+      await new Promise((r) => setTimeout(r, Math.random() * 50 + 30));
+    }
+
+    isGhostTyping = false;
+  }
+
+  /**
+   * Handles keyboard shortcuts for the Ghost Typing feature.
+   * Only active in IS_DEV_MODE and triggered via F8.
+   */
+  function handleKeydownGhost(event: KeyboardEvent) {
+    if (IS_DEV_MODE && event.key === "F8") {
+      event.preventDefault();
+      triggerGhostTyping();
+      if (IS_DEV_MODE) {
+        console.log("👻 Ghost Typing Triggered via F8");
+      }
+    }
+  }
 </script>
+
+<svelte:window onkeydown={handleKeydownGhost} />
 
 {#if isShowingOverlay}
   <div transition:fade={{ duration: 1500 }} class="fixed inset-0 z-50 bg-black">

@@ -26,6 +26,7 @@ Output MUST be a valid JSON object:
   "refined_prompt": "string",
   "hypnotic_script": "string" 
 }
+The 'refined_prompt' MUST be strictly in English and limited to a maximum of 300 characters to optimize token usage.
 The 'hypnotic_script' should be a short, 2-sentence hypnotic induction script strictly in English. Deep, calming, and abstract. Focus on relaxation. Do not describe specific sounds.`;
 
 export const POST: RequestHandler = async ({

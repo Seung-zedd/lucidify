@@ -87,7 +87,7 @@ export async function generateDreamMedia(
 
     let startRes: Response;
     let retries = 0;
-    const maxRetries = 2;
+    const maxRetries = 3; // Increased retries
 
     while (true) {
       startRes = await fetch(apiUrl, {
@@ -105,7 +105,8 @@ export async function generateDreamMedia(
       // Handle Quota Exhaustion with Exponential Backoff
       if (startRes.status === 429 && retries < maxRetries) {
         retries++;
-        const waitTime = Math.pow(2, retries) * 1000 + Math.random() * 1000;
+        // Start with a longer wait (5s) to allow the rolling window to reset
+        const waitTime = Math.pow(2, retries) * 2500 + Math.random() * 2000;
         if (IS_DEV_MODE) {
           console.warn(
             `⚠️ [Veo] 429 Quota Exhausted. Retrying in ${Math.round(waitTime)}ms... (Attempt ${retries}/${maxRetries})`,

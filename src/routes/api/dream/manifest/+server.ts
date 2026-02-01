@@ -46,9 +46,9 @@ export const POST: RequestHandler = async ({
     const isDevEnv = dev || isDevHostname(url.hostname);
     const SAFETY_TIMEOUT = isDevEnv ? 150000 : 180000;
 
-    // Quota Splitting: Select the appropriate key based on environment
+    // Quota Splitting: Select the appropriate key strictly based on environment
     const activeGenAIKey = isDevEnv
-      ? DEV_GOOGLE_GENERATIVE_AI_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY
+      ? DEV_GOOGLE_GENERATIVE_AI_API_KEY
       : GOOGLE_GENERATIVE_AI_API_KEY;
 
     genAI = new GoogleGenerativeAI(activeGenAIKey);

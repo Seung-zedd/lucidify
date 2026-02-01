@@ -68,7 +68,7 @@ export async function generateDreamMedia(
   const apiKey =
     overrideApiKey ||
     (IS_DEV_MODE
-      ? DEV_GOOGLE_GENERATIVE_AI_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY
+      ? DEV_GOOGLE_GENERATIVE_AI_API_KEY
       : GOOGLE_GENERATIVE_AI_API_KEY);
 
   if (!apiKey) throw new Error("Missing AI API Key");

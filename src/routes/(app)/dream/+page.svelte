@@ -816,7 +816,8 @@
       <div
         class={cn(
           "relative w-full h-full overflow-hidden",
-          isClearing && "animate-mild-shake",
+          isClearing &&
+            (isTransitioning ? "animate-mild-shake" : "animate-shake-infinite"),
         )}
       >
         <!-- Video A (Bottom Layer / Active) -->
@@ -876,6 +877,7 @@
             class={cn(
               "absolute inset-0 z-10 transition-opacity duration-1500 ease-in-out",
               isTransitioning ? "opacity-100" : "opacity-0",
+              isTransitioning && "animate-fluid-expand",
             )}
             ontransitionend={() => {
               if (isTransitioning) {
@@ -911,7 +913,11 @@
                 muted={isMuted}
                 playsinline
                 oncanplay={handleReveal}
-                class="w-full h-full object-cover"
+                class={cn(
+                  "w-full h-full object-cover",
+                  isClearing && "animate-pulse-impact",
+                  isTransitioning && "animate-settle-in",
+                )}
               >
                 <track kind="captions" />
               </video>
@@ -920,7 +926,11 @@
                 src={nextVideoUrl}
                 alt="Next reality"
                 onload={handleReveal}
-                class="w-full h-full object-cover animate-ken-burns"
+                class={cn(
+                  "w-full h-full object-cover animate-ken-burns",
+                  isClearing && "animate-pulse-impact",
+                  isTransitioning && "animate-settle-in",
+                )}
               />
             {/if}
           </div>
@@ -1325,6 +1335,10 @@
 
   .animate-mild-shake {
     animation: mild-shake 0.4s ease-in-out;
+  }
+
+  .animate-shake-infinite {
+    animation: mild-shake 0.4s ease-in-out infinite;
   }
 
   .mist-layer {

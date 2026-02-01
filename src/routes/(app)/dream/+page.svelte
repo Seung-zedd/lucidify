@@ -324,7 +324,7 @@
         showMist = false;
         isClearing = false;
       }, 2500);
-    }, 500); // Wait 0.5s for the initial mist to settle
+    }, 200); // Quick trigger for immediate feedback
 
     // Show Lucid Button after 3 seconds
     setTimeout(() => {
@@ -1338,7 +1338,7 @@
   }
 
   .animate-shake-infinite {
-    animation: mild-shake 0.4s ease-in-out infinite;
+    animation: mild-shake 0.2s ease-in-out infinite;
   }
 
   .mist-layer {

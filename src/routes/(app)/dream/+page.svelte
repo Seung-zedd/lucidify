@@ -833,8 +833,10 @@
                 "w-full h-full object-cover transition-all duration-1000 ease-out",
                 isClearing && "animate-pulse-impact",
               )}
-              style="filter: {showLucidChoice || showLucidInput
-                ? 'grayscale(100%) brightness(0.5)'
+              style="filter: {showLucidChoice ||
+              showLucidInput ||
+              isTransitioning
+                ? 'grayscale(100%) blur(4px) brightness(0.5)'
                 : isLucidMode
                   ? isFocused
                     ? 'blur(0px) brightness(1.0)'
@@ -853,8 +855,10 @@
                 "w-full h-full object-cover transition-all duration-1000 ease-out animate-ken-burns",
                 isClearing && "animate-pulse-impact",
               )}
-              style="filter: {showLucidChoice || showLucidInput
-                ? 'grayscale(100%) brightness(0.5)'
+              style="filter: {showLucidChoice ||
+              showLucidInput ||
+              isTransitioning
+                ? 'grayscale(100%) blur(4px) brightness(0.5)'
                 : isLucidMode
                   ? isFocused
                     ? 'blur(0px) brightness(1.0)'

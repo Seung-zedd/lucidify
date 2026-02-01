@@ -1,10 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import {
-  GOOGLE_GENERATIVE_AI_API_KEY,
-  DEV_GOOGLE_GENERATIVE_AI_API_KEY,
-  GOOGLE_CLOUD_TTS_API_KEY,
-} from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import type { RequestHandler } from "./$types";
 import { isDevHostname } from "$lib/utils/env";
 import { dev } from "$app/environment";
@@ -48,8 +44,15 @@ export const POST: RequestHandler = async ({
 
     // Quota Splitting: Select the appropriate key strictly based on environment
     const activeGenAIKey = isDevEnv
-      ? DEV_GOOGLE_GENERATIVE_AI_API_KEY
-      : GOOGLE_GENERATIVE_AI_API_KEY;
+      ? env.DEV_GOOGLE_GENERATIVE_AI_API_KEY
+      : env.GOOGLE_GENERATIVE_AI_API_KEY;
+
+    if (!activeGenAIKey) {
+      throw error(
+        500,
+        `Missing API Key for ${isDevEnv ? "Dev" : "Prod"} environment`,
+      );
+    }
 
     genAI = new GoogleGenerativeAI(activeGenAIKey);
 
@@ -77,7 +80,7 @@ export const POST: RequestHandler = async ({
           if (clientScript) {
             ttsPromise = generateAudioGuide(
               clientScript,
-              GOOGLE_CLOUD_TTS_API_KEY || activeGenAIKey,
+              env.GOOGLE_CLOUD_TTS_API_KEY || activeGenAIKey,
               isDevEnv,
             );
           }
@@ -119,7 +122,7 @@ export const POST: RequestHandler = async ({
             // If we didn't have a client script and we need to narrate the director's script
             const secondAudio = await generateAudioGuide(
               directorScript,
-              GOOGLE_CLOUD_TTS_API_KEY || activeGenAIKey,
+              env.GOOGLE_CLOUD_TTS_API_KEY || activeGenAIKey,
               isDevEnv,
             );
             if (secondAudio) send("AUDIO_GUIDE", { audio: secondAudio });

@@ -1,10 +1,6 @@
-import {
-  GOOGLE_GENERATIVE_AI_API_KEY,
-  DEV_GOOGLE_GENERATIVE_AI_API_KEY,
-} from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import { IS_DEV_MODE } from "$lib/utils/env";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import process from "node:process";
 
 export interface GenerationResult {
   mediaUrl: string;
@@ -65,13 +61,20 @@ export async function generateDreamMedia(
   let mediaUrl = "";
   let mediaType: "video" | "image" = "video";
 
+  const isDevEnv = IS_DEV_MODE; // Assuming IS_DEV_MODE is equivalent to checking dev environment
+
+  // Quota Splitting: Select the appropriate key strictly based on environment
   const apiKey =
     overrideApiKey ||
-    (IS_DEV_MODE
-      ? DEV_GOOGLE_GENERATIVE_AI_API_KEY
-      : GOOGLE_GENERATIVE_AI_API_KEY);
+    (isDevEnv
+      ? env.DEV_GOOGLE_GENERATIVE_AI_API_KEY
+      : env.GOOGLE_GENERATIVE_AI_API_KEY);
 
-  if (!apiKey) throw new Error("Missing AI API Key");
+  if (!apiKey) {
+    throw new Error(
+      `Missing API Key for ${isDevEnv ? "Dev" : "Prod"} environment`,
+    );
+  }
 
   if (IS_DEV_MODE) {
     console.log(

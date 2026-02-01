@@ -1337,10 +1337,6 @@
     animation: mild-shake 0.4s ease-in-out;
   }
 
-  .animate-shake-infinite {
-    animation: mild-shake 0.2s ease-in-out infinite;
-  }
-
   .mist-layer {
     mask-image: radial-gradient(circle at center, transparent 30%, black 100%);
     -webkit-mask-image: radial-gradient(

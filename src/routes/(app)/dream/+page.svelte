@@ -433,24 +433,53 @@
           }
         }
       }
-
-      // 5. Cleanup
-      setTimeout(() => {
-        showMist = false;
-        isClearing = false;
-      }, 2500); // Match with animation duration
-
-      setTimeout(() => (showAchievement = false), 4000);
-    } catch (e) {
+    } catch (e: any) {
       isAwakening = false;
-      if (IS_DEV_MODE) {
-        console.log("[Dream] Awakening Error:", e);
-      }
-      alert("Failed to manifest your will.");
+      if (IS_DEV_MODE) console.log("[Dream] Awakening Error:", e);
+      alert(e.message || "Failed to manifest your will.");
       isClearing = false;
       isFocused = true;
       showMist = false;
     }
+  }
+
+  function handleReveal() {
+    if (!nextVideoUrl || isTransitioning) return;
+
+    // 1. Reveal Sound (Always Play)
+    const audio = new Audio("/audios/awakening.mp3");
+    audio.volume = 0.5;
+    audio.play().catch(() => {});
+
+    // 2. Fade out transition SFX
+    fadeOutAudio(1500);
+
+    // 3. Strict Branching Logic (Audio Engineering)
+    if (nextMediaType === "video") {
+      // Branch A: Hard Cut background music (Veo 3.1 immersion)
+      if (ambientAudio) {
+        ambientAudio.volume = 0;
+        ambientAudio.pause();
+      }
+      pendingNextAmbientUrl = "";
+    } else {
+      // Branch B: Atmospheric restoration (Imagen)
+      if (pendingNextAmbientUrl) {
+        if (ambientAudio) fadeAudioOut(ambientAudio, 500);
+        ambientAudio = new Audio(pendingNextAmbientUrl);
+        ambientAudio.loop = true;
+        fadeAudioIn(ambientAudio, 2000);
+        pendingNextAmbientUrl = "";
+      } else if (ambientAudio) {
+        fadeAudioIn(ambientAudio, 2000);
+      }
+    }
+
+    // 4. Trigger the Cross-Fade
+    if (videoElementB) videoElementB.play();
+    isTransitioning = true;
+    isClearing = true;
+    if (mistVideo) mistVideo.playbackRate = 4.0;
   }
 
   function handleExitVideo() {
@@ -805,7 +834,7 @@
                 isClearing && "animate-pulse-impact",
               )}
               style="filter: {showLucidChoice || showLucidInput
-                ? 'grayscale(100%) blur(4px) brightness(0.5)'
+                ? 'grayscale(100%) brightness(0.5)'
                 : isLucidMode
                   ? isFocused
                     ? 'blur(0px) brightness(1.0)'
@@ -825,7 +854,7 @@
                 isClearing && "animate-pulse-impact",
               )}
               style="filter: {showLucidChoice || showLucidInput
-                ? 'grayscale(100%) blur(4px) brightness(0.5)'
+                ? 'grayscale(100%) brightness(0.5)'
                 : isLucidMode
                   ? isFocused
                     ? 'blur(0px) brightness(1.0)'
@@ -858,7 +887,14 @@
                 // Reset filters/focus
                 setTimeout(() => {
                   isFocused = true;
+                  showMist = false;
+                  isClearing = false;
                 }, 500);
+
+                // Auto-hide achievement
+                setTimeout(() => {
+                  showAchievement = false;
+                }, 4000);
               }
             }}
           >
@@ -870,43 +906,7 @@
                 loop={isLooping}
                 muted={isMuted}
                 playsinline
-                oncanplay={() => {
-                  if (nextVideoUrl && !isTransitioning) {
-                    // 1. Reveal Sound (Always Play)
-                    const audio = new Audio("/audios/awakening.mp3");
-                    audio.volume = 0.5;
-                    audio.play().catch(() => {});
-
-                    // 2. Fade out transition SFX
-                    fadeOutAudio(1500);
-
-                    // 3. Strict Branching Logic (Audio Engineering)
-                    if (nextMediaType === "video") {
-                      // Branch A: Hard Cut background music (Veo 3.1 immersion)
-                      if (ambientAudio) {
-                        ambientAudio.volume = 0;
-                        ambientAudio.pause();
-                      }
-                      pendingNextAmbientUrl = "";
-                    } else {
-                      // Branch B: atmospheric restoration (Imagen)
-                      if (pendingNextAmbientUrl) {
-                        if (ambientAudio) fadeAudioOut(ambientAudio, 500);
-                        ambientAudio = new Audio(pendingNextAmbientUrl);
-                        ambientAudio.loop = true;
-                        fadeAudioIn(ambientAudio, 2000);
-                        pendingNextAmbientUrl = "";
-                      } else if (ambientAudio) {
-                        fadeAudioIn(ambientAudio, 2000);
-                      }
-                    }
-
-                    if (videoElementB) videoElementB.play();
-                    isTransitioning = true;
-                    isClearing = true;
-                    if (mistVideo) mistVideo.playbackRate = 4.0;
-                  }
-                }}
+                oncanplay={handleReveal}
                 class="w-full h-full object-cover"
               >
                 <track kind="captions" />
@@ -915,32 +915,7 @@
               <img
                 src={nextVideoUrl}
                 alt="Next reality"
-                onload={() => {
-                  if (nextVideoUrl && !isTransitioning) {
-                    // 1. Reveal Sound
-                    const audio = new Audio("/audios/awakening.mp3");
-                    audio.volume = 0.5;
-                    audio.play().catch(() => {});
-
-                    // 2. Fade out transition SFX
-                    fadeOutAudio(1500);
-
-                    // 3. Audio Restoration for Images
-                    if (pendingNextAmbientUrl) {
-                      if (ambientAudio) fadeAudioOut(ambientAudio, 500);
-                      ambientAudio = new Audio(pendingNextAmbientUrl);
-                      ambientAudio.loop = true;
-                      fadeAudioIn(ambientAudio, 2000);
-                      pendingNextAmbientUrl = "";
-                    } else if (ambientAudio) {
-                      fadeAudioIn(ambientAudio, 2000);
-                    }
-
-                    isTransitioning = true;
-                    isClearing = true;
-                    if (mistVideo) mistVideo.playbackRate = 4.0;
-                  }
-                }}
+                onload={handleReveal}
                 class="w-full h-full object-cover animate-ken-burns"
               />
             {/if}

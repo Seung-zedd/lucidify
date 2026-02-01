@@ -2,6 +2,7 @@ import { error } from "@sveltejs/kit";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import {
   GOOGLE_GENERATIVE_AI_API_KEY,
+  DEV_GOOGLE_GENERATIVE_AI_API_KEY,
   GOOGLE_CLOUD_TTS_API_KEY,
 } from "$env/static/private";
 import type { RequestHandler } from "./$types";
@@ -16,7 +17,8 @@ export const config = {
   maxDuration: 300,
 };
 
-const genAI = new GoogleGenerativeAI(GOOGLE_GENERATIVE_AI_API_KEY);
+// genAI will be initialized inside the request handler to use the correct environment key
+let genAI: GoogleGenerativeAI;
 
 const SYSTEM_INSTRUCTION = `You are a Cinematic Director. Analyze the provided dream prompt.
 Determine the visual category: 'FLY', 'EXPLORE', 'TRANSFORM', or 'NIGHTMARE'.
@@ -43,6 +45,13 @@ export const POST: RequestHandler = async ({
     const url = new URL(request.url);
     const isDevEnv = dev || isDevHostname(url.hostname);
     const SAFETY_TIMEOUT = isDevEnv ? 150000 : 180000;
+
+    // Quota Splitting: Select the appropriate key based on environment
+    const activeGenAIKey = isDevEnv
+      ? DEV_GOOGLE_GENERATIVE_AI_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY
+      : GOOGLE_GENERATIVE_AI_API_KEY;
+
+    genAI = new GoogleGenerativeAI(activeGenAIKey);
 
     if (isDevEnv) {
       console.log("🚀 [Manifest] Request Started", {
@@ -110,7 +119,7 @@ export const POST: RequestHandler = async ({
             // If we didn't have a client script and we need to narrate the director's script
             const secondAudio = await generateAudioGuide(
               directorScript,
-              GOOGLE_CLOUD_TTS_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY,
+              GOOGLE_CLOUD_TTS_API_KEY || activeGenAIKey,
               isDevEnv,
             );
             if (secondAudio) send("AUDIO_GUIDE", { audio: secondAudio });
@@ -122,6 +131,7 @@ export const POST: RequestHandler = async ({
             (msg) => send("PROGRESS", { message: msg }),
             SAFETY_TIMEOUT,
             startTime,
+            activeGenAIKey,
           );
 
           send("COMPLETE", {

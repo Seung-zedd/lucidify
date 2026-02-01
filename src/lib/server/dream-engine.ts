@@ -1,4 +1,7 @@
-import { GOOGLE_GENERATIVE_AI_API_KEY } from "$env/static/private";
+import {
+  GOOGLE_GENERATIVE_AI_API_KEY,
+  DEV_GOOGLE_GENERATIVE_AI_API_KEY,
+} from "$env/static/private";
 import { IS_DEV_MODE } from "$lib/utils/env";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import process from "node:process";
@@ -57,11 +60,17 @@ export async function generateDreamMedia(
   sendProgress: (message: string) => void,
   safetyTimeout: number,
   startTime: number,
+  overrideApiKey?: string,
 ): Promise<GenerationResult> {
   let mediaUrl = "";
   let mediaType: "video" | "image" = "video";
 
-  const apiKey = process.env.GOOGLE_AI_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY;
+  const apiKey =
+    overrideApiKey ||
+    (IS_DEV_MODE
+      ? DEV_GOOGLE_GENERATIVE_AI_API_KEY || GOOGLE_GENERATIVE_AI_API_KEY
+      : GOOGLE_GENERATIVE_AI_API_KEY);
+
   if (!apiKey) throw new Error("Missing AI API Key");
 
   if (IS_DEV_MODE) {

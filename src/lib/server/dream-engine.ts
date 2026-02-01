@@ -201,6 +201,14 @@ export async function generateDreamMedia(
         if (mediaUrl) {
           mediaType = "video";
           isVideoDone = true;
+
+          // Crucial: Append the API key to the URL so the browser can download it
+          // Google AI Studio file URLs require 'key' parameter for direct access
+          if (mediaUrl.includes("generativelanguage.googleapis.com")) {
+            const separator = mediaUrl.includes("?") ? "&" : "?";
+            mediaUrl = `${mediaUrl}${separator}key=${apiKey}`;
+          }
+
           if (IS_DEV_MODE) {
             console.log("✅ [Veo] Generation Complete! URL:", mediaUrl);
           }

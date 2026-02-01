@@ -288,6 +288,23 @@
       pendingAmbientUrl = ""; // Clear after use
     }
 
+    // 💥 Theatrical Transition: Clear the mist after a short delay
+    setTimeout(() => {
+      isClearing = true;
+      if (mistVideo) mistVideo.playbackRate = 4.0; // Warp speed!
+
+      // Awakening SFX
+      const audio = new Audio("/audios/awakening.mp3");
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
+
+      // Final cleanup to reveal the video
+      setTimeout(() => {
+        showMist = false;
+        isClearing = false;
+      }, 2500);
+    }, 500); // Wait 0.5s for the initial mist to settle
+
     // Show Lucid Button after 3 seconds
     setTimeout(() => {
       if (isVideoPlaying && !isLucidMode) {
@@ -841,6 +858,17 @@
                     loop={isLooping}
                     muted={isMuted}
                     playsinline
+                    onerror={(e) => {
+                      if (IS_DEV_MODE) {
+                        console.error("🚨 Video Load Error:", e);
+                        console.error("🔗 Source:", mediaSource);
+                      }
+                    }}
+                    oncanplay={() => {
+                      if (videoElement && isVideoPlaying) {
+                        videoElement.play().catch(() => {});
+                      }
+                    }}
                     class={cn(
                       "w-full h-full object-cover transition-all duration-2500 ease-in",
                       isClearing && "animate-pulse-impact",

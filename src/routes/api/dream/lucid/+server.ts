@@ -1,11 +1,8 @@
 import { error } from "@sveltejs/kit";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import {
-  GOOGLE_GENERATIVE_AI_API_KEY,
-  DEV_GOOGLE_GENERATIVE_AI_API_KEY,
-} from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import type { RequestHandler } from "./$types";
-import { IS_DEV_MODE, isDevHostname } from "$lib/utils/env";
+import { isDevHostname } from "$lib/utils/env";
 import { dev } from "$app/environment";
 import { generateDreamMedia } from "$lib/server/dream-engine";
 
@@ -39,8 +36,15 @@ export const POST: RequestHandler = async ({
 
     // Quota Splitting: Select the appropriate key strictly based on environment
     const activeGenAIKey = isDevEnv
-      ? DEV_GOOGLE_GENERATIVE_AI_API_KEY
-      : GOOGLE_GENERATIVE_AI_API_KEY;
+      ? env.DEV_GOOGLE_GENERATIVE_AI_API_KEY
+      : env.GOOGLE_GENERATIVE_AI_API_KEY;
+
+    if (!activeGenAIKey) {
+      throw error(
+        500,
+        `Missing API Key for ${isDevEnv ? "Dev" : "Prod"} environment`,
+      );
+    }
 
     genAI = new GoogleGenerativeAI(activeGenAIKey);
 

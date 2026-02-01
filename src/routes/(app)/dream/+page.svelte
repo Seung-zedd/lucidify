@@ -10,8 +10,7 @@
   import X from "@lucide/svelte/icons/x";
   import Mountain from "@lucide/svelte/icons/mountain";
   import Zap from "@lucide/svelte/icons/zap";
-  import ZapOff from "@lucide/svelte/icons/zap-off";
-  import { IS_DEV_MODE, isDevHostname } from "$lib/utils/env";
+  import { IS_DEV_MODE } from "$lib/utils/env";
 
   const LOADING_PHRASES = [
     "Manifesting Your Will...",

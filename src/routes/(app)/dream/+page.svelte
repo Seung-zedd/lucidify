@@ -816,8 +816,7 @@
       <div
         class={cn(
           "relative w-full h-full overflow-hidden",
-          isClearing &&
-            (isTransitioning ? "animate-mild-shake" : "animate-shake-infinite"),
+          isClearing && "animate-mild-shake",
         )}
       >
         <!-- Video A (Bottom Layer / Active) -->

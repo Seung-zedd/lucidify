@@ -259,13 +259,7 @@
 
       <!-- Bed/Sleep Metaphor -->
       <div class="mt-16 flex flex-col items-center gap-4 opacity-50">
-        <a
-          href="/whats-new"
-          class="text-xs text-slate-400 hover:text-white uppercase tracking-[0.3em] transition-all duration-300 border-b border-transparent hover:border-white/20 pb-1"
-        >
-          Check What's New
-        </a>
-        <p class="text-[10px] text-slate-600 uppercase tracking-[0.4em]">
+        <p class="text-xs text-slate-600 uppercase tracking-[0.4em]">
           PWA Mode Available
         </p>
       </div>

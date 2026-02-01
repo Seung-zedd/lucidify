@@ -73,8 +73,8 @@ export async function generateDreamMedia(
 
   try {
     // --- VEO VIDEO GENERATION ---
-    // Aligning model ID with dashboard 'Veo 3 Fast Generate' standard
-    const modelId = "veo-3-fast-generate-preview";
+    // Reverting to 3.1 as the 404 confirmed the version-less string is not recognized by the API
+    const modelId = "veo-3.1-fast-generate-preview";
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:predictLongRunning`;
 
     if (IS_DEV_MODE) {

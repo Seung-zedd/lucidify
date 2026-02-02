@@ -53,6 +53,7 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **API Quota Isolation**: Separated `DEV_` and `PROD` Google AI keys across all endpoints to ensure testing does not consume production limits.
 - **Vercel Build Stability**: Migrated all private environment variables to `$env/dynamic/private` to prevent build-time failures on Vercel when branch-specific keys are absent.
 - **Agent Guidelines**: Established `AGENTS.md` to enforce cognitive protocols, documentation standards, and selective technical memo usage.
+- **Context-Aware Ghost Typing**: Enhanced the F8 demo shortcut to automatically target the visible input. It now types the Icarus-themed prompt when the Lucid Mode transition prompt is open, and the default dream prompt otherwise.
 
 ## 🎨 UI/UX (Svelte 5)
 

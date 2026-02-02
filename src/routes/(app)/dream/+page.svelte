@@ -87,7 +87,9 @@
 
   // Ghost Typing Logic (Hackathon Demo Only)
   let isGhostTyping = $state(false);
-  const GHOST_TARGET_TEXT = "Soaring through pastel clouds at sunrise.";
+  const GHOST_DREAM_TEXT = "Soaring through pastel clouds at sunrise.";
+  const GHOST_LUCID_TEXT =
+    "i was flying with the white wings of Icarus, suspended between the blinding sun and the deep blue ocean.";
 
   function fadeAudioIn(audio: HTMLAudioElement, duration = 3000) {
     audio.volume = 0;
@@ -532,13 +534,26 @@
    * Simulates a human typing by adding characters one by one with random delays.
    */
   async function triggerGhostTyping() {
-    if (isGhostTyping) return;
+    if (!IS_DEV_MODE || isGhostTyping) return;
     isGhostTyping = true;
-    message = "";
 
-    for (let i = 0; i < GHOST_TARGET_TEXT.length; i++) {
-      message += GHOST_TARGET_TEXT[i];
-      // Random delay between 30ms and 80ms to simulate人 typing
+    // Determine target text and variable based on current context
+    const isLucidInputActive = showLucidInput;
+    const targetText = isLucidInputActive ? GHOST_LUCID_TEXT : GHOST_DREAM_TEXT;
+
+    if (isLucidInputActive) {
+      lucidAction = "";
+    } else {
+      message = "";
+    }
+
+    for (let i = 0; i < targetText.length; i++) {
+      if (isLucidInputActive) {
+        lucidAction += targetText[i];
+      } else {
+        message += targetText[i];
+      }
+      // Random delay between 30ms and 80ms to simulate human typing
       await new Promise((r) => setTimeout(r, Math.random() * 50 + 30));
     }
 

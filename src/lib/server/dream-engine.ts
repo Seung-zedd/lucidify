@@ -189,8 +189,11 @@ export async function generateDreamMedia(
         const generateVideoRes = responseObj?.generateVideoResponse;
         const firstSample = generateVideoRes?.generatedSamples?.[0];
 
+        // Refined extraction prioritizing user-observed video[0] structure
         mediaUrl =
           firstSample?.video?.uri ||
+          responseObj?.video?.[0]?.uri || // Directly as observed by user
+          responseObj?.video?.uri ||
           pollData.result?.videoUri ||
           responseObj?.videoUri ||
           pollData.metadata?.outputUri ||

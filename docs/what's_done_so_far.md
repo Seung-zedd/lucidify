@@ -41,7 +41,7 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **Serverless Reliability**: Safety timers (55s/180s) to prevent hard timeouts on Vercel.
 - **Vercel Preview Debugging**: Enhanced server-side logging using `request.url` detection to debug issues directly in production-like environments.
 - **Veo Quota Resilience**: Implemented exponential backoff for the Dream Engine to handle transient `429 RESOURCE_EXHAUSTED` errors. Aligned model IDs to match dashboard standards.
-- **Veo API Schema Fix**: Updated polling logic to correctly parse the deeply nested `generatedSamples` response from Veo 3.1.
+- **Veo API Schema Fix**: Updated polling logic to correctly parse the deeply nested `generatedSamples` response from Veo 3.1. Added support for `video[0]` array structure to ensure only a single sample is processed even when multiple are returned.
 - **Veo Manifestation Fix**: Implemented dual-fix for "Only Mist" bug: (1) Appending API keys to video URLs for browser authorization and (2) Adding the missing theatrical transition sequence to clear the entry mist.
 - **Lucid Timeout Fix**: Increased Lucid Mode safety timeout to 150s in dev to prevent premature Imagen fallbacks.
 - **Entry Flow Pivot**: Changed overlay button to "Ready to Enter dream?" to allow users to view insights before starting the video via the dashboard.

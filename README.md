@@ -4,22 +4,24 @@
 
 
 > **Winner(Aiming for!) of Google Gemini 3 Hackathon**
-> A multimodal lucid dreaming interface that visualizes your subconscious using **Gemini 2.5 Flash** and **Veo 3.1**(Imagen 4 for fallback).
+> A multimodal lucid dreaming interface that visualizes your subconscious using **Gemini 2.5 Flash**, **Veo 3.1**, and **Imagen 4.0**.
 
 ## 🔗 Links
 - **Live App:** [https://lucidify-purple.vercel.app/](https://lucidify-purple.vercel.app/)
 - **Demo Video:** [YouTube Link Here]
 
 ## ✨ Key Features
-- **Visualize the Unseen:** Transforms dream descriptions into cinematic videos using **Veo 3.1** & **Imagen 4.0 Ultra**.
-- **Deep Interpretation:** **Gemini 2.5 Flash** analyzes dream symbols and provides psychological insights.
-- **Lucid Interaction:** Real-time narrative intervention (e.g., "I was flying").
-- **Mystical Journal:** Save your insights locally with a Tarot-inspired Flip Card UI. No login required.
+- **Visual Manifestation (Veo 3.1 & Imagen 4.0):** Deployed Multi-Model Orchestration to transform dream descriptions into cinematic reality.
+- **The Dream Architect (Gemini 2.5 Flash):** Features **"Hypnotic Writing"** logic to sanitize and poetically enhance user prompts for vivid storytelling.
+- **Perfect Audio Sync:** Uses **Parallel Synthesis** and aggressive SSML pacing (Neural2-F) for zero-latency audio-visual alignment.
+- **Lucid Interaction:** Real-time narrative intervention (e.g., "I was flying") powered by the reactive **Swan Architecture** (SSE).
+- **Mystical Journal:** A local-first "Memory Card" system with a Tarot-inspired Flip UI to archive your subconscious insights.
 
 ## 🛠️ Tech Stack
-- **Framework:** SvelteKit (App), TailwindCSS (Styling)
-- **AI Models:** Google Gemini 2.5 Flash, Veo 3.1 (Video), Imagen 4.0 Ultra (Image), Neural2 (TTS)
-- **Storage:** Local Storage (Privacy-first architecture)
+- **Framework:** SvelteKit (Migrated to **Svelte 5 Runes**), TailwindCSS
+- **AI Core:** Google Gemini 2.5 Flash (Architect), Veo 3.1 (Video), Imagen 4.0 (Image)
+- **Audio:** Google Cloud TTS (Neural2-F) with Smart Ambient Matching
+- **Architecture:** Serverless functions with GCP Key Isolation
 
 ## 👻 Hidden Feature
 Found yourself lost? Press **`F8`** on your keyboard to let your subconscious take over.

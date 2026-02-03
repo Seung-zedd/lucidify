@@ -8,6 +8,7 @@
   import ShieldCheck from "@lucide/svelte/icons/shield-check";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
   import Headset from "@lucide/svelte/icons/headset";
+  import Library from "@lucide/svelte/icons/library";
 
   let stars: {
     left: string;
@@ -34,9 +35,18 @@
   const updates = [
     {
       date: "Feb 2026",
-      title: "Major Release: Visualizing Dreams in Motion",
+      title: "New Feature: The Subconscious Archive",
       description:
-        "Successfully recorded and edited the comprehensive demo video showcasing the full immersive flow of Lucidify. From poetic dream descriptions to cinematic video manifestation.",
+        "Launched the Dream Journal, a permanent sanctuary for your visions. Featuring the 'Crystal Block' UI—an immersive, glassmorphic gallery with 'Awakening' light effects that bring your past dreams to life.",
+      icon: Library,
+      color: "text-purple-400",
+      bg: "bg-purple-400/10",
+    },
+    {
+      date: "Feb 2026",
+      title: "Cinematic Demo & Experience Flow",
+      description:
+        "Refined the end-to-end manifestation flow. From poetic dream descriptions to cinematic video generation, every interaction is now tuned for maximum immersion and artistic fidelity.",
       icon: Video,
       color: "text-rose-400",
       bg: "bg-rose-400/10",

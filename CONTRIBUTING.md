@@ -133,7 +133,7 @@ To maintain a high-quality codebase, we adhere to the following principles. For 
 ## 💡 General Guidelines
 
 - **Stay Focused**: One feature/fix per branch.
-- **Documentation**: Update `README.md` or relevant docs if your changes introduce new features.
+- **Update "What's New"**: Every new feature or significant improvement **MUST** be added to the timeline on the "What's New" page (`src/routes/(marketing)/whats-new/+page.svelte`) before releasing to ensure our users are informed of our progress.
 - **Communication**: If you're unsure about something, open an issue or ask in the project's communication channel.
 
 Thank you for complying with the contributing rules! 🚀

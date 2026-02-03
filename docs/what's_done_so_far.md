@@ -33,6 +33,13 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **TTS-driven User Flow**:
   - **Audio-Gated UI**: The user enters a fullscreen "Purple Dream" overlay while manifesting. The "Enter Dream" button only appears after BOTH the video is ready and the narrator has finished.
   - **Auto-Fade Overlay**: The loading overlay now automatically fades out once the audio narration ends, returning the user to the results screen for a natural transition.
+- **Dream Journal (Local Persistence)**:
+  - **Feature**: Lightweight "Dream Journal" to save subconscious insights locally.
+  - **UI (Mystical Flip Cards)**: Tarot-style cards that levitate on hover and flip on click to reveal dream details.
+  - **Tactile Interaction**: Smooth 3D transformations with dynamic colored auras (unique gradients) for each card.
+  - **Navigation**: Dedicated `/journal` page with a responsive grid layout. Updated "Back to the Waking World" link on the whats-new page to return users directly to the Dream Architect (`/dream`).
+  - **Toggle Integration**: Recoded the "Bookmark" button into a toggle system. It now saves or removes entries from `localStorage` using prompt-based deletion, with dynamic success/info toast feedback.
+  - **Dream Card UX Refinement**: Prevented accidental flips using `stopPropagation` on the scrollable content area. Added sticky headers with backdrop blur, wider scrollbars, and contextual hover effects for copy buttons (Gold for Insight, Purple for Prompt).
 
 ## 🛠️ Technical Fixes & Stability
 
@@ -53,7 +60,7 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **API Quota Isolation**: Separated `DEV_` and `PROD` Google AI keys across all endpoints to ensure testing does not consume production limits.
 - **Vercel Build Stability**: Migrated all private environment variables to `$env/dynamic/private` to prevent build-time failures on Vercel when branch-specific keys are absent.
 - **Agent Guidelines**: Established `AGENTS.md` to enforce cognitive protocols, documentation standards, and selective technical memo usage.
-- **Context-Aware Ghost Typing**: Enhanced the F8 demo shortcut to automatically target the visible input. It now types the Icarus-themed prompt when the Lucid Mode transition prompt is open, and the default dream prompt otherwise.
+- **Ghost Typing Easter Egg**: Transformed the F8 demo shortcut into a production-ready Easter Egg. It now provides a celebratory console message and types context-aware prompts (Icarus for Lucid Mode, default otherwise) for all users who discover it.
 
 ## 🎨 UI/UX (Svelte 5)
 
@@ -61,10 +68,16 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **Lucid Mode**: Interactive "Take Control" flow that lets users modify the dream via the "Director" phase.
 - **Immersive Atmosphere**: CSS-based "fluid-expand" transitions, mist overlays, and deep-purple aesthetics.
 - **Synchronized Script Display**: Frontend dynamically updates the `loadingText` via a `NEW_SCRIPT` SSE event to match any real-time backend refinements.
+- **Micro-Animations (Toast/Journal)**: Implemented Svelte 5 rune-based global toast system and sophisticated 3D CSS animations for the journal archives.
 
 ## 📂 Key Files
 
 - `src/lib/server/dream-engine.ts`: All AI/Vertex/GCP synthesis logic.
 - `src/routes/api/dream/manifest/+server.ts`: The SSE stream orchestrator and parallel logic.
 - `src/routes/(app)/dream/+page.svelte`: The main immersive UI and SSE event listener.
+- `src/lib/utils/journal.ts`: Local Storage persistence logic for dream entries.
+- `src/routes/(app)/journal/+page.svelte`: The mystical journal archive view.
+- `src/lib/components/DreamCard.svelte`: Mystical 3D flip card component with index-based gradients.
+- `src/lib/components/SubconsciousInsight.svelte`: Extracted insight rendering with Bookmark integration.
+- `docs/walkthrough_journal.md`: Detailed engineering walkthrough of the Dream Journal feature.
 - `docs/technical_memo.md`: Detailed "How & Why" for specific engineering challenges.

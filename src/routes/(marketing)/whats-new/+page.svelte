@@ -218,7 +218,7 @@
     <!-- CTA & Back -->
     <div class="mt-32 text-center" in:fade={{ delay: 1000 }}>
       <a
-        href="/"
+        href="/dream"
         class="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-all text-sm font-bold uppercase tracking-widest group"
       >
         <ArrowLeft

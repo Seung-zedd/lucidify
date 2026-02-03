@@ -61,7 +61,7 @@
 
   <!-- Content Container (Handles clipping) -->
   <div
-    class="ticket-content relative z-1 w-full h-full rounded-[2rem] overflow-hidden border border-white/10 flex flex-col bg-[#0a0a0a] shadow-2xl"
+    class="ticket-content relative z-1 w-full h-full rounded-4xl overflow-hidden border border-white/10 flex flex-col bg-[#0a0a0a] shadow-2xl"
   >
     <!-- Top Section (40%): The Art -->
     <div

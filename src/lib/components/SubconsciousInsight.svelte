@@ -3,7 +3,11 @@
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Bookmark from "@lucide/svelte/icons/bookmark";
   import Check from "@lucide/svelte/icons/check";
-  import { saveDreamEntry, isDreamSaved } from "$lib/utils/journal";
+  import {
+    saveDreamEntry,
+    isDreamSaved,
+    deleteDreamEntryByPrompt,
+  } from "$lib/utils/journal";
   import { toast } from "$lib/runes/toast.svelte";
   import { cn } from "$lib/utils";
 
@@ -46,22 +50,30 @@
   });
 
   function handleBookmark() {
-    if (isSaved || !analysisResult) return;
+    if (!analysisResult) return;
 
     try {
-      saveDreamEntry({
-        userPrompt,
-        analysisResult: {
-          title: analysisResult.title,
-          insight: analysisResult.insight,
-          keywords: analysisResult.keywords,
-        },
-        videoGenerationPrompt,
-      });
-      isSaved = true;
-      toast.show("Insight saved to Journal.", "success");
+      if (isSaved) {
+        // Handle Removal
+        deleteDreamEntryByPrompt(userPrompt);
+        isSaved = false;
+        toast.show("Insight removed from Journal.", "info");
+      } else {
+        // Handle Saving
+        saveDreamEntry({
+          userPrompt,
+          analysisResult: {
+            title: analysisResult.title,
+            insight: analysisResult.insight,
+            keywords: analysisResult.keywords,
+          },
+          videoGenerationPrompt,
+        });
+        isSaved = true;
+        toast.show("Insight saved to Journal.", "success");
+      }
     } catch (e) {
-      toast.show("Failed to save insight.", "error");
+      toast.show("Failed to update journal.", "error");
     }
   }
 </script>
@@ -74,18 +86,20 @@
     <div class="absolute top-6 right-6 z-10" in:fade={{ duration: 400 }}>
       <button
         onclick={handleBookmark}
-        disabled={isSaved}
         class={cn(
-          "p-3 rounded-xl transition-all duration-300 border",
+          "p-3 rounded-xl transition-all duration-300 border group/btn",
           isSaved
-            ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
+            ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400 hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400"
             : "bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10 hover:scale-110 active:scale-95 shadow-lg",
         )}
-        aria-label={isSaved ? "Saved to journal" : "Save to journal"}
+        aria-label={isSaved ? "Remove from journal" : "Save to journal"}
       >
         {#if isSaved}
           <div in:scale>
-            <Check class="w-5 h-5" />
+            <Check class="w-5 h-5 block group-hover/btn:hidden" />
+            <Bookmark
+              class="w-5 h-5 hidden group-hover/btn:block fill-current"
+            />
           </div>
         {:else}
           <Bookmark class="w-5 h-5" />

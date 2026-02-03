@@ -63,6 +63,17 @@ export function deleteDreamEntry(id: string): void {
 }
 
 /**
+ * Deletes a dream entry from local storage by prompt.
+ */
+export function deleteDreamEntryByPrompt(userPrompt: string): void {
+  const currentEntries = getDreamEntries();
+  const updatedEntries = currentEntries.filter(
+    (entry) => entry.userPrompt !== userPrompt,
+  );
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
+}
+
+/**
  * Checks if a dream (by prompt) is already saved.
  * Use this to toggle the Bookmark icon state.
  */

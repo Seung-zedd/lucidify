@@ -76,4 +76,7 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - `src/routes/(app)/dream/+page.svelte`: The main immersive UI and SSE event listener.
 - `src/lib/utils/journal.ts`: Local Storage persistence logic for dream entries.
 - `src/routes/(app)/journal/+page.svelte`: The mystical journal archive view.
+- `src/lib/components/DreamCard.svelte`: Mystical 3D flip card component with index-based gradients.
+- `src/lib/components/SubconsciousInsight.svelte`: Extracted insight rendering with Bookmark integration.
+- `docs/walkthrough_journal.md`: Detailed engineering walkthrough of the Dream Journal feature.
 - `docs/technical_memo.md`: Detailed "How & Why" for specific engineering challenges.

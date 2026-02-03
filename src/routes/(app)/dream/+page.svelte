@@ -535,7 +535,7 @@
    * Simulates a human typing by adding characters one by one with random delays.
    */
   async function triggerGhostTyping() {
-    if (!IS_DEV_MODE || isGhostTyping) return;
+    if (isGhostTyping) return;
     isGhostTyping = true;
 
     // Determine target text and variable based on current context
@@ -566,12 +566,14 @@
    * Only active in IS_DEV_MODE and triggered via F8.
    */
   function handleKeydownGhost(event: KeyboardEvent) {
-    if (IS_DEV_MODE && event.key === "F8") {
+    if (event.key === "F8") {
       event.preventDefault();
       triggerGhostTyping();
-      if (IS_DEV_MODE) {
-        console.log("👻 Ghost Typing Triggered via F8");
-      }
+      console.log(
+        "%c Congrats! You found the Easter egg! 👻 %c Typewriter mode activated. ",
+        "background: #6366f1; color: white; border-radius: 4px; padding: 4px 8px; font-weight: bold;",
+        "background: #1e1b4b; color: #a5b4fc; border-radius: 4px; padding: 4px 8px;",
+      );
     }
   }
 </script>

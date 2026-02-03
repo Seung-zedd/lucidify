@@ -1,7 +1,7 @@
 # ☁️ Lucidify: Awaken Your Subconscious
 
-![Lucidify Hero Image](./static/hero-screenshot.png)
-*(여기에 앱 스크린샷 한 장 넣으세요)*
+![Lucidify Hero Image](https://i.imgur.com/lCQj5Py.png)
+
 
 > **Winner(Aiming for!) of Google Gemini 3 Hackathon**
 > A multimodal lucid dreaming interface that visualizes your subconscious using **Gemini 1.5 Pro** and **Veo**.

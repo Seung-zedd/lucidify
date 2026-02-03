@@ -40,7 +40,8 @@
   );
 
   // Copy Functions
-  function copyToClipboard(text: string, label: string) {
+  function copyToClipboard(e: MouseEvent, text: string, label: string) {
+    e.stopPropagation(); // Explicitly stop bubbling for copy buttons
     if (!text) return;
     navigator.clipboard.writeText(text);
     toast.show(`${label} copied to clipboard`, "success");
@@ -121,13 +122,25 @@
       class="absolute inset-0 w-full h-full backface-hidden rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/10 text-left flex flex-col"
       style="transform: rotateY(180deg);"
     >
+      <!-- Gradient Fade Overlays for Depth -->
       <div
-        class="absolute top-0 left-0 right-0 h-16 bg-linear-to-b from-black/90 to-transparent z-20 pointer-events-none"
+        class="absolute top-0 left-0 right-0 h-12 bg-linear-to-b from-black to-transparent z-40 pointer-events-none"
+      ></div>
+      <div
+        class="absolute bottom-0 left-0 right-0 h-12 bg-linear-to-t from-black to-transparent z-40 pointer-events-none"
       ></div>
 
-      <div class="flex-1 overflow-y-auto custom-scrollbar p-6 pt-8 space-y-8">
+      <!-- Scrollable Container -->
+      <div
+        class="flex-1 overflow-y-auto custom-scrollbar p-6 pt-4 space-y-8"
+        onclick={(e) => e.stopPropagation()}
+        role="presentation"
+      >
+        <!-- Section: Insight -->
         <div class="relative group/section">
-          <div class="flex items-center justify-between mb-3">
+          <div
+            class="sticky top-0 z-30 flex items-center justify-between py-4 mb-2 bg-[#0a0a0a]/80 backdrop-blur-md -mx-6 px-6"
+          >
             <h4
               class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-transparent bg-clip-text bg-linear-to-r from-amber-200 to-yellow-400"
             >
@@ -135,24 +148,27 @@
               Subconscious Insight
             </h4>
             <button
-              class="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all hover:scale-110 active:scale-95"
-              onclick={() =>
-                copyToClipboard(entry.analysisResult?.insight, "Insight")}
+              class="p-2 rounded-full bg-white/5 hover:bg-yellow-500/20 text-white/60 hover:text-yellow-400 transition-all hover:scale-110 active:scale-95 z-50"
+              onclick={(e) =>
+                copyToClipboard(e, entry.analysisResult?.insight, "Insight")}
               title="Copy Insight"
             >
               <Copy class="w-4 h-4" />
             </button>
           </div>
 
-          <p class="text-base text-slate-100 leading-relaxed font-medium">
+          <p class="text-base text-gray-300 leading-relaxed font-light px-1">
             {entry.analysisResult?.insight}
           </p>
         </div>
 
         <div class="w-full h-px bg-white/10"></div>
 
-        <div class="relative group/section pb-4">
-          <div class="flex items-center justify-between mb-3">
+        <!-- Section: Prompt -->
+        <div class="relative group/section pb-8">
+          <div
+            class="sticky top-0 z-30 flex items-center justify-between py-4 mb-2 bg-[#0a0a0a]/80 backdrop-blur-md -mx-6 px-6"
+          >
             <h4
               class="flex items-center gap-2 text-[10px] font-black text-indigo-300 uppercase tracking-[0.3em]"
             >
@@ -160,9 +176,9 @@
               Video Prompt
             </h4>
             <button
-              class="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all hover:scale-110 active:scale-95"
-              onclick={() =>
-                copyToClipboard(entry.videoGenerationPrompt, "Prompt")}
+              class="p-2 rounded-full bg-white/5 hover:bg-purple-500/20 text-white/60 hover:text-purple-400 transition-all hover:scale-110 active:scale-95 z-50"
+              onclick={(e) =>
+                copyToClipboard(e, entry.videoGenerationPrompt, "Prompt")}
               title="Copy Prompt"
             >
               <Copy class="w-4 h-4" />
@@ -170,7 +186,7 @@
           </div>
 
           <div
-            class="p-4 rounded-xl bg-black/40 border border-white/5 font-mono text-[11px] text-slate-400 leading-relaxed wrap-break-word select-text"
+            class="p-4 rounded-xl bg-black/40 border border-white/5 font-mono text-[11px] text-slate-400 leading-relaxed wrap-break-word select-text mx-1"
           >
             {entry.videoGenerationPrompt || "No prompt recorded."}
           </div>
@@ -195,14 +211,19 @@
 
   /* Custom Scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.3);
     border-radius: 20px;
+    border: 2px solid transparent; /* Gives it some 'air' */
+    background-clip: content-box;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.5);
   }
 
   /* Noise Texture */

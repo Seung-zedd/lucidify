@@ -191,19 +191,21 @@
     right: 0;
     height: 100%;
     width: 100%;
-    transform: scale(0.9);
-    filter: blur(25px);
+    transform: scale(0.85);
+    filter: blur(20px);
     background: linear-gradient(to bottom, var(--glow-start), var(--glow-end));
-    opacity: 0.6;
+    opacity: 0.4;
     z-index: -1;
     transition:
-      opacity 0.5s ease-in-out,
-      transform 0.5s ease-in-out;
+      opacity 0.6s ease-in-out,
+      transform 0.6s ease-in-out,
+      filter 0.6s ease-in-out;
   }
 
   .gallery-ticket:hover::after {
-    opacity: 0.9;
-    transform: scale(0.95) translateY(5px);
+    opacity: 1;
+    transform: scale(1) translateY(10px);
+    filter: blur(30px);
   }
 
   /* Custom Ticket Scrollbar */

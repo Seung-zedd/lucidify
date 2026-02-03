@@ -11,7 +11,7 @@
 - **Demo Video:** [YouTube Link Here]
 
 ## ✨ Key Features
-- **Visual Manifestation (Veo 3.1 & Imagen 4.0):** Deployed Multi-Model Orchestration to transform dream descriptions into cinematic reality.
+- **Visual Manifestation (Veo 3.1 & Imagen 4.0):** Adaptive Multi-Model Orchestration to transform dream descriptions into cinematic reality, ensuring zero-downtime visualization.
 - **The Dream Architect (Gemini 2.5 Flash):** Features **"Hypnotic Writing"** logic to sanitize and poetically enhance user prompts for vivid storytelling.
 - **Perfect Audio Sync:** Uses **Parallel Synthesis** and aggressive SSML pacing (Neural2-F) for zero-latency audio-visual alignment.
 - **Lucid Interaction:** Real-time narrative intervention (e.g., "I was flying") powered by the reactive **Swan Architecture** (SSE).

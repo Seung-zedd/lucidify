@@ -48,7 +48,7 @@
 </script>
 
 <div
-  class="group gallery-ticket relative w-full h-[600px] cursor-pointer transition-all duration-500 ease-out"
+  class="group gallery-ticket relative w-full h-[600px] cursor-default transition-all duration-500 ease-out"
   onmouseenter={() => (isHovered = true)}
   onmouseleave={() => (isHovered = false)}
   style="--glow-start: {startColor}; --glow-end: {endColor}; {isHovered
@@ -182,30 +182,29 @@
 </div>
 
 <style>
-  /* Ambient Gallery Glow Effect */
+  /* Floor Reflection Effect */
   .gallery-ticket::after {
     content: "";
     position: absolute;
-    top: 30px;
-    left: 0;
-    right: 0;
-    height: 100%;
-    width: 100%;
-    transform: scale(0.85);
-    filter: blur(20px);
+    bottom: -5%;
+    left: 5%;
+    width: 90%;
+    height: 25%;
     background: linear-gradient(to bottom, var(--glow-start), var(--glow-end));
+    filter: blur(25px);
     opacity: 0.4;
+    transform: scaleY(0.8);
     z-index: -1;
     transition:
       opacity 0.6s ease-in-out,
-      transform 0.6s ease-in-out,
-      filter 0.6s ease-in-out;
+      filter 0.6s ease-in-out,
+      transform 0.6s ease-in-out;
   }
 
   .gallery-ticket:hover::after {
-    opacity: 1;
-    transform: scale(1) translateY(10px);
-    filter: blur(30px);
+    opacity: 0.8;
+    filter: blur(35px);
+    transform: scaleY(1.2) translateY(5px);
   }
 
   /* Custom Ticket Scrollbar */

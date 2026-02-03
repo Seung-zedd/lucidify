@@ -12,7 +12,6 @@
     index: number;
   }>();
 
-  let isFlipped = $state(false);
   let isHovered = $state(false);
 
   // 🎨 Mystical Gradient Palette (The Chroma Aura System)
@@ -41,61 +40,52 @@
 
   // Copy Functions
   function copyToClipboard(e: MouseEvent, text: string, label: string) {
-    e.stopPropagation(); // Explicitly stop bubbling for copy buttons
+    e.stopPropagation();
     if (!text) return;
     navigator.clipboard.writeText(text);
     toast.show(`${label} copied to clipboard`, "success");
   }
-
-  function toggleFlip(e: MouseEvent) {
-    // Prevent flipping when a button is clicked
-    if ((e.target as HTMLElement).closest("button")) return;
-    isFlipped = !isFlipped;
-  }
 </script>
 
 <div
-  class="group relative w-full h-[500px] perspective-1000 cursor-pointer"
+  class="group gallery-ticket relative w-full h-[600px] cursor-pointer transition-all duration-500 ease-out"
   onmouseenter={() => (isHovered = true)}
   onmouseleave={() => (isHovered = false)}
-  onclick={toggleFlip}
-  style="--glow-start: {startColor}; --glow-end: {endColor};"
-  role="button"
-  tabindex="0"
-  onkeydown={(e) => e.key === "Enter" && (isFlipped = !isFlipped)}
+  style="--glow-start: {startColor}; --glow-end: {endColor}; {isHovered
+    ? 'transform: translateY(-10px);'
+    : ''}"
+  role="presentation"
 >
+  <!-- Main Card Container -->
   <div
-    class={cn(
-      "relative w-full h-full transition-all duration-600 ease-out transform-style-3d shadow-2xl",
-      isFlipped && "rotate-y-180",
-    )}
-    style="transform: {isHovered && !isFlipped
-      ? 'translateY(-15px)'
-      : ''} {isFlipped ? 'rotateY(180deg)' : 'rotateY(0)'};"
+    class="relative z-1 w-full h-full rounded-[1.5rem] overflow-hidden border border-white/10 flex flex-col bg-[#0a0a0a] shadow-2xl"
   >
-    <!-- Front Face -->
+    <!-- Top Section (40%): The Art -->
     <div
-      class="absolute inset-0 w-full h-full backface-hidden rounded-2xl overflow-hidden border border-white/10"
+      class="h-[40%] relative flex flex-col justify-between p-6 overflow-hidden"
     >
+      <!-- Background Gradient -->
       <div
-        class="absolute inset-0 opacity-80 transition-opacity duration-500 group-hover:opacity-100"
+        class="absolute inset-0 opacity-100 transition-opacity duration-500"
         style="background: linear-gradient(135deg, {startColor}, {endColor});"
       ></div>
 
-      <div class="absolute inset-0 bg-noise opacity-20 mix-blend-overlay"></div>
+      <!-- Noise Texture -->
+      <div class="absolute inset-0 bg-noise opacity-30 mix-blend-overlay"></div>
 
+      <!-- Content -->
       <div
-        class="relative z-10 flex flex-col justify-between h-full p-8 text-white"
+        class="relative z-10 flex flex-col justify-between h-full text-white"
       >
         <div
-          class="text-xs font-bold tracking-[0.3em] opacity-80 uppercase border-b border-white/20 pb-2 inline-block self-start font-sans"
+          class="text-[10px] font-black tracking-[0.4em] opacity-80 uppercase font-sans drop-shadow-md"
         >
           {formattedDate}
         </div>
 
-        <div class="flex-1 flex items-center justify-center">
+        <div class="flex-1 flex items-center justify-center py-4">
           <h3
-            class="text-4xl font-serif font-black text-center leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
+            class="text-3xl md:text-4xl font-serif font-black text-center leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
           >
             {entry.analysisResult?.title || "Untitled Dream"}
           </h3>
@@ -104,84 +94,79 @@
         <div class="flex flex-wrap gap-2 justify-center">
           {#each entry.analysisResult?.keywords?.slice(0, 3) || [] as tag}
             <span
-              class="px-3 py-1 text-[10px] font-bold bg-black/20 backdrop-blur-md rounded-full border border-white/10 uppercase tracking-widest"
+              class="px-3 py-1 text-[9px] font-bold bg-black/30 backdrop-blur-md rounded-full border border-white/10 uppercase tracking-widest"
             >
               #{tag}
             </span>
           {/each}
         </div>
       </div>
-
-      <div
-        class="absolute inset-0 rounded-2xl ring-1 ring-white/30 group-hover:ring-white/50 transition-all pointer-events-none"
-      ></div>
     </div>
 
-    <!-- Back Face -->
-    <div
-      class="absolute inset-0 w-full h-full backface-hidden rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/10 text-left flex flex-col"
-      style="transform: rotateY(180deg);"
-    >
+    <!-- Bottom Section (60%): The Details -->
+    <div class="flex-1 min-h-0 relative flex flex-col bg-zinc-950">
       <!-- Gradient Fade Overlays for Depth -->
       <div
-        class="absolute top-0 left-0 right-0 h-12 bg-linear-to-b from-black to-transparent z-40 pointer-events-none"
+        class="absolute top-0 left-0 right-0 h-10 bg-linear-to-b from-zinc-950 to-transparent z-20 pointer-events-none"
       ></div>
       <div
-        class="absolute bottom-0 left-0 right-0 h-12 bg-linear-to-t from-black to-transparent z-40 pointer-events-none"
+        class="absolute bottom-0 left-0 right-0 h-10 bg-linear-to-t from-zinc-950 to-transparent z-20 pointer-events-none"
       ></div>
 
-      <!-- Scrollable Container -->
+      <!-- Scrollable Content Area -->
       <div
-        class="flex-1 overflow-y-auto custom-scrollbar p-6 pt-4 space-y-8"
+        class="flex-1 overflow-y-auto ticket-scrollbar p-6 space-y-6"
         onclick={(e) => e.stopPropagation()}
         role="presentation"
       >
         <!-- Section: Insight -->
-        <div class="relative group/section">
+        <div class="relative">
           <div
-            class="sticky top-0 z-30 flex items-center justify-between py-4 mb-2 bg-[#0a0a0a]/80 backdrop-blur-md -mx-6 px-6"
+            class="sticky top-0 z-10 flex items-center justify-between py-3 mb-2 bg-zinc-950/80 backdrop-blur-md -mx-6 px-6"
           >
             <h4
-              class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-transparent bg-clip-text bg-linear-to-r from-amber-200 to-yellow-400"
+              class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] text-transparent bg-clip-text bg-linear-to-r from-amber-200 to-yellow-400"
             >
-              <Sparkles class="w-4 h-4 text-yellow-400" />
-              Subconscious Insight
+              <Sparkles class="w-3.5 h-3.5 text-yellow-400" />
+              Manifestation
             </h4>
             <button
-              class="p-2 rounded-full bg-white/5 hover:bg-yellow-500/20 text-white/60 hover:text-yellow-400 transition-all hover:scale-110 active:scale-95 z-50"
+              class="p-2 rounded-full bg-white/5 hover:bg-yellow-500/20 text-white/60 hover:text-yellow-400 transition-all hover:scale-110 active:scale-95"
               onclick={(e) =>
                 copyToClipboard(e, entry.analysisResult?.insight, "Insight")}
               title="Copy Insight"
             >
-              <Copy class="w-4 h-4" />
+              <Copy class="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <p class="text-base text-gray-300 leading-relaxed font-light px-1">
+          <p
+            class="text-[15px] text-gray-300 leading-relaxed font-light px-1 pb-2"
+          >
             {entry.analysisResult?.insight}
           </p>
         </div>
 
-        <div class="w-full h-px bg-white/10"></div>
+        <div class="w-full h-px bg-white/5"></div>
 
-        <!-- Section: Prompt -->
-        <div class="relative group/section pb-8">
+        <!-- Section: Video Prompt -->
+        <div class="relative pb-6">
           <div
-            class="sticky top-0 z-30 flex items-center justify-between py-4 mb-2 bg-[#0a0a0a]/80 backdrop-blur-md -mx-6 px-6"
+            class="sticky top-0 z-10 flex items-center justify-between py-3 mb-2 bg-zinc-950/80 backdrop-blur-md -mx-6 px-6"
           >
             <h4
-              class="flex items-center gap-2 text-[10px] font-black text-indigo-300 uppercase tracking-[0.3em]"
+              class="flex items-center gap-2 text-[10px] font-black text-indigo-300 uppercase tracking-[0.35em]"
             >
-              <Video class="w-3.5 h-3.5" />
-              Video Prompt
+              <Video class="w-3.5 h-3.5 font-bold" />
+              Director Choice
             </h4>
             <button
-              class="p-2 rounded-full bg-white/5 hover:bg-purple-500/20 text-white/60 hover:text-purple-400 transition-all hover:scale-110 active:scale-95 z-50"
+              class="p-2 rounded-full bg-white/5 hover:bg-indigo-500/20 text-white/60 hover:text-indigo-400 transition-all hover:scale-110 active:scale-95"
               onclick={(e) =>
                 copyToClipboard(e, entry.videoGenerationPrompt, "Prompt")}
               title="Copy Prompt"
             >
-              <Copy class="w-4 h-4" />
+              <Copy class="w-3.5 h-3.5" />
             </button>
           </div>
 
@@ -197,37 +182,50 @@
 </div>
 
 <style>
-  /* 3D Perspective Utilities */
-  .perspective-1000 {
-    perspective: 1000px;
-  }
-  .transform-style-3d {
-    transform-style: preserve-3d;
-  }
-  .backface-hidden {
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+  /* Ambient Gallery Glow Effect */
+  .gallery-ticket::after {
+    content: "";
+    position: absolute;
+    top: 30px;
+    left: 0;
+    right: 0;
+    height: 100%;
+    width: 100%;
+    transform: scale(0.9);
+    filter: blur(25px);
+    background: linear-gradient(to bottom, var(--glow-start), var(--glow-end));
+    opacity: 0.6;
+    z-index: -1;
+    transition:
+      opacity 0.5s ease-in-out,
+      transform 0.5s ease-in-out;
   }
 
-  /* Custom Scrollbar */
-  .custom-scrollbar::-webkit-scrollbar {
+  .gallery-ticket:hover::after {
+    opacity: 0.9;
+    transform: scale(0.95) translateY(5px);
+  }
+
+  /* Custom Ticket Scrollbar */
+  .ticket-scrollbar::-webkit-scrollbar {
     width: 8px;
   }
-  .custom-scrollbar::-webkit-scrollbar-track {
+  .ticket-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.3);
+  .ticket-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.25);
     border-radius: 20px;
-    border: 2px solid transparent; /* Gives it some 'air' */
+    border: 2px solid transparent;
     background-clip: content-box;
   }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255, 0.5);
+  .ticket-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.4);
   }
 
   /* Noise Texture */
   .bg-noise {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+    pointer-events: none;
   }
 </style>

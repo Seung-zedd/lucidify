@@ -4,21 +4,21 @@
 
 
 > **Winner(Aiming for!) of Google Gemini 3 Hackathon**
-> A multimodal lucid dreaming interface that visualizes your subconscious using **Gemini 1.5 Pro** and **Veo**.
+> A multimodal lucid dreaming interface that visualizes your subconscious using **Gemini 2.5 Flash** and **Veo 3.1**(Imagen 4 for fallback).
 
 ## 🔗 Links
 - **Live App:** [https://lucidify-purple.vercel.app/](https://lucidify-purple.vercel.app/)
 - **Demo Video:** [YouTube Link Here]
 
 ## ✨ Key Features
-- **Visualize the Unseen:** Transforms dream descriptions into cinematic videos using **Veo** & **Imagen 3**.
-- **Deep Interpretation:** **Gemini 1.5 Pro** analyzes dream symbols and provides psychological insights.
+- **Visualize the Unseen:** Transforms dream descriptions into cinematic videos using **Veo 3.1** & **Imagen 4.0 Ultra**.
+- **Deep Interpretation:** **Gemini 2.5 Flash** analyzes dream symbols and provides psychological insights.
 - **Lucid Interaction:** Real-time narrative intervention (e.g., "I was flying").
 - **Mystical Journal:** Save your insights locally with a Tarot-inspired Flip Card UI. No login required.
 
 ## 🛠️ Tech Stack
 - **Framework:** SvelteKit (App), TailwindCSS (Styling)
-- **AI Models:** Google Gemini 1.5 Pro, Veo (Video), Imagen 3 (Image), Neural2 (TTS)
+- **AI Models:** Google Gemini 2.5 Flash, Veo 3.1 (Video), Imagen 4.0 Ultra (Image), Neural2 (TTS)
 - **Storage:** Local Storage (Privacy-first architecture)
 
 ## 👻 Hidden Feature

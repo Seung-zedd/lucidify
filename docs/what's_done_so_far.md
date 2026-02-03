@@ -37,8 +37,9 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
   - **Feature**: Lightweight "Dream Journal" to save subconscious insights locally.
   - **UI (Mystical Flip Cards)**: Tarot-style cards that levitate on hover and flip on click to reveal dream details.
   - **Tactile Interaction**: Smooth 3D transformations with dynamic colored auras (unique gradients) for each card.
-  - **Navigation**: Dedicated `/journal` page with a responsive grid layout.
-  - **Integration**: "Bookmark" button in the insight box for immediate saving with toast notifications.
+  - **Navigation**: Dedicated `/journal` page with a responsive grid layout. Updated "Back to the Waking World" link on the whats-new page to return users directly to the Dream Architect (`/dream`).
+  - **Toggle Integration**: Recoded the "Bookmark" button into a toggle system. It now saves or removes entries from `localStorage` using prompt-based deletion, with dynamic success/info toast feedback.
+  - **Dream Card UX Refinement**: Prevented accidental flips using `stopPropagation` on the scrollable content area. Added sticky headers with backdrop blur, wider scrollbars, and contextual hover effects for copy buttons (Gold for Insight, Purple for Prompt).
 
 ## 🛠️ Technical Fixes & Stability
 

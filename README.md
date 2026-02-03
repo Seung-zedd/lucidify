@@ -25,7 +25,9 @@
 Found yourself lost? Press **`F8`** on your keyboard to let your subconscious take over.
 
 ## 🚀 How to Run locally
+```bash
 1. Clone the repo
 2. `pnpm install`
 3. Create `.env` and add `GOOGLE_API_KEY=...`
 4. `pnpm dev`
+```

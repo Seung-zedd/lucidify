@@ -1,5 +1,6 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
+  import Toast from "$lib/components/Toast.svelte";
   let { children } = $props();
 </script>
 
@@ -19,6 +20,8 @@
       <nav
         class="flex gap-8 text-sm font-bold uppercase tracking-widest text-slate-400"
       >
+        <a href="/journal" class="hover:text-white transition-colors">Journal</a
+        >
         <a href="/whats-new" class="hover:text-white transition-colors"
           >What's New</a
         >
@@ -36,4 +39,6 @@
   >
     <!-- Add mobile nav icons here -->
   </footer>
+
+  <Toast />
 </div>

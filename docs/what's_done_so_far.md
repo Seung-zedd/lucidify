@@ -33,6 +33,12 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **TTS-driven User Flow**:
   - **Audio-Gated UI**: The user enters a fullscreen "Purple Dream" overlay while manifesting. The "Enter Dream" button only appears after BOTH the video is ready and the narrator has finished.
   - **Auto-Fade Overlay**: The loading overlay now automatically fades out once the audio narration ends, returning the user to the results screen for a natural transition.
+- **Dream Journal (Local Persistence)**:
+  - **Feature**: Lightweight "Dream Journal" to save subconscious insights locally.
+  - **UI (Mystical Flip Cards)**: Tarot-style cards that levitate on hover and flip on click to reveal dream details.
+  - **Tactile Interaction**: Smooth 3D transformations with dynamic colored auras (unique gradients) for each card.
+  - **Navigation**: Dedicated `/journal` page with a responsive grid layout.
+  - **Integration**: "Bookmark" button in the insight box for immediate saving with toast notifications.
 
 ## 🛠️ Technical Fixes & Stability
 
@@ -61,10 +67,13 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **Lucid Mode**: Interactive "Take Control" flow that lets users modify the dream via the "Director" phase.
 - **Immersive Atmosphere**: CSS-based "fluid-expand" transitions, mist overlays, and deep-purple aesthetics.
 - **Synchronized Script Display**: Frontend dynamically updates the `loadingText` via a `NEW_SCRIPT` SSE event to match any real-time backend refinements.
+- **Micro-Animations (Toast/Journal)**: Implemented Svelte 5 rune-based global toast system and sophisticated 3D CSS animations for the journal archives.
 
 ## 📂 Key Files
 
 - `src/lib/server/dream-engine.ts`: All AI/Vertex/GCP synthesis logic.
 - `src/routes/api/dream/manifest/+server.ts`: The SSE stream orchestrator and parallel logic.
 - `src/routes/(app)/dream/+page.svelte`: The main immersive UI and SSE event listener.
+- `src/lib/utils/journal.ts`: Local Storage persistence logic for dream entries.
+- `src/routes/(app)/journal/+page.svelte`: The mystical journal archive view.
 - `docs/technical_memo.md`: Detailed "How & Why" for specific engineering challenges.

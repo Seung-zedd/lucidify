@@ -48,7 +48,7 @@
 </script>
 
 <div
-  class="group gallery-ticket relative w-full h-[600px] cursor-default transition-all duration-500 ease-out"
+  class="group gallery-ticket-wrapper relative w-full h-[600px] cursor-default transition-all duration-500 ease-out"
   onmouseenter={() => (isHovered = true)}
   onmouseleave={() => (isHovered = false)}
   style="--glow-start: {startColor}; --glow-end: {endColor}; {isHovered
@@ -56,9 +56,12 @@
     : ''}"
   role="presentation"
 >
-  <!-- Main Card Container -->
+  <!-- Dedicated Glow Element (Outside overflow:hidden) -->
+  <div class="gallery-glow"></div>
+
+  <!-- Content Container (Handles clipping) -->
   <div
-    class="relative z-1 w-full h-full rounded-[1.5rem] overflow-hidden border border-white/10 flex flex-col bg-[#0a0a0a] shadow-2xl"
+    class="ticket-content relative z-1 w-full h-full rounded-[2rem] overflow-hidden border border-white/10 flex flex-col bg-[#0a0a0a] shadow-2xl"
   >
     <!-- Top Section (40%): The Art -->
     <div
@@ -182,29 +185,35 @@
 </div>
 
 <style>
-  /* Floor Reflection Effect */
-  .gallery-ticket::after {
-    content: "";
+  /* The Glow Element (The Canvas) */
+  .gallery-glow {
     position: absolute;
-    bottom: -5%;
-    left: 5%;
-    width: 90%;
-    height: 25%;
+    left: 10%;
+    width: 80%;
+    height: 80%;
     background: linear-gradient(to bottom, var(--glow-start), var(--glow-end));
-    filter: blur(25px);
-    opacity: 0.4;
-    transform: scaleY(0.8);
     z-index: -1;
-    transition:
-      opacity 0.6s ease-in-out,
-      filter 0.6s ease-in-out,
-      transform 0.6s ease-in-out;
+
+    /* State 1: Floor Reflection (Default) */
+    bottom: 0px;
+    transform: translateY(20px) scale(0.9);
+    filter: blur(35px);
+    opacity: 0.6;
+    border-radius: 40%;
+
+    /* Smooth Morphing Transition */
+    transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 
-  .gallery-ticket:hover::after {
-    opacity: 0.8;
-    filter: blur(35px);
-    transform: scaleY(1.2) translateY(5px);
+  /* State 2: Full Aura (Hover) */
+  .group:hover .gallery-glow {
+    width: 110%;
+    left: -5%;
+    bottom: -10px;
+    transform: translateY(0) scale(1);
+    filter: blur(45px);
+    opacity: 0.9;
+    border-radius: 2rem;
   }
 
   /* Custom Ticket Scrollbar */

@@ -185,35 +185,37 @@
 </div>
 
 <style>
-  /* The Glow Element (The Canvas) */
+  /* 🌟 The Gallery Glow - Logic Update 🌟 */
   .gallery-glow {
     position: absolute;
-    left: 10%;
-    width: 80%;
-    height: 80%;
+    z-index: -1; /* Behind the card */
+
+    /* Positioning */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    /* Gradient */
     background: linear-gradient(to bottom, var(--glow-start), var(--glow-end));
-    z-index: -1;
 
-    /* State 1: Floor Reflection (Default) */
-    bottom: 0px;
-    transform: translateY(20px) scale(0.9);
-    filter: blur(35px);
-    opacity: 0.6;
-    border-radius: 40%;
+    /* ✅ IMPORTANT: Default State (Resting on Floor) */
+    /* Push it DOWN (translateY) so it is visible below the card bottom */
+    transform: translateY(25px) scale(0.9);
+    filter: blur(25px);
+    opacity: 0.6; /* Make sure it's visible! */
+    border-radius: 2rem;
 
-    /* Smooth Morphing Transition */
-    transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+    /* Smooth Transition */
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 
-  /* State 2: Full Aura (Hover) */
+  /* 🚀 Hover State (Awakening) */
   .group:hover .gallery-glow {
-    width: 110%;
-    left: -5%;
-    bottom: -10px;
-    transform: translateY(0) scale(1);
-    filter: blur(45px);
-    opacity: 0.9;
-    border-radius: 2rem;
+    /* Expand to surround the card */
+    transform: translateY(0) scale(1.05); /* Centered & Slightly larger than card */
+    filter: blur(45px); /* Intense Blur */
+    opacity: 0.8; /* Brighter */
   }
 
   /* Custom Ticket Scrollbar */

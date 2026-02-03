@@ -1,6 +1,6 @@
 # ☁️ Lucidify: Awaken Your Subconscious
 
-![Lucidify Hero Image](https://i.imgur.com/lCQj5Py.png)
+![Lucidify Hero Image](https://imgur.com/Cn2lDfO.png)
 
 
 > **Winner(Aiming for!) of Google Gemini 3 Hackathon**

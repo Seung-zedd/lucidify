@@ -4,12 +4,14 @@
   import Copy from "@lucide/svelte/icons/copy";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Video from "@lucide/svelte/icons/video";
+  import Trash2 from "@lucide/svelte/icons/trash-2";
   import { toast } from "$lib/runes/toast.svelte";
 
   // Props definition
-  let { entry, index } = $props<{
+  let { entry, index, onremove } = $props<{
     entry: DreamEntry;
     index: number;
+    onremove: () => void;
   }>();
 
   let isHovered = $state(false);
@@ -75,6 +77,20 @@
 
       <!-- Noise Texture -->
       <div class="absolute inset-0 bg-noise opacity-30 mix-blend-overlay"></div>
+
+      <!-- Delete Button (Top Right) -->
+      <button
+        class="absolute top-4 right-4 z-30 p-2.5 rounded-xl bg-black/20 backdrop-blur-md border border-white/10 text-white/50 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 transition-all duration-300 hover:scale-110 active:scale-95 group/trash"
+        onclick={(e) => {
+          e.stopPropagation();
+          onremove();
+        }}
+        title="Remove Dream"
+      >
+        <Trash2
+          class="w-4 h-4 transition-transform group-hover/trash:rotate-12"
+        />
+      </button>
 
       <!-- Content -->
       <div

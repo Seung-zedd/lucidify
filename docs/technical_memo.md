@@ -4,7 +4,7 @@
 
 "Explore Your Subconscious with AI-Generated Dream Visuals."
 
-**Period**: 2026.01.20 ~ 2026.02.06
+**Period**: 2026.01.19 ~ 2026.02.06
 
 **Tech Stack**:
 

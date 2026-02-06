@@ -4,14 +4,13 @@
 
 "Explore Your Subconscious with AI-Generated Dream Visuals."
 
-**Period**: 2026.01.20 ~ Present
+**Period**: 2026.01.20 ~ 2026.02.06
 
 **Tech Stack**:
 
 - **Frontend**: Svelte 5, Vite 7, Tailwind CSS 4, Lucide Svelte.
 - **Backend**: SvelteKit (Serverless Functions), Google Cloud Platform (GCP).
-- **AI & Video**: Google Gemini 2.0 Flash, Google Veo 2.0 (Vertex AI).
-- **Storage & Auth**: Google Cloud Storage (GCS), Google Auth Library.
+- **AI & Video**: Google Gemini 2.5 Flash, Google Veo 3.1 (Google AI studio), Google Imagen 4 Ultra, Google TTS (Neural2-F)
 
 repo address: https://github.com/Seung-zedd/lucidify.git
 

@@ -15,11 +15,11 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 ### 2. Manifestation Logic (`api/dream/manifest`)
 
 - **Multi-Model Orchestration**:
-  1. **Google Veo 3.1 Fast**: Primary video engine using `predictLongRunning`.
-  2. **Imagen 4.0 Ultra**: High-fidelity image fallback for complex prompts.
-  3. **Imagen 3.0**: Secondary fallback to ensure reliability.
+  1. **Google Veo 3.1 Fast**: Primary video engine using `predictLongRunning` for high-fidelity cinematic shorts.
+  2. **Imagen 4.0 Ultra**: State-of-the-art image fallback for complex prompts when video quotas are exceeded.
+  3. **Imagen 3.0**: Robust secondary fallback to ensure reliable user experiences.
 - **Smart Ambient Audio Matching (Smart Fallback)**:
-  - **Mood Detection**: Uses **Gemini 2.5 Flash** to intelligently select one of 5 high-quality ambient loops (`nature`, `space`, `city`, `horror`, `fantasy`) based on the dream's emotional profile.
+  - **Mood Detection**: Uses **Gemini 2.5 Flash** to intelligently select one of 5 high-quality ambient loops (`nature`, `space`, `city`, `horror`, `fantasy`) based on the dream's emotional profile and visual landscape.
   - **Parallel Execution**: Analysis runs in parallel with Imagen generation to minimize latency during the fallback phase.
 - **Cinematic Audio Transitions**:
   - **Dynamic Fading**: Implemented sophisticated `fadeAudioIn` and `fadeAudioOut` controllers on the frontend to handle state changes.
@@ -34,9 +34,9 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
   - **Audio-Gated UI**: The user enters a fullscreen "Purple Dream" overlay while manifesting. The "Enter Dream" button only appears after BOTH the video is ready and the narrator has finished.
   - **Auto-Fade Overlay**: The loading overlay now automatically fades out once the audio narration ends, returning the user to the results screen for a natural transition.
 - **Dream Journal (Local Persistence)**:
-  - **Feature**: Lightweight "Dream Journal" to save subconscious insights locally.
-  - **UI (Mystical Flip Cards)**: Tarot-style cards that levitate on hover and flip on click to reveal dream details.
-  - **Tactile Interaction**: Smooth 3D transformations with dynamic colored auras (unique gradients) for each card.
+  - **Feature**: Lightweight "Dream Journal" to save subconscious insights locally using `localStorage`.
+  - **UI (The Chroma Aura System)**: Tarot-style cards that levitate on hover and flip on click to reveal dream details.
+  - **Tactile Interaction**: Smooth 3D transformations with **Dynamic Chroma Auras**—unique dual-color gradients generated based on entry index to provide a distinct visual "soul" for every dream.
   - **Navigation**: Dedicated `/journal` page with a responsive grid layout. Updated "Back to the Waking World" link on the whats-new page to return users directly to the Dream Architect (`/dream`).
   - **Toggle Integration**: Recoded the "Bookmark" button into a toggle system. It now saves or removes entries from `localStorage` using prompt-based deletion, with dynamic success/info toast feedback.
   - **Dream Card UX Refinement**: Prevented accidental flips using `stopPropagation` on the scrollable content area. Added sticky headers with backdrop blur, wider scrollbars, and contextual hover effects for copy buttons (Gold for Insight, Purple for Prompt). Fixed hashtag visibility by applying `line-clamp-2` and optimized vertical spacing for long titles.

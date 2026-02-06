@@ -7,7 +7,7 @@
 > A multimodal lucid dreaming interface that visualizes your subconscious using **Gemini 2.5 Flash**, **Veo 3.1**, and **Imagen 4.0**.
 
 ## 🔗 Links
-- **Live App:** [https://lucidify-purple.vercel.app/](https://lucidify-purple.vercel.app/)
+- **Live App:** [https://lucidify-dream.vercel.app/](https://lucidify-dream.vercel.app/)
 - **Demo Video:** [YouTube Link Here]
 
 ## ✨ Key Features

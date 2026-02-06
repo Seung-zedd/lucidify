@@ -39,7 +39,7 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
   - **Tactile Interaction**: Smooth 3D transformations with dynamic colored auras (unique gradients) for each card.
   - **Navigation**: Dedicated `/journal` page with a responsive grid layout. Updated "Back to the Waking World" link on the whats-new page to return users directly to the Dream Architect (`/dream`).
   - **Toggle Integration**: Recoded the "Bookmark" button into a toggle system. It now saves or removes entries from `localStorage` using prompt-based deletion, with dynamic success/info toast feedback.
-  - **Dream Card UX Refinement**: Prevented accidental flips using `stopPropagation` on the scrollable content area. Added sticky headers with backdrop blur, wider scrollbars, and contextual hover effects for copy buttons (Gold for Insight, Purple for Prompt).
+  - **Dream Card UX Refinement**: Prevented accidental flips using `stopPropagation` on the scrollable content area. Added sticky headers with backdrop blur, wider scrollbars, and contextual hover effects for copy buttons (Gold for Insight, Purple for Prompt). Fixed hashtag visibility by applying `line-clamp-2` and optimized vertical spacing for long titles.
   - **Archive Deletion (Confirm Modal)**: Added a floating "Rubbish Bin" icon to the top-right of dream cards. Triggering it opens a mystical `ConfirmModal` (inspired by Cubrain) to prevent accidental data loss, with successful deletion being persisted to local storage and reflected in the UI immediately.
 
 ## 🛠️ Technical Fixes & Stability

@@ -102,9 +102,9 @@
           {formattedDate}
         </div>
 
-        <div class="flex-1 flex items-center justify-center py-4">
+        <div class="flex-1 flex items-center justify-center py-2">
           <h3
-            class="text-3xl md:text-4xl font-serif font-black text-center leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
+            class="text-2xl md:text-3xl font-serif font-black text-center leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)] line-clamp-2"
           >
             {entry.analysisResult?.title || "Untitled Dream"}
           </h3>

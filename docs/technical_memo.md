@@ -10,7 +10,7 @@
 
 - **Frontend**: Svelte 5, Vite 7, Tailwind CSS 4, Lucide Svelte.
 - **Backend**: SvelteKit (Serverless Functions), Google Cloud Platform (GCP).
-- **AI & Video**: Google Gemini 2.5 Flash, Google Veo 3.1 (Google AI studio), Google Imagen 4 Ultra, Google TTS (Neural2-F)
+- **AI & Video**: Google Gemini 2.5 Flash, Google Veo 3.1 (Google AI studio), Imagen 4.0 Ultra, Google TTS (Neural2-F)
 
 repo address: https://github.com/Seung-zedd/lucidify.git
 

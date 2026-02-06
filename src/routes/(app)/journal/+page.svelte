@@ -1,19 +1,39 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
-  import { getDreamEntries, type DreamEntry } from "$lib/utils/journal";
+  import {
+    getDreamEntries,
+    deleteDreamEntry,
+    type DreamEntry,
+  } from "$lib/utils/journal";
   import DreamCard from "$lib/components/DreamCard.svelte";
+  import ConfirmModal from "$lib/components/ui/ConfirmModal.svelte";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import { toast } from "$lib/runes/toast.svelte";
 
   let entries = $state<DreamEntry[]>([]);
   let isLoading = $state(true);
+  let entryToDelete = $state<DreamEntry | null>(null);
 
   onMount(() => {
     // Load entries from Local Storage
     entries = getDreamEntries();
     isLoading = false;
   });
+
+  function initiateDelete(entry: DreamEntry) {
+    entryToDelete = entry;
+  }
+
+  function confirmDelete() {
+    if (entryToDelete) {
+      deleteDreamEntry(entryToDelete.id);
+      entries = entries.filter((e) => e.id !== entryToDelete?.id);
+      entryToDelete = null;
+      toast.show("Dream entry removed from archives.", "success");
+    }
+  }
 </script>
 
 <svelte:head>
@@ -83,12 +103,22 @@
     >
       {#each entries as entry, i (entry.id)}
         <div in:fly={{ y: 30, duration: 600, delay: i * 100 }}>
-          <DreamCard {entry} index={i} />
+          <DreamCard {entry} index={i} onremove={() => initiateDelete(entry)} />
         </div>
       {/each}
     </div>
   {/if}
 </div>
+
+{#if entryToDelete}
+  <ConfirmModal
+    title="Excise from Memory?"
+    message="Are you certain you wish to delete this dream? Once lost to the void, it cannot be reclaimed."
+    confirmText="Delete Forever"
+    onconfirm={confirmDelete}
+    oncancel={() => (entryToDelete = null)}
+  />
+{/if}
 
 <style>
   /* Optional: Smooth page transition bg */

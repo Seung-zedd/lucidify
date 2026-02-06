@@ -35,6 +35,15 @@
   const updates = [
     {
       date: "Feb 2026",
+      title: "Archive Deletion & Confirmation",
+      description:
+        "Implemented a mystical deletion flow for the Subconscious Archive. Using the 'Excise from Memory' confirm modal, you can now prune your journal with poetic precision while preventing accidental data loss.",
+      icon: Zap, // Using Zap or Trash icon if I had one, Zap is already imported.
+      color: "text-rose-400",
+      bg: "bg-rose-400/10",
+    },
+    {
+      date: "Feb 2026",
       title: "New Feature: The Subconscious Archive",
       description:
         "Launched the Dream Journal, a permanent sanctuary for your visions. Featuring the 'Crystal Block' UI—an immersive, glassmorphic gallery with 'Awakening' light effects that bring your past dreams to life.",

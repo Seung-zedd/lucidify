@@ -8,7 +8,7 @@
 
 ## 🔗 Links
 - **Live App:** [https://lucidify-dream.vercel.app](https://lucidify-dream.vercel.app)
-- **Demo Video:** [YouTube Link Here]
+- **Demo Video:** [YouTube Link Here](https://youtu.be/OZX_Sl9m9AQ?si=Ba6-SLVdXLJAd_lL)
 
 ## ✨ Key Features
 - **Visual Manifestation (Veo 3.1 & Imagen 4.0):** Adaptive Multi-Model Orchestration to transform dream descriptions into cinematic reality, ensuring zero-downtime visualization.

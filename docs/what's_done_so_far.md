@@ -58,9 +58,11 @@ The **Dream Engine** is the heart of Lucidify, transforming user dream descripti
 - **Dream State Vibrancy**: Removed the muted grayscale filter from the non-lucid state to ensure Veo and Imagen content is displayed in full, vivid color.
 - **Robust SFX Randomization**: Implemented a **Fisher-Yates Shuffle** deck system for `warp_n.mp3` sounds. This ensures a non-repeating, unbiased variety where every sound in the set plays once before reshuffling. Added cache-busting for browser stream reliability.
 - **Immersion Persistence**: Refined overlay logic to stay in the "Dreaming" state until both audio and video are fully synchronized and ready.
-- **API Quota Isolation**: Separated `DEV_` and `PROD` Google AI keys across all endpoints to ensure testing does not consume production limits.
-- **Vercel Build Stability**: Migrated all private environment variables to `$env/dynamic/private` to prevent build-time failures on Vercel when branch-specific keys are absent.
 - **Agent Guidelines**: Established `AGENTS.md` to enforce cognitive protocols, documentation standards, and selective technical memo usage.
+- **Emergency Security Mitigation (Supply Chain Attack)**:
+  - **Context**: Proactive response to the April 2026 Vercel supply chain incident.
+  - **Rotation**: Full rotation of Gemini (`GOOGLE_GENERATIVE_AI_API_KEY`), GCP (`GCP_CREDENTIALS_JSON`), and Backend (`VITE_API_BASE_URL`) keys.
+  - **Zero-Trust Implementation**: Established mandatory **"Sensitive"** storage layer for Vercel env vars and codified the protocol in `AGENTS.md`.
 - **Ghost Typing Easter Egg**: Transformed the F8 demo shortcut into a production-ready Easter Egg. It now provides a celebratory console message and types context-aware prompts (Icarus for Lucid Mode, default otherwise) for all users who discover it.
 
 ## 🎨 UI/UX (Svelte 5)

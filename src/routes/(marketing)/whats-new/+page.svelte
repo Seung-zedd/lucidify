@@ -34,6 +34,15 @@
 
   const updates = [
     {
+      date: "Apr 2026",
+      title: "Security Infrastructure Upgrade",
+      description:
+        "Proactively rotated all sensitive API keys and environment variables following the industry-wide Vercel incident. Migrated to the 'Sensitive' storage layer to ensure zero-trust integrity for our generative AI and cloud infrastructure.",
+      icon: ShieldCheck,
+      color: "text-emerald-400",
+      bg: "bg-emerald-400/10",
+    },
+    {
       date: "Feb 2026",
       title: "Archive Deletion & Confirmation",
       description:

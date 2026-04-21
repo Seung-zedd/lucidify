@@ -195,3 +195,32 @@ When adapting external UI code:
 - Whenever you finish a certain task, work, or feature implementation, you **MUST** update `docs/what's_done_so_far.md` to reflect the current state of the project. This ensures the project history and context remain accurate for future sessions.
 - **Rule: Selective Technical Memo Writing.**
 - You should only write to `docs/technical_memo.md` if the user is **actively struggling** with a specific problem or if a solution requires a deep dive into complex engineering trade-offs that need formal documentation. Do not use it for routine updates.
+
+---
+
+## 19. 🛡️ Security & Secret Management (Mandatory Protocol)
+
+To protect the project from supply chain attacks and unauthorized access, agents follow a strict **Zero-Trust Secret Management** policy.
+
+### 19.1 Zero-Trust Interaction
+
+- **No Secrets to AI**: NEVER request OR read real API keys, passwords, or secrets from the user or `.env` files if they are meant for production. If you encounter them, immediately suggest rotation if they've been leaked to the chat.
+- **CLI-First Secret Management**: To mitigate browser-based supply chain attacks (DOM poisoning, clipboard monitoring on Dashboard UI), prefer using the **Vercel CLI** for adding secrets.
+- **Blind CLI Updates**: When adding environment variables, NEVER include the secret value in the command string (e.g., avoid `vercel env add NAME VALUE`). Use the **interactive prompt** method (`vercel env add NAME`) to ensure values are not saved in terminal history (`.bash_history`).
+
+### 19.2 Deployment Configuration
+
+- **Sensitive Flag**: When adding secrets via CLI or UI, always ensure the **"Sensitive"** property is enabled (blocking unmasking).
+- **Key Rotation**: Following the April 2026 Vercel incident, a full rotation of all sensitive keys and a corresponding version bump (v1.6.2+) is mandatory.
+
+### 19.3 Git Safety
+
+- **.env Protection**: If you see a `.env` file not listed in `.gitignore`, your first priority is to fix the ignore file.
+
+---
+
+## 20. 🧹 Code Cleanup & Dead Code Removal
+
+- **Proactive Cleanup:** When refactoring or adding features, always identify and remove any dead code in the file.
+- **Unused Elements:** Actively delete unused variables, uncalled functions, and long-commented-out blocks of old code rather than leaving them indefinitely.
+- **Rule of Thumb:** Make it a priority to leave the codebase cleaner than you found it.
